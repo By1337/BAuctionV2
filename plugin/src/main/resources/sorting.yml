@@ -1,0 +1,390 @@
+# Сортировка предметов
+# type - COMPARE_MAX или COMPARE_MIN, max - предметы будут находится в порядке убывания value, min - наоборот
+# value - по какому значению отсортировывать предметы, должно быть число
+# selected-name - когда выбрана эта сортировка, unselected-name - когда другая
+# priority - в каком порядке будет список с выбором сортировки
+sorting:
+  sorting-1:
+    name: sorting-5
+    type: COMPARE_MAX
+    value: '{sale_time}'
+    selected-name: '&r  &6✔ Сначала новые'
+    unselected-name: '&r&7⏺ Сначала новые'
+    priority: 0
+
+  sorting-2:
+    name: sorting-6
+    type: COMPARE_MIN
+    value: '{sale_time}'
+    selected-name: '&r  &6✔ Сначала старые'
+    unselected-name: '&r&7⏺ Сначала старые'
+    priority: 1
+
+  sorting-3:
+    name: sorting-1
+    type: COMPARE_MAX
+    value: '{price}'
+    selected-name: '&r  &6✔ Сначала дорогие'
+    unselected-name: '&r&7⏺ Сначала дорогие'
+    priority: 2
+
+  sorting-4:
+    name: sorting-2
+    type: COMPARE_MIN
+    value: '{price}'
+    selected-name: '&r  &6✔ Сначала не дорогие'
+    unselected-name: '&r&7⏺ Сначала не дорогие'
+    priority: 3
+
+  sorting-5:
+    name: sorting-3
+    type: COMPARE_MAX
+    value: '{price_for_one}'
+    selected-name: '&r  &6✔ Сначала дорогие за штуку'
+    unselected-name: '&r&7⏺ Сначала дорогие за штуку'
+    priority: 4
+
+  sorting-6:
+    name: sorting-4
+    type: COMPARE_MIN
+    value: '{price_for_one}'
+    selected-name: '&r  &6✔ Сначала не дорогие за штуку'
+    unselected-name: '&r&7⏺ Сначала не дорогие за штуку'
+    priority: 5
+
+
+
+# Каждый предмет получает теги для сортировки
+# Все теги указываются в нижнем регистре
+# В теги попадают
+#   - Материал
+#   - Все зачарования
+#   - Все эффекты зелий
+#   - И несколько особенный
+# Список особенных тегов
+#   - isflammable - Проверьте, не является ли материал блоком и не может ли он загореться.
+#   - isburnable - Проверьте, не представляет ли материал блок и может ли он сгореть.
+#   - isfuel - Проверяет, можно ли использовать этот материал в качестве топлива в печи.
+#   - hasgravity - Действует ли на этот материал сила тяжести.
+#   - issolid - Проверьте, является ли материал блочным и твердым (на нем можно строить)
+#   - isrecord - Если этот материал представляет собой воспроизводимый музыкальный диск.
+#   - isedible - Проверяет, съедобен ли этот материал.
+#   - isblock - Проверяет, является ли этот материал размещаемым блоком.
+#   - any - Любой предмет
+#
+special:
+  # Это категория по поиску /ah search <>. Она появится только если игрок ввёл эту команду
+  search:
+    name: search
+    selected-name: '<#FF0000>☃ <#FF6600>Поиск: <#FF0000>{search_input}'
+    unselected-name: '&r&7⏺ Поиск  &8(&7{custom_category_size} шт.&8)'
+    display-name: 'Поиск'
+    priority: 0 # приоритет он влияет на то в каком порядке будут категории
+    tags: [ ] # Теги сами подставятся
+  # Все категории ниже можно изменять как угодно плагин не привязан к их ключам
+categories:
+  any:
+    name: any
+    selected-name: '<#FF0000>☃ <#FF6600>Аукцион'
+    unselected-name: '&r&7⏺ Всё подряд &8(&7%bauction_ah_size_any% шт.&8)'
+    priority: 1
+    tags:
+      - 'any'
+  tools:
+    name: tools
+    selected-name: "<#FF0000>☃ <#FF6600>Категория: <#FF0000>Инструменты"
+    unselected-name: '&r&7⏺ Инструменты &8(&7%bauction_ah_size_tools% шт.&8)'
+    priority: 2
+    tags:
+      - 'is_tool'
+  weapons:
+    name: weapons
+    selected-name: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Оружие'
+    unselected-name: '&r&7⏺ Оружие &8(&7%bauction_ah_size_weapon% шт.&8)'
+    priority: 3
+    tags:
+      - 'is_weapon'
+  blocks:
+    name: blocks
+    selected-name: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Блоки'
+    unselected-name: '&r&7⏺ Блоки &8(&7%bauction_ah_size_blocks% шт.&8)'
+    priority: 4
+    tags:
+      - 'is_block'
+  grief:
+    name: grief
+    selected-name: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Для Грифа'
+    unselected-name: '&r&7⏺ Для Грифа &8(&7%bauction_ah_size_mechanisms% шт.&8)'
+    priority: 5
+    tags:
+      - 'tnt'
+      - 'fire_charge'
+      - 'sticky_piston'
+      - 'piston'
+      - 'tripwire_hook'
+      - 'rail'
+      - 'hopper'
+      - 'observer'
+      - 'tnt_minecart'
+      - 'redstone_torch'
+      - 'slime_block'
+      - 'chest_minecart'
+      - 'minecart'
+      - 'hopper_minecart'
+      - 'redstone'
+  alchemy:
+    name: alchemy
+    selected-name: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Зельеварение'
+    unselected-name: '&r&7⏺ Алхимия &8(&7%bauction_ah_size_alchemy% шт.&8)'
+    priority: 6
+    tags:
+      - 'glass_bottle'
+      - 'redstone'
+      - 'golden_carrot'
+      - 'glowstone_dust'
+      - 'gunpowder'
+      - 'brown_mushroom'
+      - 'fermented_spider_eye'
+      - 'blaze_powder'
+      - 'scute'
+      - 'magma_cream'
+      - 'nether_wart'
+      - 'turtle_helmet'
+      - 'brewing_stand'
+      - 'phantom_membrane'
+      - 'red_mushroom'
+      - 'dragon_breath'
+      - 'sugar'
+      - 'glistering_melon_slice'
+      - 'ghast_tear'
+      - 'rabbit_foot'
+
+  food:
+    name: food
+    selected-name: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Еда'
+    unselected-name: '&r&7⏺ Еда &8(&7%bauction_ah_size_food% шт.&8)'
+    priority: 7
+    tags:
+      - 'is_edible'
+
+  potions:
+    name: potions
+    selected-name: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Зелья'
+    unselected-name: '&r&7⏺ Зелья &8(&7%bauction_ah_size_potions% шт.&8)'
+    priority: 8
+    tags:
+      - 'potion'
+      - 'glass_bottle'
+      - 'splash_potion'
+      - 'lingering_potion'
+
+
+  armor:
+    name: armor
+    selected-name: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Снаряжение'
+    unselected-name: '&r&7⏺ Броня &8(&7%bauction_ah_size_armor% шт.&8)'
+    priority: 10
+    tags:
+      - 'is_armor'
+
+  eggs:
+    name: eggs
+    selected-name: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Яйца и Спавнеры'
+    unselected-name: '&r&7⏺ Яйца &  Спавнеры &8(&7%bauction_ah_size_donat_items% шт.&8)'
+    priority: 12
+    tags:
+      - 'is_spawn_agg'
+      - 'spawner'
+  rich_items:
+    name: rich_items
+    selected-name: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Ценные ресурсы'
+    unselected-name: '&r&7⏺ Ценные ресурсы &8(&7%bauction_ah_size_donat_items% шт.&8)'
+    priority: 13
+    tags:
+      - 'coal'
+      - 'lapis_lazuli'
+      - 'redstone'
+      - 'iron_ingot'
+      - 'gold_ingot'
+      - 'diamond'
+      - 'emerald'
+      - 'ancient_debris'
+      - 'netherite_scrap'
+      - 'netherite_ingot'
+      - 'coal_ore'
+      - 'lapis_ore'
+      - 'redstone_ore'
+      - 'iron_ore'
+      - 'gold_ore'
+      - 'diamond_ore'
+      - 'emerald_ore'
+      - 'coal_block'
+      - 'lapis_block'
+      - 'redstone_block'
+      - 'iron_block'
+      - 'gold_block'
+      - 'diamond_block'
+      - 'emerald_block'
+      - 'netherite_block'
+      - 'charcoal'
+      - 'gold_nugget'
+      - 'quartz'
+      - 'nether_quartz_ore'
+      - 'glowstone'
+      - 'glowstone_dust'
+      - 'beacon'
+  original_items:
+    name: original_items
+    selected-name: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Настоящие вещи'
+    unselected-name: '&r&7⏺ Настоящие ресурсы &8(&7%bauction_ah_size_original_items% шт.&8)'
+    priority: 14
+    tags:
+      - 'custommodeldata:12211'
+      - 'custommodeldata:12221'
+      - 'custommodeldata:12231'
+      - 'custommodeldata:12243'
+      - 'custommodeldata:12253'
+      - 'custommodeldata:12263'
+      - 'custommodeldata:12273'
+      - 'custommodeldata:12283'
+      - 'custommodeldata:12293'
+      - 'custommodeldata:12103'
+      - 'custommodeldata:12113'
+      - 'custommodeldata:12123'
+      - 'custommodeldata:12133'
+      - 'custommodeldata:12143'
+      - 'custommodeldata:12153'
+      - 'custommodeldata:12163'
+      - 'custommodeldata:12173'
+      - 'minecraft:eventsoul:soul'
+      - 'minecraft:campfiremysticevent:&#00ffffлегендарный'
+      - 'minecraft:campfiremysticevent:&#ff0000элитный'
+      - 'minecraft:campfiremysticevent:&#ff6a09богатый'
+      - 'minecraft:campfiremysticevent:&#eb996aсолидный'
+      - 'minecraft:campfiremysticevent:&#dead91обычный'
+      - 'minecraft:campfiremysticevent:random'
+      - 'custommodeldata:11111'
+      - 'nulltrap:lkstrap-key-plast:'
+      - 'nulltrap:lksspace-dust-key:dust'
+      - 'nulltrap:lksspace-dust-key:diz'
+      - 'nulltrap:lksspace-dust-key:smerch'
+      - 'nulltrap:lksspace-dust-key:freeze'
+      - 'executableitems:ei-id:aura'
+      - 'nulltnt:fttiers-plugin:white'
+      - 'nulltnt:fttiers-plugin:black'
+      - 'executableitems:ei-id:prozess'
+      - 'executableitems:ei-id:silver'
+      - 'executableitems:ei-id:agent'
+      - 'executableitems:ei-id:flesh'
+      - 'executableitems:ei-id:killer'
+      - 'executableitems:ei-id:medik'
+      - 'executableitems:ei-id:otrizhka'
+      - 'executableitems:ei-id:ser'
+      - 'executableitems:ei-id:vspish'
+      - 'executableitems:ei-id:winner'
+      - 'executableitems:ei-id:cursed'
+      - 'executableitems:ei-id:devil'
+      - 'executableitems:ei-id:ice'
+      - 'executableitems:ei-id:paranoya'
+      - 'executableitems:ei-id:poison'
+      - 'executableitems:ei-id:tochen'
+      - 'nullbottleexp:amount:5'
+      - 'nullbottleexp:amount:10'
+      - 'nullbottleexp:amount:15'
+      - 'nullbottleexp:amount:20'
+      - 'nullbottleexp:amount:25'
+      - 'nullbottleexp:amount:30'
+      - 'nullbottleexp:amount:35'
+      - 'nullbottleexp:amount:40'
+      - 'nullbottleexp:amount:45'
+      - 'nullbottleexp:amount:50'
+      - 'nulltraps:traptype:trap'
+      - 'nulltraps:traptype:inevitable'
+      - 'nulltraps:traptype:singular'
+      - 'nulltraps:traptype:ghostly'
+      - 'nulltraps:traptype:kingly'
+      - 'nulltraps:traptype:painful'
+      - 'nulltraps:traptype:cursed'
+      - 'nulltraps:traptype:insidious'
+      - 'nulltraps:traptype:frozen'
+      - 'nulltraps:traptype:pearl'
+      - 'nulltraps:traptype:cruel'
+      - 'nulltraps:traptype:deadly'
+      - 'nulltraps:traptype:mythic'
+      - 'nulltraps:traptype:evil'
+      - 'nulltraps:traptype:nightmarish'
+      - 'nulltraps:traptype:dragon'
+      - 'nullstash:name:resurses'
+      - 'nullstash:name:armor'
+      - 'nullstash:name:weapons'
+      - 'nullstash:name:tools'
+      - 'nullstash:name:sphere'
+      - 'nulltnt:fttiers-plugin:white'
+      - 'nulltnt:fttiers-plugin:black'
+  else_items:
+    name: else_items
+    selected-name: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Прочие ресурсы'
+    unselected-name: '&r&7⏺ Прочие ресурсы &8(&7%bauction_ah_size_else_items% шт.&8)'
+    priority: 15
+    tags:
+      - 'redstone'
+      - 'golden_carrot'
+      - 'glowstone_dust'
+      - 'gunpowder'
+      - 'brown_mushroom'
+      - 'fermented_spider_eye'
+      - 'blaze_powder'
+      - 'scute'
+      - 'magma_cream'
+      - 'nether_wart'
+      - 'turtle_helmet'
+      - 'brewing_stand'
+      - 'phantom_membrane'
+      - 'red_mushroom'
+      - 'dragon_breath'
+      - 'sugar'
+      - 'glistering_melon_slice'
+      - 'ghast_tear'
+      - 'rabbit_foot'
+      - 'conduit'
+      - 'nether_star'
+      - 'beacon'
+      - 'bone'
+      - 'bone_meal'
+      - 'sugar_cane'
+      - 'cactus'
+      - 'flint'
+      - 'experience_bottle'
+      - 'leather'
+  books:
+    name: books
+    selected-name: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Книги'
+    unselected-name: '&r&7⏺ Книги &8(&7%bauction_ah_size_books% шт.&8)'
+    priority: 16
+    tags:
+      - 'enchanted_book'
+      - 'book'
+      - 'bookshelf'
+      - 'writable_book'
+      - 'written_book'
+  talismans:
+    name: talismans
+    selected-name: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Талисманы'
+    unselected-name: '&r&7⏺ Талисманы &8(&7%bauction_ah_size_talismans% шт.&8)'
+    priority: 17
+    tags:
+      - 'mixitems:upgradable_item:sphere_andromeda;3'
+      - 'mixitems:upgradable_item:sphere_pandora;3'
+      - 'mixitems:upgradable_item:sphere_titan;3'
+      - 'mixitems:upgradable_item:sphere_apollon;3'
+      - 'mixitems:upgradable_item:sphere_astrei;3'
+      - 'mixitems:upgradable_item:sphere_osiris;3'
+      - 'mixitems:upgradable_item:sphere_himera;3'
+      - 'mixitems:upgradable_item:talisman_karatel;3'
+      - 'mixitems:upgradable_item:talisman_krysh;3'
+      - 'mixitems:upgradable_item:talisman_grani;3'
+      - 'mixitems:upgradable_item:talisman_dedala;3'
+      - 'mixitems:upgradable_item:talisman_tritona;3'
+      - 'mixitems:upgradable_item:talisman_garmoni;3'
+      - 'mixitems:upgradable_item:talisman_feniksa;3'
+      - 'mixitems:upgradable_item:talisman_echidnas;3'

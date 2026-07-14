@@ -1,0 +1,77 @@
+include: [
+  "./lots_items.yml"
+]
+id: bauc:vault
+provider: bauc:vault
+title: "<#FF0000>☃ <#FF6600>Хранилище<off_title><b><gray>[<gold>{current_page}<gray>/<gold>{max_page}<gray>]"
+
+slots: 0-44
+
+items:
+  back:
+    slot: 46
+    name: "<#FF0000>[⟲]<#FF6600> Вернуться"
+    material: tipped_arrow
+    on_click:
+      - sound: 'entity.enderman.teleport 1 1'
+      - back_or_close: ''
+  resell:
+    slot: 52
+    name: "<#FF0000>[⟲]<#FF6600> Перевыставить предметы"
+    lore:
+      - "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы перевыставить"
+      - ""
+      - "<#FFFFE6>Автоматически выставит все"
+      - "<#FFFFE6>Ваши предметы заново в Аукцион"
+      - "<#FFFFE6>по тем же ценам"
+    material: clock
+    on_click:
+      - '+resell'
+  research:
+    slot: 49
+    name: "<#FF0000>[⟲]<#FF6600> Обновить"
+    lore:
+      - "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы обновить"
+      - ""
+      - "<#FFFFE6>Эта кнопка позволяет"
+      - "<#FFFFE6>обновить список товаров"
+    material: nether_star
+    on_click:
+      - sound: 'entity.ender_eye.launch 1 1'
+      - '[research]'
+  rent:
+    slot: 53
+    name: "<#FF0000>[☃]<#FF6600> Аренда слотов"
+    lore:
+      - "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы перейти"
+      - ""
+      - "<#FFFFE6>Здесь можно арендовать,"
+      - "<#FFFFE6>дополнительные слоты"
+    all_flags: true
+    material: crafting_table
+    on_click:
+      - '[sound] ui.button.click 1 1'
+      - '[chat] /ah rent'
+
+  # фулл скрыть next_page если нет некст страницы не получится из-за особеностей вычисления {has_next_page}
+  next_page:
+    slot: 50
+    material: spectral_arrow
+    oneOf:
+      - on_view: '{has_next_page} == true'
+        name: "<#FF0000>[»]<#FF6600> Следующая страница"
+      - name: "<gray>[»] Следующая страница"
+    on_click:
+      - sound: 'entity.ender_eye.launch 1 1'
+      - next_page: ''
+
+  previous_page:
+    slot: 48
+    material: spectral_arrow
+    oneOf:
+      - on_view: '{current_page} != 1'
+        name: "<#FF0000>[«]<#FF6600> Предыдущая страница"
+      - name: "<gray>[«] Предыдущая страница"
+    on_click:
+      - sound: 'entity.ender_eye.launch 1 1'
+      - previous_page: ''

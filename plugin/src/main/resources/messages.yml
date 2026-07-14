@@ -1,0 +1,48 @@
+
+header: true
+default_lang: ru_RU
+
+themes:
+  default:
+    color1: '#FFFFFF'
+    color2: '#FFFFFF'
+  dark:
+    color1: '#000000'
+    color2: '#000000'
+
+theme_papi_detector: ~
+
+#---
+#language_country
+#$lang: ru_RU
+
+#hello: '<{color1}>Привет!'
+
+---
+$lang: ru_RU
+
+sell_success: 'Вы успешно выставили {item_name}({count}) на продажу за {price}'
+sell_req_item: 'Возьмите в руку предмет который хотите продать!'
+sell_req_price: 'Используйте /ah sell <цена>'
+sell_qa_moved_to_vault: 'некоторые предметы перемещены в хранилище'
+
+illegal_item: 'Вы не можете выставить на аукцион этот предмет!'
+minimum_price: 'Минимальная цена на этот товар {min} монет!'
+lots_add_error_bad_count: 'не удалось выставить на аук'
+lots_add_error: 'не удалось выставимть на аук'
+auction_is_disabled: 'Аукцион временно не работает('
+outdated_lot: 'Этого товара больше нет'
+insufficient_balance: 'У Вас не достаточно монет!'
+not_owner_lot:
+  - 'Вы не владелец этого товара'
+  - visual: 'not_owner_lot'
+item_taken: 'Вы успешно забрали {item_name}<white> с аукциона!'
+err_full_inv_added_to_vault:
+  - 'инвентарь полон! Предметы перемещены в хранилище!'
+  - visual: 'added_to_vault'
+vault_take_inv_is_full:
+  - 'Ваш инвентарь полон!'
+  - visual: 'inv_is_full'
+vault_take_but_dropped: 'Не все предметы поместились в инвентарь! Некоторые упали на пол!'
+
+buy_success: 'Вы успешно купили {item_name}<white>за {price}'

@@ -1,0 +1,15 @@
+barrier: &auto_removal
+  material: red_dye
+  tick_speed: 25
+  on_tick: '[die]'
+visual:
+  inv_is_full:
+    <<: *auto_removal
+    name: '&cВаш инвентарь полон!'
+  not_owner_lot:
+    <<: *auto_removal
+    name: '&cВы не владелец этого товара'
+  added_to_vault:
+    <<: *auto_removal
+    material: yellow_dye
+    name: '&eПредмет перемещен в хранилище!'

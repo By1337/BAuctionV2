@@ -1,0 +1,10 @@
+main: com.by1337.auc.BAuction
+name: BAuctionV2
+version: 1.0
+api-version: "1.21"
+depend:
+  - BLib
+  - BMenu
+permissions:
+  aha.*:
+    default: op

@@ -1,0 +1,88 @@
+include: [
+  "./lots_items.yml"
+]
+id: bauc:home
+provider: bauc:home
+`
+#title: "<#FF0000>☃ <#FF6600>Категория: <#FF0000>Блоки<b>            <gray>  [<gold>1<gray>/<gold>565<gray>]"
+title: "<#FF0000>☃ <#FF6600>Аукцион<off_title><b><gray>[<gold>{current_page}<gray>/<gold>{max_page}<gray>]"
+
+slots: 0-44
+
+
+items:
+  vault:
+    slot: 46
+    material: ender_chest
+    name: "<#FF0000>[☃]<#FF6600> Хранилище"
+    lore:
+      - "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы перейти"
+      - ""
+      - "<#FFFFE6>Здесь хранятся товары,"
+      - "<#FFFFE6>которые Вы продаете, или"
+      - "<#FFFFE6>ваши купленные предметы"
+    on_click:
+      - sound: 'ui.button.click 1 1'
+      - open: 'bauc:vault'
+  research:
+    slot: 49
+    name: "<#FF0000>[⟲]<#FF6600> Обновить"
+    lore:
+      - "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы обновить"
+      - ""
+      - "<#FFFFE6>Эта кнопка позволяет"
+      - "<#FFFFE6>обновить список товаров"
+    material: nether_star
+    on_click:
+      - sound: 'entity.ender_eye.launch 1 1'
+      - '[research]'
+  categories:
+    slot: 52
+    name: "<#FF0000>[❖]<#FF6600> Категории"
+    lore:
+      - "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы перейти"
+      - ""
+      - "<#FFFFE6>В этом меню можно"
+      - "<#FFFFE6>удобно отсортировать"
+      - "<#FFFFE6>товары по категориям"
+    material: chest
+    on_click:
+      - sound: 'ui.button.click 1 1'
+      - "+categories"
+
+  rent:
+    slot: 53
+    name: "<#FF0000>[☃]<#FF6600> Аренда слотов"
+    lore:
+      - "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы перейти"
+      - ""
+      - "<#FFFFE6>Здесь можно арендовать,"
+      - "<#FFFFE6>дополнительные слоты"
+    all_flags: true
+    material: crafting_table
+    on_click:
+      - '[sound] ui.button.click 1 1'
+      - '[chat] /ah rent'
+
+  # фулл скрыть next_page если нет некст страницы не получится из-за особеностей вычисления {has_next_page}
+  next_page:
+    slot: 50
+    material: spectral_arrow
+    oneOf:
+      - on_view: '{has_next_page} == true'
+        name: "<#FF0000>[»]<#FF6600> Следующая страница"
+      - name: "<gray>[»] Следующая страница"
+    on_click:
+      - sound: 'entity.ender_eye.launch 1 1'
+      - next_page: ''
+
+  previous_page:
+    slot: 48
+    material: spectral_arrow
+    oneOf:
+      - on_view: '{current_page} != 1'
+        name: "<#FF0000>[«]<#FF6600> Предыдущая страница"
+      - name: "<gray>[«] Предыдущая страница"
+    on_click:
+      - sound: 'entity.ender_eye.launch 1 1'
+      - previous_page: ''

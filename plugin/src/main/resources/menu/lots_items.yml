@@ -1,0 +1,116 @@
+# если свой предмет
+#любой клик - забрать
+#
+#если чужой
+#лкм - купить
+#шифт лкм - купить фастом
+#
+#если шалкер или мешочек
+#пкм - осмотреть содержимое
+#
+#если больше 1 (шалкер и мешочек максимум 1)
+#пкм купить количество
+
+item_info_lore: &info
+  - '&#30a700&n                        '
+  - '&r '
+  - ' &x&2&F&F&B&2&C$ &fЦена: &x&2&F&F&B&2&C${price}'
+  - ' &x&F&B&B&2&2&C⚡ &fПродавец: &x&F&8&F&2&2&8{seller_name}'
+  - ' &#E9DC00⌚ &fИстекает: &#E9DC00{expires}'
+  - '&#30a700&n                        '
+
+
+vault_lot:
+  lore:
+    - ' &x&F&F&A&1&0&E➥ &x&F&F&9&C&1&0Н&x&F&F&9&7&1&1а&x&F&F&9&2&1&3ж&x&F&F&8&D&1&4м&x&F&F&8&8&1&6и&f, чтобы &#FFEE50забрать'
+    - '&#30a700&n                        '
+    - '&r '
+    - ' &x&2&F&F&B&2&C$ &fЦена: &x&2&F&F&B&2&C${price}'
+    - ' &x&F&B&B&2&2&C⚡ &fПродавец: &x&F&8&F&2&2&8{seller_name}'
+    - ' &#E9DC00⌚ &fУдаление: &#E9DC00{expires}'
+    - '&#30a700&n                        '
+    - '&r '
+  on_click: # забрать предмет
+    - take_lot: ''
+
+sold:
+  name: "<#FF0000>Товар не актуален"
+  material: gray_dye
+  lore:
+    - ""
+    - *info
+    - '&r '
+  all_flags: true
+  on_click:
+    - '<#FF0000>[✘] Ошибка!<#FFFFE6> Этот товар не актуален!'
+    - sound: 'block.note_block.basedrum 1 1'
+
+purchased:
+  name: "<#51f542>Товар куплен!"
+  material: lime_dye
+  lore:
+    - ""
+    - *info
+    - '&r '
+  all_flags: true
+  on_click:
+    - '<#FF0000>[✘] Ошибка!<#FFFFE6> Вы уже купили этот товар!'
+    - sound: 'block.note_block.basedrum 1 1'
+
+taken:
+  name: "<#51f542>Товар убран!"
+  material: lime_dye
+  lore:
+    - ""
+    - *info
+    - '&r '
+  all_flags: true
+  on_click:
+    - '<#FF0000>[✘] Ошибка!<#FFFFE6> Вы уже забрали этот товар!'
+    - sound: 'block.note_block.basedrum 1 1'
+
+# Когда игрок owner предмета
+owned:
+  lore:
+    - ' &x&F&F&A&1&0&E➥ &x&F&F&9&C&1&0Н&x&F&F&9&7&1&1а&x&F&F&9&2&1&3ж&x&F&F&8&D&1&4м&x&F&F&8&8&1&6и&f, чтобы &#FFEE50забрать'
+    - *info
+    - '&r '
+  on_click: # забрать предмет
+    - take_lot: ''
+
+one:
+  lore:
+    - ' &x&F&F&A&1&0&E➥ &x&F&F&9&C&1&0Н&x&F&F&9&7&1&1а&x&F&F&9&2&1&3ж&x&F&F&8&D&1&4м&x&F&F&8&8&1&6и&f, чтобы &#50FF50купить'
+    - *info
+    - '&r '
+  on_left_click:
+    - купить +конфирм
+  on_shift_left_click:
+    - купить -конфирм
+
+container:
+  lore:
+    - ' &x&F&F&A&1&0&E➥ &x&F&F&9&C&1&0Н&x&F&F&9&7&1&1а&x&F&F&9&2&1&3ж&x&F&F&8&D&1&4м&x&F&F&8&8&1&6и&f, чтобы &#50FF50купить'
+    - *info
+    - '&r '
+    - '&#E99100↪ &fНажмите &#E99100Пкм'
+    - '&#E99100 &fчтобы осмотреть содержимое.'
+    - ''
+  on_left_click:
+    - купить +конфирм
+  on_shift_left_click:
+    - купить -конфирм
+  on_right_click:
+    - осмотреть шалкер
+
+many:
+  lore:
+    - ' &x&F&F&A&1&0&E➥ &x&F&F&9&C&1&0Н&x&F&F&9&7&1&1а&x&F&F&9&2&1&3ж&x&F&F&8&D&1&4м&x&F&F&8&8&1&6и&f, чтобы &#50FF50купить'
+    - *info
+    - '&r '
+  on_left_click:
+    - купить +конфирм
+  on_shift_left_click:
+    - купить -конфирм
+  on_right_click:
+    - купить количество
