@@ -6,6 +6,7 @@ import com.by1337.auc.config.Config;
 import com.by1337.auc.eco.VaultHook;
 import com.by1337.auc.handler.Auction;
 import com.by1337.auc.handler.SimpleAuction;
+import com.by1337.auc.menu.ConfirmMenu;
 import com.by1337.auc.menu.HomeMenu;
 import com.by1337.auc.menu.VaultMenu;
 import com.by1337.auc.metrics.MetricFormatter;
@@ -62,11 +63,13 @@ public class BAuction extends JavaPlugin {
         subLoader = new MenuSubLoader(new File(getDataFolder(), "menus"), this, BMenu.menuLoader());
         subLoader.menuCodecRegistry().register("bauc:home", HomeMenu.HomeMenuV2Config.CODEC);
         subLoader.menuCodecRegistry().register("bauc:vault", VaultMenu.VaultMenuConfig.CODEC);
+        subLoader.menuCodecRegistry().register("bauc:confirm", ConfirmMenu.ConfirmMenuConfig.CODEC);
         BMenu.menuLoader().registerSubLoader(this, subLoader);
         File bmHome = BMenu.menuLoader().homeDir();
         ResourceUtil.saveIfNotExist("menu/vault.yml", this, new File(bmHome, "bauc/vault.yml"));
         ResourceUtil.saveIfNotExist("menu/lots_items.yml", this, new File(bmHome, "bauc/lots_items.yml"));
         ResourceUtil.saveIfNotExist("menu/home.yml", this, new File(bmHome, "bauc/home.yml"));
+        ResourceUtil.saveIfNotExist("menu/confirm.yml", this, new File(bmHome, "bauc/confirm.yml"));
     }
 
     @Override

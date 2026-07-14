@@ -84,9 +84,11 @@ one:
     - *info
     - '&r '
   on_left_click:
-    - купить +конфирм
+    - open:
+        menu: 'bauc:confirm'
+        on_accept_command: '[buy_lot]'
   on_shift_left_click:
-    - купить -конфирм
+    - buy_lot: ''
 
 container:
   lore:
@@ -97,9 +99,11 @@ container:
     - '&#E99100 &fчтобы осмотреть содержимое.'
     - ''
   on_left_click:
-    - купить +конфирм
+    - open:
+        menu: 'bauc:confirm'
+        on_accept_command: '[buy_lot]'
   on_shift_left_click:
-    - купить -конфирм
+    - buy_lot: ''
   on_right_click:
     - осмотреть шалкер
 
@@ -109,8 +113,10 @@ many:
     - *info
     - '&r '
   on_left_click:
-    - купить +конфирм
+    - open:
+        menu: 'bauc:confirm'
+        on_accept_command: '[buy_lot]'
   on_shift_left_click:
-    - купить -конфирм
+    - buy_lot: ''
   on_right_click:
     - купить количество

@@ -10,4 +10,6 @@ ru_RU:
   time.format.minutes: '{} мин.'
   time.format.minutes.seconds: '{} мин. {} сек.'
   time.format.seconds: '{} сек.'
-  
+  visual.inv_is_full: 'Ваш инвентарь полон!'
+  visual.not_owner_lot: 'Вы не владелец этого товара'
+  visual.added_to_vault: 'Предмет перемещен в хранилище!'

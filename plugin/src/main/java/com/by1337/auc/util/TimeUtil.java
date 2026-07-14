@@ -58,7 +58,7 @@ public class TimeUtil {
     }
 
 
-    private static String formatTime_OLD(long years, long months, long days, long hours, long minutes, long seconds) {
+    /*private static String formatTime_OLD(long years, long months, long days, long hours, long minutes, long seconds) {
         if (years != 0) {
             if (months != 0) return String.format("%s г. %s мес.", years, months);
             return String.format("%s г.", years);
@@ -76,7 +76,7 @@ public class TimeUtil {
             return String.format("%s мин.", minutes);
         }
         return seconds + " сек.";
-    }
+    }*/
 
 
 }

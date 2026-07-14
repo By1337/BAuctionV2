@@ -5,11 +5,11 @@ barrier: &auto_removal
 visual:
   inv_is_full:
     <<: *auto_removal
-    name: '&cВаш инвентарь полон!'
+    name: '&c<lang:bauctionv2.visual.inv_is_full>'
   not_owner_lot:
     <<: *auto_removal
-    name: '&cВы не владелец этого товара'
+    name: '&c<lang:bauctionv2.visual.not_owner_lot>'
   added_to_vault:
     <<: *auto_removal
     material: yellow_dye
-    name: '&eПредмет перемещен в хранилище!'
+    name: '&e<lang:bauctionv2.visual.added_to_vault>'

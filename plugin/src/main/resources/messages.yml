@@ -1,24 +1,5 @@
-
-header: true
-default_lang: ru_RU
-
-themes:
-  default:
-    color1: '#FFFFFF'
-    color2: '#FFFFFF'
-  dark:
-    color1: '#000000'
-    color2: '#000000'
-
-theme_papi_detector: ~
-
-#---
-#language_country
-#$lang: ru_RU
-
-#hello: '<{color1}>Привет!'
-
----
+# <#FF0000>[✘] Ошибка!<#FFFFE6> У Вас не хватает <#FFFF00>Монет<#FFFFE6>!
+#
 $lang: ru_RU
 
 sell_success: 'Вы успешно выставили {item_name}({count}) на продажу за {price}'
@@ -46,3 +27,5 @@ vault_take_inv_is_full:
 vault_take_but_dropped: 'Не все предметы поместились в инвентарь! Некоторые упали на пол!'
 
 buy_success: 'Вы успешно купили {item_name}<white>за {price}'
+
+on_sell_lot: 'Игрок {buyer} купил у Вас {item_name}<white>за {price}'
