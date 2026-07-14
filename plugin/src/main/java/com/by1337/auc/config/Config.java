@@ -7,7 +7,7 @@ import dev.by1337.bmenu.slot.SlotFactory;
 import dev.by1337.cmd.Command;
 import dev.by1337.cmd.argument.ArgumentStrings;
 import dev.by1337.core.util.io.ResourceUtil;
-import dev.by1337.edsl.EventContextFactory;
+import dev.by1337.edsl.MessageManager;
 import dev.by1337.edsl.context.EventContext;
 import dev.by1337.yaml.YamlMap;
 import dev.by1337.yaml.decoder.RecordYamlDecoder;
@@ -21,18 +21,18 @@ import java.util.Map;
 public class Config {
     public static final YamlDecoder<Config> DECODER = RecordYamlDecoder.mapOf(
             Config::new,
-            EventContextFactory.decoder("messages.yml").fieldOf(),
+            MessageManager.decoder("messages.yml", "lang.yml").fieldOf(),
             readFile("tags.yml").and(TagsConfig.DECODER).fieldOf(),
             YamlDecoder.mapOf(YamlDecoder.STRING, SlotFactory.CODEC.asDecoder())
                     .fieldOf("visual")
     );
     private static final Logger log = LoggerFactory.getLogger(Config.class);
-    public final EventContextFactory eventCtx;
+    public final MessageManager eventCtx;
     public final TagsConfig tags;
     public final TagsExtractor tagsExtractor;
     private final Map<String, SlotFactory> visual;
 
-    public Config(EventContextFactory eventCtx, TagsConfig tags, Map<String, SlotFactory> visual) {
+    public Config(MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual) {
         this.eventCtx = eventCtx;
         this.tags = tags;
         tagsExtractor = new TagsExtractor(tags);
@@ -46,14 +46,14 @@ public class Config {
                         return;
                     }
                     var menu = BMenu.menuLoader().getOpenedMenu(s.target());
-                    if (menu != null){
+                    if (menu != null) {
                         menu.layers().getMatrix(3)[menu.lastClickedSlot()] = f.build();
                     }
                 }
         ));
     }
 
-    private static YamlDecoder<YamlMap> readFile(String name){
+    private static YamlDecoder<YamlMap> readFile(String name) {
         return YamlDecoder.fromContext(Plugin.class)
                 .map(pl -> ResourceUtil.saveIfNotExist(name, pl))
                 .and(YamlDecoder.READ_YAML_FROM_FILE);

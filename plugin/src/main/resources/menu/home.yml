@@ -3,7 +3,6 @@ include: [
 ]
 id: bauc:home
 provider: bauc:home
-`
 #title: "<#FF0000>☃ <#FF6600>Категория: <#FF0000>Блоки<b>            <gray>  [<gold>1<gray>/<gold>565<gray>]"
 title: "<#FF0000>☃ <#FF6600>Аукцион<off_title><b><gray>[<gold>{current_page}<gray>/<gold>{max_page}<gray>]"
 

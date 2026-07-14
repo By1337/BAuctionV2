@@ -27,8 +27,8 @@ public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
 
     @Override
     public ResponseFuture<@Nullable GhostLot> apply(Auction auction) {
-        if (price / count < 1) {
-            BAuction.sendMessage("minimum_price", who, PlaceholderResolver.of("min", count));
+        if (price / count < 0.01D) {
+            BAuction.sendMessage("minimum_price", who, PlaceholderResolver.of("min", 0.01D * count));
             return EMPTY;
         }
         //todo checks

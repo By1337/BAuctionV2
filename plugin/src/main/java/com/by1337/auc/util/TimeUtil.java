@@ -6,7 +6,7 @@ public class TimeUtil {
         return getFormat(time, false);
     }
 
-    public static String getFormat(long time, boolean prefix) {
+    private static String getFormat(long time, boolean prefix) {
         long currentTimeMillis = System.currentTimeMillis();
         long timeDifferenceMillis = currentTimeMillis - time;
         timeDifferenceMillis = timeDifferenceMillis < 0 ? -timeDifferenceMillis : timeDifferenceMillis;
@@ -33,11 +33,32 @@ public class TimeUtil {
             }
 
         } else {
-            return "0 сек.";
+            return "<lang:bauctionv2.time.format.seconds:0>";
         }
     }
 
     private static String formatTime(long years, long months, long days, long hours, long minutes, long seconds) {
+        if (years != 0) {
+            if (months != 0) return String.format("<lang:bauctionv2.time.format.years.months:%d:%d>", years, months);
+            return String.format("<lang:bauctionv2.time.format.years:%d>", years);
+        } else if (months != 0) {
+            if (days != 0) return String.format("<lang:bauctionv2.time.format.months.days:%d:%d>", months, days);
+            return String.format("<lang:bauctionv2.time.format.months:%d>", months);
+        } else if (days != 0) {
+            if (hours != 0) return String.format("<lang:bauctionv2.time.format.days.hours:%d:%d>", days, hours);
+            return String.format("<lang:bauctionv2.time.format.days:%d>", days);
+        } else if (hours != 0) {
+            if (minutes != 0) return String.format("<lang:bauctionv2.time.format.hours.minutes:%d:%d>", hours, minutes);
+            return String.format("<lang:bauctionv2.time.format.hours:%d>", hours);
+        } else if (minutes != 0) {
+            if (seconds != 0) return String.format("<lang:bauctionv2.time.format.minutes.seconds:%d:%d>", minutes, seconds);
+            return String.format("<lang:bauctionv2.time.format.minutes:%d>", minutes);
+        }
+        return String.format("<lang:bauctionv2.time.format.seconds:%d>", seconds);
+    }
+
+
+    private static String formatTime_OLD(long years, long months, long days, long hours, long minutes, long seconds) {
         if (years != 0) {
             if (months != 0) return String.format("%s г. %s мес.", years, months);
             return String.format("%s г.", years);
@@ -56,5 +77,6 @@ public class TimeUtil {
         }
         return seconds + " сек.";
     }
+
 
 }

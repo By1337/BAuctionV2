@@ -111,19 +111,25 @@
             <artifactId>common</artifactId>
             <version>1.0</version>
         </dependency>
+
         <dependency>
             <groupId>dev.by1337.sync</groupId>
             <artifactId>bsync-common</artifactId>
             <version>1.0</version>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>dev.by1337.sync</groupId>
             <artifactId>bsync-client</artifactId>
             <version>1.0</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>dev.by1337.sync</groupId>
+            <artifactId>bsync-k2v</artifactId>
+            <version>1.0</version>
+        </dependency>
+
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>

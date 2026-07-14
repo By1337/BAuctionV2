@@ -6,6 +6,7 @@ provider: bauc:vault
 title: "<#FF0000>☃ <#FF6600>Хранилище<off_title><b><gray>[<gold>{current_page}<gray>/<gold>{max_page}<gray>]"
 
 slots: 0-44
+vault_type: 'vault_and_active' # vault_and_active, only_active, only_vault
 
 items:
   back:

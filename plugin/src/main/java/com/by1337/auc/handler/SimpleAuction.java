@@ -13,6 +13,9 @@ import com.by1337.auc.handler.item.ItemStackRepository;
 import com.by1337.auc.handler.name.PlayerNameService;
 import com.by1337.auc.pipeline.LocalPipeline;
 import com.by1337.auc.pipeline.Remote;
+import com.by1337.auc.user.AucUser;
+import dev.by1337.sync.DataManager;
+import dev.by1337.sync.PlayerDataRepository;
 import dev.by1337.sync.client.channel.ClientChannelRuntime;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import dev.by1337.sync.common.channel.ChannelMessage;
@@ -23,6 +26,7 @@ import dev.by1337.sync.common.packet.ExpectsResponse;
 import dev.by1337.sync.common.packet.Packet;
 import dev.by1337.sync.common.work.EventLoopWorker;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,9 +45,31 @@ public class SimpleAuction {
     private final Tag2IdService tag2id = Tag2IdService.INSTANCE;
     private final PlayerNameService nameService;
     private final Auction auction;
+    private final PlayerDataRepository<AucUser> users;
 
     public SimpleAuction(Config config, Plugin plugin) {
         this.config = config;
+        users = PlayerDataRepository.create(
+                "main",
+                plugin,
+                new DataManager<>() {
+                    @Override
+                    public @NotNull AucUser read(byte @Nullable [] data) {
+                        return AucUser.read(data);
+                    }
+                    @Override
+                    public byte @NotNull [] write(@NotNull AucUser data) {
+                        return data.write();
+                    }
+                    @Override
+                    public void acceptMail(@NotNull AucUser data, @NotNull String mail) {
+                        data.acceptMail(mail);
+                    }
+                    @Override
+                    public void forceUnlock(UUID key) {
+                    }
+                }
+        );
         worker = new EventLoopWorker("bauc");
         pipeline = new LocalPipeline(worker);
         pipeline
@@ -125,5 +151,9 @@ public class SimpleAuction {
 
     public LotsIndexer indexer() {
         return indexer;
+    }
+
+    public PlayerDataRepository<AucUser> users() {
+        return users;
     }
 }

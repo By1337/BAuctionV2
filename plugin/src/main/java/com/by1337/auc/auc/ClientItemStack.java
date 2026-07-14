@@ -90,7 +90,7 @@ public class ClientItemStack {
         var meta = itemStack.getItemMeta();
         if (meta == null || !meta.hasDisplayName()) {
             String color;
-            if (meta != null) {
+            if (meta != null && meta.hasRarity()) {
                 color = "<" + meta.getRarity().color().asHexString() + ">";
             } else {
                 color = "";
