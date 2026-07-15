@@ -1,4 +1,4 @@
-package com.by1337.auc.handler.index.search;
+package com.by1337.auc.search;
 
 import com.by1337.auc.auc.ClientVaultLot;
 import org.jetbrains.annotations.Nullable;

@@ -18,6 +18,7 @@ cleanup:
   - 'logs_that_burn'
   - 'spruce_logs'
   - 'overworld_natural_logs'
+  - '*vibration*'
 
 damage_extract:
   damage_10: 10 # целый % дамага <=10
@@ -31,6 +32,7 @@ tag_rewriter:
 
 #+wildcard
 tag_appender:
+  'totem_of_undying': 'totem'
   '*shulker_box': 'shulker_box'
   'tnt & !btnt*': 'default_tnt'
   'shulker_box & empty_container': 'empty_shulker_box'

@@ -3,7 +3,7 @@ package com.by1337.auc.menu;
 import com.by1337.auc.auc.ClientVaultLot;
 import com.by1337.auc.auc.LotData;
 import com.by1337.auc.auc.sort.SortingRegistry;
-import com.by1337.auc.handler.index.search.LotsResult;
+import com.by1337.auc.search.LotsResult;
 import dev.by1337.bmenu.menu.Menu;
 import dev.by1337.yaml.codec.PipelineYamlCodecBuilder;
 import dev.by1337.yaml.codec.YamlCodec;

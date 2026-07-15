@@ -4,7 +4,7 @@ import com.by1337.auc.BAuction;
 import com.by1337.auc.auc.ClientVaultLot;
 import com.by1337.auc.auc.LotData;
 import com.by1337.auc.handler.Auction;
-import com.by1337.auc.handler.index.search.LotsResult;
+import com.by1337.auc.search.LotsResult;
 import dev.by1337.bmenu.command.ExecuteContext;
 import dev.by1337.bmenu.factory.MenuCodecs;
 import dev.by1337.bmenu.loader.MenuConfig;
@@ -69,7 +69,7 @@ public abstract class LotsMenu extends AbstractMenu {
         super(config, viewer, previousMenu);
         cfg = config;
         viewingLots = new LotData[animationMask().length];
-        auction = BAuction.plugin().auction();
+        auction = BAuction.auction();
         addPlaceholderResolver(PLACEHOLDERS.bindCtx(this));
     }
 

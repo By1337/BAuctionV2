@@ -5,8 +5,8 @@ import com.by1337.auc.auc.ClientVaultLot;
 import com.by1337.auc.auc.sort.Sorting;
 import com.by1337.auc.auc.sort.SortingRegistry;
 import com.by1337.auc.handler.SimpleAuction;
-import com.by1337.auc.handler.index.search.PlayerVaultResult;
-import com.by1337.auc.handler.index.search.SearchResult;
+import com.by1337.auc.search.PlayerVaultResult;
+import com.by1337.auc.search.SearchResult;
 import com.by1337.auc.pipeline.LocalChannelContext;
 import com.by1337.auc.pipeline.LocalChannelHandler;
 import com.by1337.auc.pipeline.LocalPipeline;
@@ -169,6 +169,7 @@ public class LotsIndexer implements LocalChannelHandler {
         } finally {
             buffer.release();
         }
+        if (base == null) return BitSetPool.empty();
         return base;
     }
 

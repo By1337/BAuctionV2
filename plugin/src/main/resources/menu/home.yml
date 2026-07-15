@@ -3,9 +3,13 @@ include: [
 ]
 id: bauc:home
 provider: bauc:home
-title: "<#FF0000>☃ <#FF6600>Аукцион<off_title><b><gray>[<gold>{current_page}<gray>/<gold>{max_page}<gray>]"
+title: "<lang:bauctionv2.categories.{current_category_id}.title><off_title><b><gray>[<gold>{current_page}<gray>/<gold>{max_page}<gray>]"
 
 slots: 0-44
+
+category_line:
+  if_selected: '<white><gold>✔ <lang:bauctionv2.categories.{id}.name>'
+  else: '<white><#9CF9FF>●<white><lang:bauctionv2.categories.{id}.name>'
 
 items:
   vault:
@@ -46,6 +50,19 @@ items:
     on_click:
       - sound: 'ui.button.click 1 1'
       - "+categories"
+
+  categories_HW:
+    slot: 51
+    name: "<#FF0000>[❖]<#FF6600> Категории"
+    lore:
+      - '{all_categories}'
+    material: chest_minecart
+    on_left_click:
+      - sound: 'ui.button.click 1 1'
+      - next_category: ''
+    on_right_click:
+      - sound: 'ui.button.click 1 1'
+      - previous_category: ''
 
   rent:
     slot: 53

@@ -24,19 +24,22 @@ public class Config {
             MessageManager.decoder("messages.yml", "lang.yml").fieldOf(),
             readFile("tags.yml").and(TagsConfig.DECODER).fieldOf(),
             YamlDecoder.mapOf(YamlDecoder.STRING, SlotFactory.CODEC.asDecoder())
-                    .fieldOf("visual")
+                    .fieldOf("visual"),
+            readFile("categories.yml").and(Categories.DECODER).fieldOf()
     );
     private static final Logger log = LoggerFactory.getLogger(Config.class);
     public final MessageManager eventCtx;
     public final TagsConfig tags;
     public final TagsExtractor tagsExtractor;
     private final Map<String, SlotFactory> visual;
+    public final Categories categories;
 
-    public Config(MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual) {
+    public Config(MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual, Categories categories) {
         this.eventCtx = eventCtx;
         this.tags = tags;
         tagsExtractor = new TagsExtractor(tags);
         this.visual = visual;
+        this.categories = categories;
         eventCtx.commands().sub(new Command<EventContext>("[visual]").executor(
                 new ArgumentStrings<>("visual"),
                 (s, v) -> {

@@ -8,7 +8,7 @@ import java.util.*;
 public class SortingRegistry {
     private static final List<Sorting> list = new ArrayList<>();
     public static final Sorting NEWEST = register("newest", Comparator.<ClientAucLot>comparingLong(v -> v.lot.createdDate()).reversed());
-    //сначала старые понятно нахуя нужны
+    //сначала старые не понятно нахуя нужны
     public static final Sorting CHEAPER = register("cheaper", Comparator.<ClientAucLot>comparingLong(v -> v.lprice_for_one));
     //public static final Sorting EXPENSIVE = register("expensive", CHEAPER.comparator().reversed()); //сомнительный
 

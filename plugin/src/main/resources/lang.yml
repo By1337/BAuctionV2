@@ -13,3 +13,48 @@ ru_RU:
   visual.inv_is_full: 'Ваш инвентарь полон!'
   visual.not_owner_lot: 'Вы не владелец этого товара'
   visual.added_to_vault: 'Предмет перемещен в хранилище!'
+
+  categories.any.title: '<#FF0000>☃ <#FF6600>Аукцион'
+  categories.any.name: 'Все товары'
+
+  categories.blocks.title: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Блоки'
+  categories.blocks.name: 'Блоки'
+
+  categories.tools.title: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Инструменты'
+  categories.tools.name: 'Инструменты'
+
+  categories.weapons.title: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Оружие'
+  categories.weapons.name: 'Оружие'
+
+  categories.armor.title: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Снаряжение'
+  categories.armor.name: 'Снаряжение'
+
+  categories.resources.title: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Ценные ресурсы'
+  categories.resources.name: 'Ценные ресурсы'
+
+  categories.other_resources.title: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Прочие ресурсы'
+  categories.other_resources.name: 'Прочие ресурсы'
+
+  categories.edible.title: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Еда'
+  categories.edible.name: 'Еда'
+
+  categories.potions.title: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Зелья'
+  categories.potions.name: 'Зелья'
+
+  categories.books.title: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Книги'
+  categories.books.name: 'Книги'
+
+  categories.spawners_and_eggs.title: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Яйца и Спавнеры'
+  categories.spawners_and_eggs.name: 'Яйца и Спавнеры'
+
+  categories.talismans.title: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Талисманы'
+  categories.talismans.name: 'Талисманы'
+
+  categories.donat_items.title: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Настоящие вещи'
+  categories.donat_items.name: 'Настоящие вещи'
+
+  categories.brewing.title: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Зельеварение'
+  categories.brewing.name: 'Зельеварение'
+
+  categories.grief.title: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Для Грифа'
+  categories.grief.name: 'Для Грифа'

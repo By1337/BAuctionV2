@@ -1,10 +1,7 @@
-package com.by1337.auc.tag.tester;
+package com.by1337.auc.search.filter;
 
 import com.by1337.auc.handler.index.Tag2IdService;
-import com.by1337.auc.search.filter.ComplexSearchFilter;
-import com.by1337.auc.search.filter.NopSearchFilter;
-import com.by1337.auc.search.filter.SearchFilter;
-import com.by1337.auc.search.filter.SearchFilterAndNotPair;
+import com.by1337.auc.tag.tester.ExpReader;
 import com.by1337.auc.util.WildcardMatcher;
 import dev.by1337.yaml.codec.DataResult;
 import dev.by1337.yaml.decoder.YamlDecoder;
@@ -28,6 +25,7 @@ public class SearchFilterParser {
 
 
     public static SearchFilter parse(String input) {
+        if (input.isBlank()) return EmptySearchFilter.INSTANCE;
         ExpReader reader = new ExpReader(input);
 
         List<IntArrayList> ands = new ArrayList<>();
@@ -35,7 +33,7 @@ public class SearchFilterParser {
         IntArrayList and = new IntArrayList();
         IntArrayList not = new IntArrayList();
         loop:
-        while (reader.next() != '\0') {
+        while (reader.hasNext()) {
             for (String token : parseToken(reader)) {
                 switch (token) {
                     case "!" -> {
@@ -64,7 +62,7 @@ public class SearchFilterParser {
         if (!not.isEmpty())
             nots.add(not);
         int size = Math.max(ands.size(), nots.size());
-        if (size == 0) return NopSearchFilter.INSTANCE;
+        if (size == 0) return EmptySearchFilter.INSTANCE;
         if (size == 1) {
             return new SearchFilterAndNotPair(
                     !and.isEmpty() ? and.toIntArray() : null,
