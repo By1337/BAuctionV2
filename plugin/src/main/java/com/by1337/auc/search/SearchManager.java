@@ -4,14 +4,12 @@ import com.by1337.auc.assets.McLang;
 import com.by1337.auc.handler.index.Tag2IdService;
 import com.by1337.auc.search.filter.SearchFilter;
 import com.by1337.auc.search.filter.SearchFilterAndNotPair;
-import com.by1337.auc.search.trie.TrieV2;
 import dev.by1337.yaml.decoder.RecordYamlDecoder;
 import dev.by1337.yaml.decoder.YamlDecoder;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import net.kyori.adventure.translation.Translatable;
 import net.kyori.adventure.translation.Translator;
 import org.bukkit.Keyed;
-import org.bukkit.Material;
 import org.bukkit.Registry;
 import org.bukkit.enchantments.Enchantment;
 import org.jspecify.annotations.NonNull;
@@ -22,7 +20,7 @@ import java.util.Map;
 public class SearchManager {
     public static final YamlDecoder<SearchManager> DECODER = Config.DECODER.map(SearchManager::new);
     private final Config config;
-    private TrieV2<SearchFilter> trie;
+    private Trie<SearchFilter> trie;
     private Locale locale;
 
     public SearchManager(Config config) {
@@ -31,7 +29,7 @@ public class SearchManager {
     }
 
     public void boot(Tag2IdService tag2id, String locale) {
-        trie = new TrieV2<>();
+        trie = new Trie<>();
         this.locale = Translator.parseLocale(locale);
         McLang lang = new McLang(locale);
         for (Map.Entry<String, String[]> e : config.search.entrySet()) {
@@ -50,7 +48,7 @@ public class SearchManager {
         }
     }
 
-    public TrieV2<SearchFilter> trie() {
+    public Trie<SearchFilter> trie() {
         return trie;
     }
 

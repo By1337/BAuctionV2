@@ -1,13 +1,10 @@
 package com.by1337.auc.command.args;
 
-import com.by1337.auc.BAuction;
 import com.by1337.auc.search.SearchManager;
 import com.by1337.auc.search.filter.SearchFilter;
-import com.by1337.auc.search.filter.SearchFilterAndNotPair;
 import com.by1337.auc.search.filter.SearchFilterList;
 import com.by1337.auc.util.ByLocaleSelector;
 import dev.by1337.cmd.*;
-import dev.by1337.cmd.argument.ArgumentStrings;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.slf4j.Logger;
@@ -33,19 +30,17 @@ public class SearchArgument<C extends CommandSender> extends Argument<C, SearchF
             return;
         }
         String str = readAll(reader);
-        System.out.println(str);
         var list = manager.trie().parse(str);
-        System.out.println(list);
         if (list.isEmpty()) {
             return;
         }
-        for (SearchFilter f : list) {
+/*        for (SearchFilter f : list) {
             if (f instanceof SearchFilterAndNotPair p){
                 for (String s : p.from()) {
                     System.out.println(s + " " + BAuction.plugin().aucManager().tag2id().getId(s));
                 }
             }
-        }
+        }*/
         if (list.size() == 1) {
             out.put(name, list.getFirst());
         } else {
@@ -61,19 +56,29 @@ public class SearchArgument<C extends CommandSender> extends Argument<C, SearchF
             log.error("has no SearchManager for locale {}", player.locale());
             return;
         }
-        String str = readAll(reader);
-        System.out.println(str);
-        if (str.isEmpty()) {
+        String input = readAll(reader);
+        if (input.isEmpty()) {
             for (String v : manager.trie().getSuggestions("", 30)) {
                 suggestions.suggest(v);
             }
             return;
         }
-        for (String v : manager.trie().getSuggestions(str, 30)) {
-            suggestions.suggest(v);
+        var s = manager.trie().getSuggestions(input, 30);
+        int lastSpace;
+        if ((lastSpace = input.lastIndexOf(' ')) != -1) {
+            suggestions.setStart(suggestions.start() + lastSpace + 1);
+        }
+        for (String suggestion : s) {
+            int idx = suggestion.lastIndexOf(' ', input.length() - 1);
+
+            String completion = idx == -1
+                    ? suggestion
+                    : suggestion.substring(idx + 1);
+            suggestions.suggest(completion);
         }
     }
-    private String readAll(CommandReader reader){
+
+    private String readAll(CommandReader reader) {
         String src = reader.src();
         int idx = reader.ridx();
         if (idx < src.length()) {

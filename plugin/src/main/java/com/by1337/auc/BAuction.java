@@ -150,8 +150,8 @@ public class BAuction extends JavaPlugin {
         HandlerList.unregisterAll(playerList);
     }
 
-    public static BukkitEventListener eventListener() {
-        return plugin.eventListener;
+    public BukkitEventListener eventListener() {
+        return eventListener;
     }
 
     public static PlayerList playerList() {
@@ -242,9 +242,3 @@ public class BAuction extends JavaPlugin {
     }
 
 }
-
-
-//"enchantment.minecraft.aqua_affinity": "Подводник",
-//"item.minecraft.potion.effect.awkward": "Мутное зелье",
-//"item.minecraft.potato": "Картофель",
-//"block.minecraft.bone_block": "Костный блок",

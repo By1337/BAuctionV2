@@ -1,109 +1,134 @@
 package com.by1337.auc.search;
 
-import com.by1337.auc.search.filter.SearchFilter;
+import it.unimi.dsi.fastutil.chars.Char2ObjectMap;
+import it.unimi.dsi.fastutil.chars.Char2ObjectOpenHashMap;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Trie {
-    private final TrieNode root;
+public class Trie<T> {
 
-    public Trie() {
-        root = new TrieNode('\0');
-    }
+    private final Node<T> root = new Node<>('\0', null);
 
-    public void insert(String key, SearchFilter value) {
-        TrieNode node = root;
-        for (char ch : key.toCharArray()) {
-            TrieNode child = getChildWithChar(node, ch);
+    public T insert(CharSequence key, T value) {
+        Node<T> node = root;
+        var len = key.length();
+        for (int i = 0; i < len; i++) {
+            char c = key.charAt(i);
+            var child = node.children.get(c);
             if (child == null) {
-                child = new TrieNode(ch);
-                node.children.add(child);
+                child = new Node<>(c, null);
+                node.children.put(c, child);
             }
             node = child;
         }
-        node.isEnd = true;
+        var old = node.storedValue;
         node.storedValue = value;
+        node.key = key.toString();
+        return old;
     }
 
-    public List<SearchFilter> getAllWithPrefix(String prefix) {
-        List<SearchFilter> results = new ArrayList<>();
-        TrieNode node = getNodeByPrefix(prefix);
-        if (node == null) return List.of();
-        getAllWithPrefixHelper(node, results);
-        return results;
-    }
+    public List<T> parse(CharSequence key) {
+        List<T> result = new ArrayList<>();
+        var len = key.length();
+        int start = 0;
 
-    public List<String> getAllKeysWithPrefix(String prefix) {
-        return getAllKeysWithPrefix(prefix, -1);
-    }
-
-    public List<String> getAllKeysWithPrefix(String prefix, int limit) {
-        List<String> keys;
-        if (limit > 0) {
-            keys = new ArrayList<>(limit);
-        } else {
-            keys = new ArrayList<>();
-        }
-        TrieNode node = getNodeByPrefix(prefix);
-        getAllKeysWithPrefixHelper(node, prefix, keys, limit);
-        return keys;
-    }
-
-    private TrieNode getNodeByPrefix(String prefix) {
-        TrieNode node = root;
-        for (char ch : prefix.toCharArray()) {
-            TrieNode child = getChildWithChar(node, ch);
-            if (child == null) {
-                return null;
+        while (start < len) {
+            boolean found = false;
+            for (int end = len; end > start; end--) {
+                T t = get(key, start, end);
+                if (t != null) {
+                    result.add(t);
+                    start = end;
+                    found = true;
+                    break;
+                }
             }
-            node = child;
-        }
-        return node;
-    }
 
-    private TrieNode getChildWithChar(TrieNode node, char ch) {
-        for (TrieNode child : node.children) {
-            if (child.value == ch) {
-                return child;
+            if (!found) {
+                start++;
             }
         }
-        return null;
+
+        return result;
     }
 
-    private void getAllWithPrefixHelper(TrieNode node, List<SearchFilter> results) {
-        if (node == null) {
-            return;
-        }
+    public List<String> getSuggestions(CharSequence prefix, int limit) {
+        List<String> suggestions = new ArrayList<>();
+        int len = prefix.length();
 
-        if (node.isEnd) {
-            results.add(node.storedValue);
-        }
+        for (int start = 0; start < len; start++) {
+            Node<T> node = root;
+            boolean validPrefix = true;
 
-        for (TrieNode child : node.children) {
-            getAllWithPrefixHelper(child, results);
-        }
-    }
-
-    private void getAllKeysWithPrefixHelper(TrieNode node, String currentPrefix, List<String> keys) {
-        getAllKeysWithPrefixHelper(node, currentPrefix, keys, -1);
-    }
-
-    private void getAllKeysWithPrefixHelper(TrieNode node, String currentPrefix, List<String> keys, int limit) {
-        if (node == null) {
-            return;
-        }
-
-        if (node.isEnd) {
-            keys.add(currentPrefix);
-        }
-        for (TrieNode child : node.children) {
-            if (limit != -1 && keys.size() >= limit) {
-                return;
+            for (int i = start; i < len; i++) {
+                char c = prefix.charAt(i);
+                boolean validSpace = c == ' ' && node.key != null;
+                node = node.children.get(prefix.charAt(i));
+                if (node == null && validSpace){
+                    start = i;
+                    validPrefix = false;
+                    break;
+                }
+                if (node == null) {
+                    validPrefix = false;
+                    break;
+                }
             }
-            if (child != null) {
-                getAllKeysWithPrefixHelper(child, currentPrefix + child.value, keys, limit);
+
+            if (validPrefix && node != null) {
+                String before = prefix.subSequence(0, start).toString();
+                collectSuggestions(node, before, suggestions, limit);
+                return suggestions;
             }
+        }
+
+        Node<T> node = root;
+        for (int i = 0; i < len; i++) {
+            node = node.children.get(prefix.charAt(i));
+            if (node == null) {
+                return suggestions;
+            }
+        }
+        collectSuggestions(node, prefix.toString(), suggestions, limit);
+        return suggestions;
+    }
+
+    private void collectSuggestions(Node<T> node, String prefix, List<String> suggestions, int limit) {
+        if (suggestions.size() >= limit) return;
+        if (node.storedValue != null) {
+            suggestions.add(prefix + node.key);
+        }
+
+        for (Node<T> child : node.children.values()) {
+            collectSuggestions(child, prefix, suggestions, limit);
+        }
+    }
+
+    private @Nullable T get(CharSequence key, int from, int to) {
+        Node<T> node = root;
+        for (int i = from; i < to; i++) {
+            node = node.children.get(key.charAt(i));
+            if (node == null) return null;
+        }
+        return node.storedValue;
+    }
+
+    private @Nullable T get(CharSequence key) {
+        return get(key, 0, key.length());
+    }
+
+    private static class Node<T> {
+        final char c;
+        final Char2ObjectMap<Node<T>> children = new Char2ObjectOpenHashMap<>();
+        T storedValue;
+        String key;
+        boolean end;
+
+        private Node(char c, T storedValue) {
+            this.c = c;
+            this.storedValue = storedValue;
         }
     }
 }
