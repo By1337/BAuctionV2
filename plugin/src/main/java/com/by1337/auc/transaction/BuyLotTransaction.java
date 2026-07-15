@@ -5,6 +5,7 @@ import com.by1337.auc.auc.ClientAucLot;
 import com.by1337.auc.common.auc.log.BuyAuctionLog;
 import com.by1337.auc.handler.Auction;
 import com.by1337.auc.handler.event.ActionResult;
+import com.by1337.auc.user.UserMails;
 import com.by1337.auc.util.mc.MCUtil;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import org.bukkit.Bukkit;
@@ -41,17 +42,17 @@ public class BuyLotTransaction implements Transaction<ActionResult> {
                 BAuction.sendMessage("outdated_lot", who);
                 return;
             }
+            var lotSeller = lot.owner();
             BAuction.sendMessage("buy_success", who, lot.placeholders());
-            eco.depositPlayer(lot.owner(), lot.dprice); //todo некоторые смешные экономики не умеют обрабатывать deposit с нескольких серверов
             auction.publishLog(new BuyAuctionLog(
                     System.currentTimeMillis(),
                     who,
-                    lot.owner(),
+                    lotSeller,
                     lot.lprice(),
                     lot.itemStack.id(),
                     lot.count()
-            ));
-
+            )).ifPresent(id -> auction.users().pushMail(lotSeller, UserMails.makeLotSold(id)));
+            auction.users().pushMail(lotSeller, UserMails.makeDepositCents(lot.lprice()));
             MCUtil.ensureMain(() -> {
                 Player player = Bukkit.getPlayer(who);
                 if (player != null) {

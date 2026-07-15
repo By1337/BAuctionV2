@@ -5,17 +5,23 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.UUID;
+
 public class AucUser {
+    public final UUID uuid;
+
     private final Object2LongMap<String> longs = new Object2LongOpenHashMap<>();
-    public long lastSoldLotSeenTimestamp;
 
-    public static AucUser read(ByteBuf buf) {
-        var user = new AucUser();
-        if (true) return user; //todo remove it
-        user.lastSoldLotSeenTimestamp = buf.readLong();
+    public AucUser(UUID uuid) {
+        this.uuid = uuid;
+    }
 
+    public static AucUser read(ByteBuf buf, UUID key) {
+        var user = new AucUser(key);
+       // if (true) return user; //todo remove it
         int longs = buf.readInt();
         for (int i = 0; i < longs; i++) {
             user.longs.put(ByteBufCodecs.readUtf8(buf), buf.readLong());
@@ -24,7 +30,6 @@ public class AucUser {
     }
 
     public void write(ByteBuf buf) {
-        buf.writeLong(lastSoldLotSeenTimestamp);
         buf.writeInt(longs.size());
         for (var entry : longs.object2LongEntrySet()) {
             ByteBufCodecs.writeUtf8(buf, entry.getKey());
@@ -44,9 +49,9 @@ public class AucUser {
         return longs.put(key, l);
     }
 
-    public static AucUser read(byte @Nullable [] arr) {
-        if (arr == null) return new AucUser();
-        return read(Unpooled.wrappedBuffer(arr));
+    public static AucUser read(byte @Nullable [] arr, UUID key) {
+        if (arr == null) return new AucUser(key);
+        return read(Unpooled.wrappedBuffer(arr), key);
     }
 
     public byte[] write() {
@@ -59,9 +64,5 @@ public class AucUser {
         } finally {
             buf.release();
         }
-    }
-
-    public void acceptMail(String mail) {
-
     }
 }

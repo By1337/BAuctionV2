@@ -5,11 +5,14 @@ import com.by1337.auc.handler.backend.ClientItemServiceBackend;
 import com.by1337.auc.handler.backend.ClientLotsRepositoryBackend;
 import com.by1337.auc.handler.backend.LogRepositoryBackend;
 import com.by1337.auc.handler.backend.PlayerNameBackend;
+import com.by1337.auc.handler.eco.EcoGiver;
+import com.by1337.auc.handler.event.UserMailEvent;
 import com.by1337.auc.handler.index.LotsIndexer;
 import com.by1337.auc.handler.index.Tag2IdService;
 import com.by1337.auc.handler.item.ItemStackRepository;
 import com.by1337.auc.handler.log.LogRepository;
 import com.by1337.auc.handler.name.PlayerNameService;
+import com.by1337.auc.handler.notify.LotSoldNotifier;
 import com.by1337.auc.pipeline.LocalPipeline;
 import com.by1337.auc.pipeline.Remote;
 import com.by1337.auc.user.AucUser;
@@ -54,18 +57,18 @@ public class SimpleAuction {
                 plugin,
                 new DataManager<>() {
                     @Override
-                    public @NotNull AucUser read(byte @Nullable [] data) {
-                        return AucUser.read(data);
+                    public @NotNull AucUser read(byte @Nullable [] data, @NotNull UUID key) {
+                        return AucUser.read(data, key);
                     }
 
                     @Override
-                    public byte @NotNull [] write(@NotNull AucUser data) {
+                    public byte @NotNull [] write(@NotNull AucUser data, @NotNull UUID key) {
                         return data.write();
                     }
 
                     @Override
-                    public void acceptMail(@NotNull AucUser data, @NotNull String mail) {
-                        data.acceptMail(mail);
+                    public void acceptMail(@NotNull AucUser data, @NotNull String mail, @NotNull UUID key) {
+                        pipeline.execute(new UserMailEvent(data, mail));
                     }
 
                     @Override
@@ -82,6 +85,8 @@ public class SimpleAuction {
                 .addLast("name_service", nameService = new PlayerNameService(plugin))
                 .addLast("log", logRepo = new LogRepository())
                 .addLast("auction", auction = new Auction())
+                .addLast("eco_giver", new EcoGiver())
+                .addLast("lot_sold_notifier", new LotSoldNotifier())
         ;
         backend = new Pipeline(worker);
         backend

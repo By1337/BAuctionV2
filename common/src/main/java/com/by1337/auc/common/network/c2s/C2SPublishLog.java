@@ -1,10 +1,12 @@
 package com.by1337.auc.common.network.c2s;
 
 import com.by1337.auc.common.auc.log.AuctionLog;
+import com.by1337.auc.common.network.a2a.A2AI32Response;
+import dev.by1337.sync.common.packet.ExpectsResponse;
 import dev.by1337.sync.common.packet.Packet;
 import io.netty.buffer.ByteBuf;
 
-public record C2SPublishLog(AuctionLog log) implements Packet {
+public record C2SPublishLog(AuctionLog log) implements Packet, ExpectsResponse<A2AI32Response> {
     public C2SPublishLog(ByteBuf buf, int protocolVersion) {
         this(AuctionLog.read(buf, protocolVersion));
     }

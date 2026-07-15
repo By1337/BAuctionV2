@@ -6,6 +6,7 @@ import com.by1337.auc.auc.ClientVaultLot;
 import com.by1337.auc.auc.GhostLot;
 import com.by1337.auc.auc.sort.Sorting;
 import com.by1337.auc.common.auc.log.AuctionLog;
+import com.by1337.auc.common.auc.log.LogRecord;
 import com.by1337.auc.handler.event.ActionResult;
 import com.by1337.auc.handler.index.LotsIndexer;
 import com.by1337.auc.handler.index.search.PlayerVaultResult;
@@ -108,8 +109,8 @@ public class Auction implements LocalChannelHandler {
         return index.search(owner, filter, sorting);
     }
 
-    public void publishLog(AuctionLog log) {
-        this.log.publishLog(log);
+    public ResponseFuture<@Nullable Integer> publishLog(AuctionLog log) {
+        return this.log.publishLog(log);
     }
 
     public ResponseFuture<@Nullable ClientItemStack> loadItem(int id) {
@@ -128,12 +129,16 @@ public class Auction implements LocalChannelHandler {
         return auction.users();
     }
 
-    public ResponseFuture<@Nullable List<AuctionLog>> loadLogs(long after, @Nullable UUID actor, @Nullable UUID subject, @Nullable String type, int limit) {
+    public ResponseFuture<@Nullable List<LogRecord>> loadLogs(long after, @Nullable UUID actor, @Nullable UUID subject, @Nullable String type, int limit) {
         return log.loadLogs(after, actor, subject, type, limit);
     }
 
-    public void registerLogListener(Consumer<AuctionLog> c) {
+    public void registerLogListener(Consumer<LogRecord> c) {
         log.registerLogListener(c);
+    }
+
+    public ResponseFuture<@Nullable LogRecord> getLog(int uid) {
+        return log.getLog(uid);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.by1337.auc.common.network;
 
 import com.by1337.auc.common.network.a2a.A2AFlagResponse;
+import com.by1337.auc.common.network.a2a.A2AI32Response;
 import com.by1337.auc.common.network.a2a.A2ASetPlayerNamePacket;
 import com.by1337.auc.common.network.c2s.*;
 import com.by1337.auc.common.network.s2c.*;
@@ -36,6 +37,9 @@ public class AucPackets {
                 .add(S2CLogAdded.class, S2CLogAdded::new)
                 .add(S2CLogsLoadResponse.class, S2CLogsLoadResponse::read)
                 .add(C2SLoadLogsRequest.class, C2SLoadLogsRequest::read)
+                .add(A2AI32Response.class, A2AI32Response::new)
+                .add(S2COptionalLogRecord.class, S2COptionalLogRecord::new)
+                .add(C2SGetLogRequest.class, C2SGetLogRequest::new)
         );
     }
 }

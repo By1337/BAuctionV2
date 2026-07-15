@@ -46,6 +46,8 @@ search:
       "незеритовая": 'незер'
       "всполох": 'блейз'
       "всполоха": 'блейза'
+      "эффективность": 'эф'
+      "спавнер": 'сп'
     search:
       "незерка":  'netherite_helmet | netherite_chestplate | netherite_leggings | netherite_boots'
       "тнт обычный": 'default_tnt'
@@ -58,6 +60,12 @@ search:
       "лопата": 'shovels'
       "кирка": 'pickaxes'
       "мотыга": 'hoes'
+
+      "з1": 'protection:1'
+      "з2": 'protection:2'
+      "з3": 'protection:3'
+      "з4": 'protection:4'
+      "шёлк": 'silk_touch'
 
       "меч алмазный": "diamond_sword"
       "шалкер фиолетовый": "purple_shulker_box"
