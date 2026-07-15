@@ -2,12 +2,16 @@ package com.by1337.auc;
 
 import com.by1337.auc.command.SearchCommand;
 import com.by1337.auc.command.SellCommand;
+import com.by1337.auc.common.auc.log.AuctionLogBoot;
+import com.by1337.auc.common.network.AucPackets;
 import com.by1337.auc.config.Config;
 import com.by1337.auc.eco.VaultHook;
+import com.by1337.auc.event.BukkitEventListener;
 import com.by1337.auc.handler.Auction;
 import com.by1337.auc.handler.SimpleAuction;
 import com.by1337.auc.menu.ConfirmMenu;
 import com.by1337.auc.menu.HomeMenu;
+import com.by1337.auc.menu.MenuBooter;
 import com.by1337.auc.menu.VaultMenu;
 import com.by1337.auc.metrics.MetricFormatter;
 import com.by1337.auc.metrics.Metrics;
@@ -48,10 +52,13 @@ public class BAuction extends JavaPlugin {
     private CommandWrapper ah;
     private CommandWrapper aha;
     private PlayerList playerList;
+    private BukkitEventListener eventListener;
 
 
     @Override
     public void onLoad() {
+        AucPackets.boot();
+        AuctionLogBoot.boot();
         plugin = this;
         var res = Config.DECODER.decode(ResourceUtil.load("config.yml", this).get(), this);
         config = res.result();
@@ -61,10 +68,9 @@ public class BAuction extends JavaPlugin {
             getSLF4JLogger().error("Failed to load cfg\n{}", res.error());
         }
         subLoader = new MenuSubLoader(new File(getDataFolder(), "menus"), this, BMenu.menuLoader());
-        subLoader.menuCodecRegistry().register("bauc:home", HomeMenu.HomeMenuV2Config.CODEC);
-        subLoader.menuCodecRegistry().register("bauc:vault", VaultMenu.VaultMenuConfig.CODEC);
-        subLoader.menuCodecRegistry().register("bauc:confirm", ConfirmMenu.ConfirmMenuConfig.CODEC);
+        MenuBooter.boot(subLoader);
         BMenu.menuLoader().registerSubLoader(this, subLoader);
+
         File bmHome = BMenu.menuLoader().homeDir();
         ResourceUtil.saveIfNotExist("menu/vault.yml", this, new File(bmHome, "bauc/vault.yml"));
         ResourceUtil.saveIfNotExist("menu/lots_items.yml", this, new File(bmHome, "bauc/lots_items.yml"));
@@ -74,10 +80,12 @@ public class BAuction extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        eventListener = new BukkitEventListener(this);
         getServer().getPluginManager().registerEvents(playerList = new PlayerList(), this);
         economy = new VaultHook();
         auction = new SimpleAuction(config, this);
         Metrics.METRICS.create("loop", MetricFormatter.nanos(), () -> auction.pipeline().eventLoop().busyNanosThenReset());
+        Boot.boot(this, auction);
         //new BukkitRunnable() {
         //    @Override
         //    public void run() {
@@ -85,7 +93,6 @@ public class BAuction extends JavaPlugin {
         //    }
         //}.runTaskTimerAsynchronously(this, 20, 20);
 
-        config.tags.search.forEach((k, v) -> v.boot(auction.tag2id(), k));
         ah = new CommandWrapper(new Command<CommandSender>("ah")
                 .sub(new SellCommand("sell"))
                 .sub(new SearchCommand("search", config.tags.search))
@@ -136,10 +143,15 @@ public class BAuction extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        eventListener.close();
         BMenu.menuLoader().unregisterSubLoader(this);
         ah.close();
         aha.close();
         HandlerList.unregisterAll(playerList);
+    }
+
+    public static BukkitEventListener eventListener() {
+        return plugin.eventListener;
     }
 
     public static PlayerList playerList() {
@@ -154,9 +166,10 @@ public class BAuction extends JavaPlugin {
         return config;
     }
 
-    public @Nullable Auction auction() {
-        if (auction == null) return null;
-        return auction.auction();
+    public static @Nullable Auction auction() {
+        var v = plugin.auction;
+        if (v == null) return null;
+        return v.auction();
     }
 
     public @Nullable SimpleAuction aucManager() {

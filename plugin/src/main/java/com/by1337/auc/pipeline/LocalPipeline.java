@@ -1,5 +1,6 @@
 package com.by1337.auc.pipeline;
 
+import com.by1337.auc.handler.SimpleAuction;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import dev.by1337.sync.common.channel.ChannelMessage;
 import dev.by1337.sync.common.work.EventLoopWorker;
@@ -15,6 +16,7 @@ public class LocalPipeline {
     private Entry[] handlers = new Entry[0];
 
     private final EventLoopWorker eventLoop;
+    private InitData initData;
 
     public LocalPipeline(EventLoopWorker eventLoop) {
         this.eventLoop = eventLoop;
@@ -83,10 +85,15 @@ public class LocalPipeline {
         }
     }
 
-    public void initAll(Remote remote) {
+    private record InitData(Remote remote, SimpleAuction auction) {
+
+    }
+
+    public void initAll(Remote remote, SimpleAuction auction) {
         eventLoop.execute(() -> {
+            initData = new InitData(remote, auction);
             for (Entry handler : handlers) {
-                handler.handler.init(this, remote);
+                handler.handler.init(this, remote, auction);
             }
         });
     }
@@ -133,6 +140,13 @@ public class LocalPipeline {
     public LocalPipeline addLast(String name, LocalChannelHandler handler) {
         handlers = Arrays.copyOf(handlers, handlers.length + 1);
         handlers[handlers.length - 1] = new Entry(name, handler);
+        if (initData != null) {
+            try {
+                handler.init(this, initData.remote, initData.auction);
+            } catch (Exception e) {
+                log.error("Failed to init handler ", e);
+            }
+        }
         return this;
     }
 
@@ -141,6 +155,13 @@ public class LocalPipeline {
         System.arraycopy(handlers, 0, arr, 1, handlers.length);
         arr[0] = new Entry(name, handler);
         handlers = arr;
+        if (initData != null) {
+            try {
+                handler.init(this, initData.remote, initData.auction);
+            } catch (Exception e) {
+                log.error("Failed to init handler ", e);
+            }
+        }
         return this;
     }
 

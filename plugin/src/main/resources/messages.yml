@@ -26,6 +26,6 @@ vault_take_inv_is_full:
   - visual: 'inv_is_full'
 vault_take_but_dropped: 'Не все предметы поместились в инвентарь! Некоторые упали на пол!'
 
-buy_success: 'Вы успешно купили {item_name}<white>за {price}'
+buy_success: 'Вы успешно купили {item_name} <white>за {price}'
 
-on_sell_lot: 'Игрок {buyer} купил у Вас {item_name}<white>за {price}'
+on_sell_lot: 'Игрок {buyer} купил у Вас {item_name} <white>за {price}'

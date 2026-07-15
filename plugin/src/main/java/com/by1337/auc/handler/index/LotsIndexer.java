@@ -4,6 +4,7 @@ import com.by1337.auc.auc.ClientAucLot;
 import com.by1337.auc.auc.ClientVaultLot;
 import com.by1337.auc.auc.sort.Sorting;
 import com.by1337.auc.auc.sort.SortingRegistry;
+import com.by1337.auc.handler.SimpleAuction;
 import com.by1337.auc.handler.index.search.PlayerVaultResult;
 import com.by1337.auc.handler.index.search.SearchResult;
 import com.by1337.auc.pipeline.LocalChannelContext;
@@ -55,7 +56,7 @@ public class LotsIndexer implements LocalChannelHandler {
     }
 
     @Override
-    public void init(LocalPipeline pipeline, Remote remote) {
+    public void init(LocalPipeline pipeline, Remote remote, SimpleAuction auction) {
         eventLoop = pipeline.eventLoop();
     }
 

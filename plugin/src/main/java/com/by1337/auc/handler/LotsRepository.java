@@ -20,7 +20,6 @@ import com.by1337.auc.pipeline.LocalPipeline;
 import com.by1337.auc.pipeline.Remote;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import dev.by1337.sync.common.channel.ChannelMessage;
-import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -44,7 +43,7 @@ public class LotsRepository implements LocalChannelHandler {
     private final Int2ObjectOpenHashMap<ClientVaultLot> vault = new Int2ObjectOpenHashMap<>();
 
     @Override
-    public void init(LocalPipeline pipeline, Remote remote) {
+    public void init(LocalPipeline pipeline, Remote remote, SimpleAuction auction) {
         this.pipeline = pipeline;
         this.remote = remote;
         itemService = pipeline.get(ItemStackRepository.class);

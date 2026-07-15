@@ -1,3 +1,4 @@
+/*
 package com.by1337.auc.handler.item;
 
 import com.by1337.auc.pipeline.LocalChannelContext;
@@ -39,3 +40,4 @@ public class ItemGiverService implements LocalChannelHandler, Listener {
         HandlerList.unregisterAll(this);
     }
 }
+*/

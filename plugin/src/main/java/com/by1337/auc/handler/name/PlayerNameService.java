@@ -2,6 +2,7 @@ package com.by1337.auc.handler.name;
 
 import com.by1337.auc.common.network.a2a.A2ASetPlayerNamePacket;
 import com.by1337.auc.common.network.c2s.C2SPlayerNameRequest;
+import com.by1337.auc.handler.SimpleAuction;
 import com.by1337.auc.pipeline.LocalChannelContext;
 import com.by1337.auc.pipeline.LocalChannelHandler;
 import com.by1337.auc.pipeline.LocalPipeline;
@@ -33,7 +34,7 @@ public class PlayerNameService implements LocalChannelHandler, Listener {
     }
 
     @Override
-    public void init(LocalPipeline pipeline, Remote remote) {
+    public void init(LocalPipeline pipeline, Remote remote, SimpleAuction auction) {
         this.pipeline = pipeline;
         this.remote = remote;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);

@@ -9,9 +9,13 @@ import org.jetbrains.annotations.Nullable;
 
 public class AucUser {
     private final Object2LongMap<String> longs = new Object2LongOpenHashMap<>();
+    public long lastSoldLotSeenTimestamp;
 
     public static AucUser read(ByteBuf buf) {
         var user = new AucUser();
+        if (true) return user; //todo remove it
+        user.lastSoldLotSeenTimestamp = buf.readLong();
+
         int longs = buf.readInt();
         for (int i = 0; i < longs; i++) {
             user.longs.put(ByteBufCodecs.readUtf8(buf), buf.readLong());
@@ -20,6 +24,7 @@ public class AucUser {
     }
 
     public void write(ByteBuf buf) {
+        buf.writeLong(lastSoldLotSeenTimestamp);
         buf.writeInt(longs.size());
         for (var entry : longs.object2LongEntrySet()) {
             ByteBufCodecs.writeUtf8(buf, entry.getKey());

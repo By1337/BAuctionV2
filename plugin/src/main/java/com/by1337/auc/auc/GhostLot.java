@@ -4,7 +4,7 @@ import com.by1337.auc.handler.name.PlayerName;
 
 import java.util.UUID;
 
-public class GhostLot implements LotData{
+public class GhostLot implements LotData {
     private final ClientItemStack itemStack;
     private final UUID owner;
     private final PlayerName ownerName;

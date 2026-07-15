@@ -2,10 +2,10 @@ package com.by1337.auc.transaction;
 
 import com.by1337.auc.BAuction;
 import com.by1337.auc.auc.ClientAucLot;
+import com.by1337.auc.common.auc.log.BuyAuctionLog;
 import com.by1337.auc.handler.Auction;
 import com.by1337.auc.handler.event.ActionResult;
 import com.by1337.auc.util.mc.MCUtil;
-import dev.by1337.edsl.context.EventContext;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -43,13 +43,14 @@ public class BuyLotTransaction implements Transaction<ActionResult> {
             }
             BAuction.sendMessage("buy_success", who, lot.placeholders());
             eco.depositPlayer(lot.owner(), lot.dprice); //todo некоторые смешные экономики не умеют обрабатывать deposit с нескольких серверов
-            auction.loadName(who).then(name -> {
-                if (name != null)
-                    BAuction.sendMessage("on_sell_lot", lot.owner(),
-                            lot.<EventContext>placeholders().append("buyer", name.name())
-                    );
-            });
-            //todo history
+            auction.publishLog(new BuyAuctionLog(
+                    System.currentTimeMillis(),
+                    who,
+                    lot.owner(),
+                    lot.lprice(),
+                    lot.itemStack.id(),
+                    lot.count()
+            ));
 
             MCUtil.ensureMain(() -> {
                 Player player = Bukkit.getPlayer(who);

@@ -4,6 +4,7 @@ import com.by1337.auc.auc.ClientItemStack;
 import com.by1337.auc.common.network.c2s.C2SLoadItemRequest;
 import com.by1337.auc.common.network.c2s.C2SPushItemRequest;
 import com.by1337.auc.config.Config;
+import com.by1337.auc.handler.SimpleAuction;
 import com.by1337.auc.handler.index.Tag2IdService;
 import com.by1337.auc.pipeline.LocalChannelContext;
 import com.by1337.auc.pipeline.LocalChannelHandler;
@@ -41,7 +42,7 @@ public class ItemStackRepository implements LocalChannelHandler {
     }
 
     @Override
-    public void init(LocalPipeline pipeline, Remote remote) {
+    public void init(LocalPipeline pipeline, Remote remote, SimpleAuction auction) {
         this.pipeline = pipeline;
         this.remote = remote;
         tag2id = Tag2IdService.INSTANCE;
