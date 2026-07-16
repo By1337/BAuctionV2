@@ -5,10 +5,7 @@ import com.by1337.auc.common.auc.VaultLot;
 import com.by1337.auc.common.handler.GetPostChannelHandler;
 import com.by1337.auc.common.network.a2a.A2AFlagResponse;
 import com.by1337.auc.common.network.c2s.*;
-import com.by1337.auc.common.network.s2c.S2CLotUpdate;
-import com.by1337.auc.common.network.s2c.S2CRemoveLotPacket;
-import com.by1337.auc.common.network.s2c.S2CRemoveVaultLotPacket;
-import com.by1337.auc.common.network.s2c.S2CVaultLotUpdate;
+import com.by1337.auc.common.network.s2c.*;
 import dev.by1337.sync.client.channel.ClientChannelRuntime;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import dev.by1337.sync.common.channel.pipeline.ChannelRuntime;
@@ -24,11 +21,35 @@ public class ClientLotsRepositoryBackend extends GetPostChannelHandler {
     private final Int2ObjectOpenHashMap<VaultLot> vault = new Int2ObjectOpenHashMap<>();
 
     public ClientLotsRepositoryBackend() {
+        registerGet(C2SSubtractLotRequest.class, this::onSubtractLot);
         registerGet(C2SAddNewLotRequest.class, this::newNewItem);
         registerGet(C2SRemoveLotRequest.class, this::removeLot);
         registerGet(C2SMove2VaultRequest.class, this::move2vault);
         registerGet(C2SAddNewVaultRequest.class, this::addNewVault);
         registerGet(C2SRemoveVaultLotRequest.class, this::removeVaultLot);
+    }
+
+    private ResponseFuture<A2AFlagResponse> onSubtractLot(C2SSubtractLotRequest r) {
+        var lot = lots.get(r.uid());
+        if (lot == null || lot.count() < r.count()) return new ResponseFuture<>(new A2AFlagResponse(false));
+        if (!lots.remove(r.uid(), lot)) return new ResponseFuture<>(new A2AFlagResponse(false));
+        int newCount = lot.count() - r.count();
+        if (newCount <= 0) {
+            remote.write(new S2CRemoveVaultLotPacket(r.uid())); //broadcast
+            return new ResponseFuture<>(new A2AFlagResponse(true));
+        }
+        AucLot newLot = new AucLot(
+                lot.uid(),
+                lot.item(),
+                lot.owner(),
+                lot.createdDate(),
+                lot.removalDate(),
+                newCount,
+                lot.lprice_for_one * newCount
+        );
+        lots.put(r.uid(), newLot);
+        remote.write(new S2CLotCountChange(r.uid(), newCount)); //broadcast
+        return new ResponseFuture<>(new A2AFlagResponse(true));
     }
 
     private ResponseFuture<A2AFlagResponse> removeVaultLot(C2SRemoveVaultLotRequest rm) {

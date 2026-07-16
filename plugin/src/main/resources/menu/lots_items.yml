@@ -119,4 +119,6 @@ many:
   on_shift_left_click:
     - buy_lot: ''
   on_right_click:
-    - купить количество
+    - open:
+        menu: 'bauc:select_count'
+        on_accept_command: '[buy_lot] {result_count}'

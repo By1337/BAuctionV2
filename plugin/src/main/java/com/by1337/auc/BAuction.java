@@ -21,6 +21,7 @@ import dev.by1337.bmenu.BMenu;
 import dev.by1337.bmenu.loader.MenuSubLoader;
 import dev.by1337.cmd.Command;
 import dev.by1337.cmd.argument.ArgumentStrings;
+import dev.by1337.core.BCore;
 import dev.by1337.core.command.bcmd.CommandWrapper;
 import dev.by1337.core.command.bcmd.requires.RequiresPermission;
 import dev.by1337.edsl.context.EventContext;
@@ -30,6 +31,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
@@ -79,6 +81,7 @@ public class BAuction extends JavaPlugin {
         ResourceUtil.saveIfNotExist("menu/lots_items.yml", this, new File(bmHome, "bauc/lots_items.yml"));
         ResourceUtil.saveIfNotExist("menu/home.yml", this, new File(bmHome, "bauc/home.yml"));
         ResourceUtil.saveIfNotExist("menu/confirm.yml", this, new File(bmHome, "bauc/confirm.yml"));
+        ResourceUtil.saveIfNotExist("menu/select_count.yml", this, new File(bmHome, "bauc/select_count.yml"));
     }
 
     @Override
@@ -95,7 +98,6 @@ public class BAuction extends JavaPlugin {
         //        Metrics.METRICS.dump(getSLF4JLogger());
         //    }
         //}.runTaskTimerAsynchronously(this, 20, 20);
-
         ah = new CommandWrapper(new Command<CommandSender>("ah")
                 .sub(new SellCommand("sell"))
                 .sub(new SearchCommand("search", config.tags.search))

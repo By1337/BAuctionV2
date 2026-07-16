@@ -7,6 +7,8 @@ import com.by1337.auc.handler.Auction;
 import com.by1337.auc.handler.event.ActionResult;
 import com.by1337.auc.user.UserMails;
 import com.by1337.auc.util.mc.MCUtil;
+import com.by1337.auc.util.number.NumberFormatter;
+import dev.by1337.edsl.context.EventContext;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -20,43 +22,51 @@ public class BuyLotTransaction implements Transaction<ActionResult> {
     private static final Logger log = LoggerFactory.getLogger(BuyLotTransaction.class);
     private final UUID who;
     private final ClientAucLot lot;
+    private final int count;
 
-    public BuyLotTransaction(UUID who, ClientAucLot lot) {
+    public BuyLotTransaction(UUID who, ClientAucLot lot, int count) {
         this.who = who;
         this.lot = lot;
+        this.count = count;
     }
 
     @Override
     public ResponseFuture<ActionResult> apply(Auction auction) {
         var eco = BAuction.economy();
-        double balance = eco.getBalance(who);
-        if (balance < lot.dprice) {
+        long balanceCents = eco.getCents(who);
+        long priceCents = lot.lprice_for_one * count;
+
+        if (balanceCents < priceCents) {
             BAuction.sendMessage("insufficient_balance", who);
             return DENY;
         }
-        eco.withdrawPlayer(who, lot.dprice);
-        Runnable undoBalance = () -> eco.depositPlayer(who, lot.dprice);
-        return auction.removeLot(lot).then(v -> {
+        eco.withdrawCents(who, priceCents);
+        Runnable undoBalance = () -> eco.depositCents(who, priceCents);
+        return auction.subtractOrRemoveLot(lot, count).then(v -> {
             if (v == null || !v.success) {
                 undoBalance.run();
                 BAuction.sendMessage("outdated_lot", who);
                 return;
             }
             var lotSeller = lot.owner();
-            BAuction.sendMessage("buy_success", who, lot.placeholders());
+            BAuction.sendMessage("buy_success", who,
+                    lot.<EventContext>placeholders()
+                            .append("price", NumberFormatter.format(priceCents / 100D))
+                            .append("count", count)
+            );
             auction.publishLog(new BuyAuctionLog(
                     System.currentTimeMillis(),
                     who,
                     lotSeller,
-                    lot.lprice(),
+                    priceCents,
                     lot.itemStack.id(),
-                    lot.count()
+                    count
             )).ifPresent(id -> auction.users().pushMail(lotSeller, UserMails.makeLotSold(id)));
-            auction.users().pushMail(lotSeller, UserMails.makeDepositCents(lot.lprice()));
+            auction.users().pushMail(lotSeller, UserMails.makeDepositCents(priceCents));
             MCUtil.ensureMain(() -> {
                 Player player = Bukkit.getPlayer(who);
                 if (player != null) {
-                    var item = lot.itemStack().asQuantity(lot.count());
+                    var item = lot.itemStack().asQuantity(count);
                     var items = player.getInventory().addItem(item).values();
                     if (!items.isEmpty()) {
                         items.forEach(i -> auction.addToVault(

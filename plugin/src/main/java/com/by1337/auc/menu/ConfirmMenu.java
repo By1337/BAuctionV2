@@ -24,7 +24,7 @@ public class ConfirmMenu extends AbstractMenu {
                         ctx.menu = c.previousMenu;
                         c.previousMenu.reopen();
                     }
-                    c.executeCommand(ctx, cmd);
+                    c.executeCommand(ctx, c.setPlaceholders(cmd));
                 }
             }));
     private final ConfirmMenuConfig cfg;
@@ -38,7 +38,7 @@ public class ConfirmMenu extends AbstractMenu {
     protected void generate() {
         if (previousMenu != null && previousMenu.lastClickedItemPayload() instanceof LotData lot) {
             for (int slot : cfg.show_item.slots()) {
-                setItem(cfg.show_item.build(lot.itemStack().itemModel(), lot.placeholders()), slot);
+                setItem(cfg.show_item.build(lot.itemStack().itemModel(lot.count()), lot.placeholders()), slot);
             }
         }
     }

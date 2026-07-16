@@ -3,13 +3,11 @@ package com.by1337.auc.handler;
 import com.by1337.auc.auc.ClientAucLot;
 import com.by1337.auc.auc.ClientVaultLot;
 import com.by1337.auc.auc.GhostLot;
+import com.by1337.auc.common.auc.AucLot;
 import com.by1337.auc.common.auc.VaultLot;
 import com.by1337.auc.common.network.a2a.A2AFlagResponse;
 import com.by1337.auc.common.network.c2s.*;
-import com.by1337.auc.common.network.s2c.S2CLotUpdate;
-import com.by1337.auc.common.network.s2c.S2CRemoveLotPacket;
-import com.by1337.auc.common.network.s2c.S2CRemoveVaultLotPacket;
-import com.by1337.auc.common.network.s2c.S2CVaultLotUpdate;
+import com.by1337.auc.common.network.s2c.*;
 import com.by1337.auc.handler.event.ActionResult;
 import com.by1337.auc.handler.index.LotsIndexer;
 import com.by1337.auc.handler.item.ItemStackRepository;
@@ -59,6 +57,12 @@ public class LotsRepository implements LocalChannelHandler {
         return vault.get(uid);
     }
 
+
+    public ResponseFuture<ActionResult> subtractOrRemoveLot(ClientAucLot lot0, int count) {
+        if (count == lot0.count()) return removeLot(lot0);
+        return pipeline.submit(() -> remote.request(new C2SSubtractLotRequest(lot0.uid(), count))
+                .map(ActionResult::of).orElse(ActionResult::deny));
+    }
 
     public ResponseFuture<ActionResult> removeLot(ClientAucLot lot0) {
         return pipeline.submit(() -> remote.request(new C2SRemoveLotRequest(lot0.uid()))
@@ -138,7 +142,27 @@ public class LotsRepository implements LocalChannelHandler {
 
     @Override
     public void handle(LocalChannelContext ctx, ChannelMessage msg) throws Exception {
-        if (msg instanceof S2CLotUpdate(com.by1337.auc.common.auc.AucLot newLot)) {
+        if (msg instanceof S2CLotCountChange(int uid, int newCount)) {
+            ClientAucLot lot = lots.get(uid);
+            if (lot == null) return;
+            var baseLot = lot.lot;
+            ClientAucLot v2 = new ClientAucLot(
+                    new AucLot(
+                            baseLot.uid(),
+                            baseLot.item(),
+                            baseLot.owner(),
+                            baseLot.createdDate(),
+                            baseLot.removalDate(),
+                            newCount,
+                            baseLot.lprice_for_one * newCount
+                    ),
+                    lot.itemStack,
+                    lot.shortId,
+                    lot.playerName
+            );
+            lots.put(v2.uid(), v2);
+            indexer.insertOrUpdateLot(v2);
+        } else if (msg instanceof S2CLotUpdate(com.by1337.auc.common.auc.AucLot newLot)) {
             itemService.loadItem(newLot.item())
                     .ifEmpty(() -> log.error("Failed to load ItemStack for {}", newLot))
                     .map(item -> players.loadName(newLot.owner())

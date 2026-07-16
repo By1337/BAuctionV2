@@ -40,6 +40,8 @@ public class AucPackets {
                 .add(A2AI32Response.class, A2AI32Response::new)
                 .add(S2COptionalLogRecord.class, S2COptionalLogRecord::new)
                 .add(C2SGetLogRequest.class, C2SGetLogRequest::new)
+                .add(C2SSubtractLotRequest.class, C2SSubtractLotRequest::new)
+                .add(S2CLotCountChange.class, S2CLotCountChange::new)
         );
     }
 }

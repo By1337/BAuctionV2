@@ -21,7 +21,8 @@ public class BukkitEventListener implements Listener {
     public BukkitEventListener(Plugin plugin) {
         this.plugin = plugin;
     }
-    public void close(){
+
+    public void close() {
         HandlerList.unregisterAll(this);
     }
 

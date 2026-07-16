@@ -146,6 +146,10 @@ public class Auction implements LocalChannelHandler {
         return auction.registries();
     }
 
+    public ResponseFuture<ActionResult> subtractOrRemoveLot(ClientAucLot lot0, int count) {
+        return repo.subtractOrRemoveLot(lot0, count);
+    }
+
     @Override
     public void handle(LocalChannelContext ctx, ChannelMessage msg) throws Exception {
         ctx.fire(msg);

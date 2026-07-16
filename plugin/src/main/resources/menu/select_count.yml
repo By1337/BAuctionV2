@@ -1,0 +1,45 @@
+id: bauc:select_count
+provider: bauc:select_count
+type: hopper
+size: 5
+title: "Покупка предмета"
+
+args:
+  on_accept_command: '[console] say bauc:select_count no command!'
+
+show_item:
+  slot: 2
+  lore:
+    - ""
+    - "<b><u><#00D8FF>▍<reset><#D5DBDC> Продавец:<#00D8FF> {seller_name}"
+    - "<b><u><#00D8FF>▍<reset><#D5DBDC> Цена:<#00D8FF> {result_price}"
+    - "<b><#00D8FF>▍<reset><#D5DBDC> Цена за 1 ед.:<#00D8FF> {price_for_one}"
+    - ""
+  on_click:
+    - accept: ''
+
+items:
+  sub1:
+    slot: 0
+    name: "<#FF2222>▶ Уменьшить на 1 единиц"
+    material: red_concrete
+    on_click:
+      - sub: '1'
+  sub10:
+    slot: 1
+    name: "<#FF2222>▶ Уменьшить на 10 единиц"
+    material: red_concrete
+    on_click:
+      - sub: '10'
+  add1:
+    slot: 3
+    name: "<#05FB00>▶ Увеличить на 1 единиц"
+    material: lime_concrete
+    on_click:
+      - add: '1'
+  add10:
+    slot: 4
+    name: "<#05FB00>▶ Увеличить на 10 единиц"
+    material: lime_concrete
+    on_click:
+      - add: '10'

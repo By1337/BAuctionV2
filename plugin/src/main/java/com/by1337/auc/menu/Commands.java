@@ -3,6 +3,7 @@ package com.by1337.auc.menu;
 import com.by1337.auc.BAuction;
 import com.by1337.auc.auc.ClientAucLot;
 import com.by1337.auc.auc.ClientVaultLot;
+import com.by1337.auc.command.args.NumberArgument;
 import com.by1337.auc.transaction.BuyLotTransaction;
 import com.by1337.auc.transaction.TakeLotTransaction;
 import com.by1337.auc.transaction.TakeVaultLotTransaction;
@@ -51,18 +52,22 @@ public class Commands {
                     log.error("{} is not a auction lot failed to take", menu.lastClickedItemPayload());
                 }
             }))
-            .sub(new Command<ExecuteContext>("[buy_lot]").executor(ctx -> {
+            .sub(new Command<ExecuteContext>("[buy_lot]").executor(
+                    new NumberArgument<>("count"),
+                    (ctx, count0) -> {
                 var menu = ctx.menu;
                 Player viewer = menu.viewer();
-                var auction = BAuction.plugin().auction();
+                var auction = BAuction.auction();
                 if (auction == null) {
                     BAuction.sendMessage("auction_is_disabled", viewer);
                     return;
                 }
                 if (menu.lastClickedItemPayload() instanceof ClientAucLot lot) {
-                    auction.apply(new BuyLotTransaction(viewer.getUniqueId(), lot))
+                    int count = count0 != null ? Math.min(lot.count(), count0.intValue()) : lot.count();
+                    auction.apply(new BuyLotTransaction(viewer.getUniqueId(), lot, count))
                             .then(v -> {
                                 if (v == null || !v.success) return;
+                                if (count != lot.count()) return;
                                 if (menu.isOpened()) {
                                     if (menu instanceof LotsMenu lotsMenu) {
                                         lotsMenu.rewriteLotDisplay(lot, lotsMenu.cfg().purchased.build(lot.itemStack.itemModel(), lot.placeholders()));
