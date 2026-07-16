@@ -1,3 +1,4 @@
+/*
 package com.by1337.auc.tag.tester;
 
 import com.by1337.auc.util.WildcardMatcher;
@@ -116,3 +117,4 @@ public class WildcardTagTester {
     }
 
 }
+*/

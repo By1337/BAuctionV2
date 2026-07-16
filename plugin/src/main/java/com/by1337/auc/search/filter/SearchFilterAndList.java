@@ -6,10 +6,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class SearchFilterList implements SearchFilter {
+public class SearchFilterAndList implements SearchFilter {
     private final List<SearchFilter> filters;
 
-    public SearchFilterList(List<SearchFilter> filters) {
+    public SearchFilterAndList(List<SearchFilter> filters) {
         this.filters = filters;
     }
 
@@ -18,11 +18,15 @@ public class SearchFilterList implements SearchFilter {
         BitSetPool.PooledBitSet result = null;
         for (SearchFilter filter : filters) {
             var v = filter.search(indexer);
-            if (v != null && !v.isEmpty()) {
+            if (v != null) {
+                if (v.isEmpty()) {
+                    if (result != null) result.release();
+                    return v;
+                }
                 if (result == null) {
                     result = v;
                 } else {
-                    result.or(v.lotMask());
+                    result.and(v.lotMask());
                     v.release();
                 }
             }

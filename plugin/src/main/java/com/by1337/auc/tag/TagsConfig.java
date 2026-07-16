@@ -18,9 +18,9 @@ public class TagsConfig {
             P2T.fieldOf("tag_appender", Map.of()),
             WildcardPattern.DECODER.listOf().fieldOf("cleanup", List.of()),
             YamlDecoder.mapOf(YamlDecoder.STRING, YamlDecoder.DOUBLE)
-                    .fieldOf("damage_extract"),
+                    .fieldOf("damage_extract", Map.of()),
             YamlDecoder.mapOf(YamlDecoder.STRING, SearchManager.DECODER)
-                    .fieldOf("search")
+                    .fieldOf("search", Map.of())
     );
 
     private final Map<WildcardPattern, List<String>> tag_rewriter;

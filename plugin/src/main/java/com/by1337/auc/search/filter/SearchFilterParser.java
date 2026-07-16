@@ -75,8 +75,8 @@ public class SearchFilterParser {
         for (int i = 0; i < size; i++) {
             IntArrayList a = ands.size() > i ? ands.get(i) : null;
             IntArrayList n = nots.size() > i ? nots.get(i) : null;
-            if (a != null) resAnds[i] = a.toIntArray();
-            if (n != null) resNots[i] = n.toIntArray();
+            if (a != null && !a.isEmpty()) resAnds[i] = a.toIntArray();
+            if (n != null && n.isEmpty()) resNots[i] = n.toIntArray();
         }
         return new ComplexSearchFilter(resAnds, resNots);
     }

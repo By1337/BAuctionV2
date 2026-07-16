@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.function.Function;
 
 public class TagsExtractor {
-    private static final List<Tag<Material>> TAGS;
+    private static final Set<String>[] TAGS;
     private final TagsConfig config;
 
     public TagsExtractor(TagsConfig config) {
@@ -31,10 +31,9 @@ public class TagsExtractor {
         Material material = item.getType();
         result.add(material.getKey().getKey());
 
-        for (Tag<Material> tag : TAGS) {
-            if (tag.isTagged(material)) {
-                result.add(tag.getKey().value());
-            }
+        var tags = TAGS[material.ordinal()];
+        if (tags != null){
+            result.addAll(tags);
         }
         if (material.isFlammable()) result.add("flammable");
         if (material.isBurnable()) result.add("burnable");
@@ -82,11 +81,12 @@ public class TagsExtractor {
             result.add("model_data:" + im.getCustomModelData());
         }
         if (im instanceof BlockStateMeta bsm) {
-            if (bsm instanceof Container c) {
+            var state = bsm.getBlockState();
+            if (state instanceof Container c) {
                 if (c.getInventory().isEmpty()) {
                     result.add("empty_container");
                 }
-            } else if (bsm instanceof Spawner sp) {
+            } else if (state instanceof Spawner sp) {
                 var type = sp.getSpawnedType();
                 if (type == null) {
                     result.add("empty_spawner");
@@ -135,7 +135,7 @@ public class TagsExtractor {
     }
 
     static {
-        TAGS = new ArrayList<>();
+        List<Tag<Material>> tags = new ArrayList<>();
         try {
             for (Field field : Tag.class.getFields()) {
                 if (field.getType() != Tag.class) continue;
@@ -146,10 +146,22 @@ public class TagsExtractor {
                     continue;
                 }
                 Tag<Material> tag = (Tag<Material>) field.get(null);
-                TAGS.add(tag);
+                tags.add(tag);
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        var materials = Material.values();
+        TAGS = new Set[materials.length];
+        for (Material material : materials) {
+            for (Tag<Material> tag : tags) {
+                if (tag.isTagged(material)){
+                    var set = TAGS[material.ordinal()];
+                    if (set == null)
+                        TAGS[material.ordinal()] = set = new HashSet<>();
+                    set.add(tag.getKey().value());
+                }
+            }
         }
     }
 }

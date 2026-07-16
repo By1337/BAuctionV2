@@ -19,6 +19,8 @@ cleanup:
   - 'spruce_logs'
   - 'overworld_natural_logs'
   - '*vibration*'
+  - 'has_gravity'
+  - 'record'
 
 damage_extract:
   damage_10: 10 # целый % дамага <=10
@@ -51,6 +53,9 @@ search:
       "эффективность": 'эф'
       "спавнер": 'сп'
     search:
+      "damage_10": 'целый'
+      "damage_50": 'поломан'
+      "damage_80": 'сломан'
       "незерка":  'netherite_helmet | netherite_chestplate | netherite_leggings | netherite_boots'
       "тнт обычный": 'default_tnt'
       "мешок пустой": 'empty_bundle'
@@ -69,6 +74,7 @@ search:
       "з4": 'protection:4'
       "шёлк": 'silk_touch'
 
+      "спавнер": 'spawner'
       "меч алмазный": "diamond_sword"
       "шалкер фиолетовый": "purple_shulker_box"
       "шалкер чёрный": "black_shulker_box"

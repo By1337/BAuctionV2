@@ -1,12 +1,10 @@
 package com.by1337.auc.search;
 
 import com.by1337.auc.assets.McLang;
-import com.by1337.auc.handler.index.Tag2IdService;
 import com.by1337.auc.search.filter.SearchFilter;
-import com.by1337.auc.search.filter.SearchFilterAndNotPair;
+import com.by1337.auc.search.filter.SearchFilterParser;
 import dev.by1337.yaml.decoder.RecordYamlDecoder;
 import dev.by1337.yaml.decoder.YamlDecoder;
-import it.unimi.dsi.fastutil.ints.IntArraySet;
 import net.kyori.adventure.translation.Translatable;
 import net.kyori.adventure.translation.Translator;
 import org.bukkit.Keyed;
@@ -14,37 +12,38 @@ import org.bukkit.Registry;
 import org.bukkit.enchantments.Enchantment;
 import org.jspecify.annotations.NonNull;
 
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 public class SearchManager {
-    public static final YamlDecoder<SearchManager> DECODER = Config.DECODER.map(SearchManager::new);
-    private final Config config;
+    public static final YamlDecoder<SearchManager> DECODER = SearchConfig.DECODER.map(SearchManager::new);
+    private final SearchConfig config;
     private Trie<SearchFilter> trie;
     private Locale locale;
 
-    public SearchManager(Config config) {
+    public SearchManager(SearchConfig config) {
         this.config = config;
-
     }
 
-    public void boot(Tag2IdService tag2id, String locale) {
+    public void boot(String locale) {
         trie = new Trie<>();
         this.locale = Translator.parseLocale(locale);
         McLang lang = new McLang(locale);
-        for (Map.Entry<String, String[]> e : config.search.entrySet()) {
-            addLookup(tag2id, e.getKey(), e.getValue());
+        for (Map.Entry<String, SearchFilter> e : config.search.entrySet()) {
+            addLookup(e.getKey(), e.getValue());
         }
-        addRegistry(Registry.MATERIAL, tag2id, lang);
-        addRegistry(Registry.POTION_EFFECT_TYPE, tag2id, lang);
+        addRegistry(Registry.MATERIAL, lang);
+        addRegistry(Registry.POTION_EFFECT_TYPE, lang);
         for (Enchantment enchantment : Registry.ENCHANTMENT) {
-            addLookup(tag2id, lang.getTranslation(enchantment.description()), enchantment.getKey().value());
+            addLookup(lang.getTranslation(enchantment.description()), SearchFilter.ofTag(enchantment.getKey().value()));
         }
     }
 
-    private <T extends Translatable & Keyed> void addRegistry(Registry<@NonNull T> r, Tag2IdService tag2id, McLang lang){
+    private <T extends Translatable & Keyed> void addRegistry(Registry<@NonNull T> r, McLang lang){
         for (T t : r) {
-            addLookup(tag2id, lang.getTranslation(t.translationKey()), t.getKey().value());
+            addLookup(lang.getTranslation(t.translationKey()), SearchFilter.ofTag(t.getKey().value()));
         }
     }
 
@@ -56,43 +55,40 @@ public class SearchManager {
         return locale;
     }
 
-    public void addLookup(Tag2IdService tag2id, String key, String... tags) {
+    public void addLookup(String key, SearchFilter filter) {
         key = key.toLowerCase(Locale.ROOT);
-        IntArraySet andSet = new IntArraySet();
-        IntArraySet notSet = new IntArraySet();
-        for (String tag : tags) {
-            if (tag.startsWith("!")) {
-                notSet.add(tag2id.getId(tag.substring(1)));
-            } else {
-                andSet.add(tag2id.getId(tag));
-            }
-        }
-        int[] and = andSet.isEmpty() ? null : andSet.toIntArray();
-        int[] not = notSet.isEmpty() ? null : notSet.toIntArray();
-
-        SearchFilter filter = new SearchFilterAndNotPair(and, not, tags);
-        trie.insert(key, filter);
-        for (Map.Entry<String, String> e : config.aliases.entrySet()) {
-            var s = key.replace(e.getKey(), e.getValue());
-            if (!s.endsWith(key)) {
-                trie.insert(s, filter);
-            }
+        var set = applyAliases(key);
+        for (String s : set) {
+            trie.insert(s, filter);
         }
     }
 
+    private Set<String> applyAliases(String src){
+        Set<String> set = new HashSet<>();
+        set.add(src);
+        for (var e : config.aliases.entrySet()) {
+            var s = src.replace(e.getKey(), e.getValue());
+            set.add(s);
+            for (var e1 : config.aliases.entrySet()) {
+                set.add(s.replace(e1.getKey(), e1.getValue()));
+            }
+        }
+        return set;
+    }
 
-    public static class Config {
-        public static final YamlDecoder<Config> DECODER = RecordYamlDecoder.mapOf(
-                Config::new,
+
+    public static class SearchConfig {
+        public static final YamlDecoder<SearchConfig> DECODER = RecordYamlDecoder.mapOf(
+                SearchConfig::new,
                 YamlDecoder.mapOf(YamlDecoder.STRING, YamlDecoder.STRING)
                         .fieldOf("aliases"),
-                YamlDecoder.mapOf(YamlDecoder.STRING, YamlDecoder.STRING.map(s -> s.split(",")))
+                YamlDecoder.mapOf(YamlDecoder.STRING, SearchFilterParser.DECODER)
                         .fieldOf("search")
         );
         private final Map<String, String> aliases;
-        private final Map<String, String[]> search;
+        private final Map<String, SearchFilter> search;
 
-        public Config(Map<String, String> aliases, Map<String, String[]> search) {
+        public SearchConfig(Map<String, String> aliases, Map<String, SearchFilter> search) {
             this.aliases = aliases;
             this.search = search;
         }
@@ -101,7 +97,7 @@ public class SearchManager {
             return aliases;
         }
 
-        public Map<String, String[]> search() {
+        public Map<String, SearchFilter> search() {
             return search;
         }
     }

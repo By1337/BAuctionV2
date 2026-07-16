@@ -91,7 +91,10 @@ public class LotsIndexer implements LocalChannelHandler {
             for (int i : and) {
                 if (maxIndex < i) continue;
                 var set = index[i];
-                if (set == null) continue;
+                if (set == null){
+                    if (base != null) base.clear();
+                    continue;
+                }
                 if (base == null) {
                     base = BitSetPool.get(set);
                 } else {
@@ -138,7 +141,10 @@ public class LotsIndexer implements LocalChannelHandler {
                     boolean init = false;
                     for (int idx : and) {
                         var set = safeGet(idx, index);
-                        if (set == null) continue;
+                        if (set == null){
+                            buffer.clear();
+                            continue;
+                        }
                         if (!init) {
                             buffer.copy(set);
                             init = true;

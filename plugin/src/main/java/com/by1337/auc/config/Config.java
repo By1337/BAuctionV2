@@ -24,8 +24,8 @@ public class Config {
             MessageManager.decoder("messages.yml", "lang.yml").fieldOf(),
             readFile("tags.yml").and(TagsConfig.DECODER).fieldOf(),
             YamlDecoder.mapOf(YamlDecoder.STRING, SlotFactory.CODEC.asDecoder())
-                    .fieldOf("visual"),
-            readFile("categories.yml").and(Categories.DECODER).fieldOf()
+                    .fieldOf("visual", Map.of()),
+            readFile("categories.yml").and(Categories.DECODER).fieldOf(null, new Categories(Map.of()))
     );
     private static final Logger log = LoggerFactory.getLogger(Config.class);
     public final MessageManager eventCtx;

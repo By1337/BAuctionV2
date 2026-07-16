@@ -9,17 +9,16 @@ import com.by1337.auc.eco.VaultHook;
 import com.by1337.auc.event.BukkitEventListener;
 import com.by1337.auc.handler.Auction;
 import com.by1337.auc.handler.SimpleAuction;
-import com.by1337.auc.menu.ConfirmMenu;
-import com.by1337.auc.menu.HomeMenu;
 import com.by1337.auc.menu.MenuBooter;
-import com.by1337.auc.menu.VaultMenu;
 import com.by1337.auc.metrics.MetricFormatter;
 import com.by1337.auc.metrics.Metrics;
+import com.by1337.auc.search.filter.SearchFilterParser;
 import com.by1337.auc.util.mc.PlayerList;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import dev.by1337.bmenu.BMenu;
 import dev.by1337.bmenu.loader.MenuSubLoader;
 import dev.by1337.cmd.Command;
+import dev.by1337.cmd.argument.ArgumentStrings;
 import dev.by1337.core.command.bcmd.CommandWrapper;
 import dev.by1337.core.command.bcmd.requires.RequiresPermission;
 import dev.by1337.edsl.context.EventContext;
@@ -136,6 +135,11 @@ public class BAuction extends JavaPlugin {
                         }
                     }
                 }))
+                .sub(new Command<CommandSender>("filter").executor(
+                        new ArgumentStrings<>("f"),
+                        (s, f) -> {
+                            System.out.println(SearchFilterParser.parse(f));
+                        }))
                 , this);
         aha.setPermission("aha.use");
         aha.register();

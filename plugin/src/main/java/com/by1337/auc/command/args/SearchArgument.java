@@ -2,7 +2,7 @@ package com.by1337.auc.command.args;
 
 import com.by1337.auc.search.SearchManager;
 import com.by1337.auc.search.filter.SearchFilter;
-import com.by1337.auc.search.filter.SearchFilterList;
+import com.by1337.auc.search.filter.SearchFilterAndList;
 import com.by1337.auc.util.ByLocaleSelector;
 import dev.by1337.cmd.*;
 import org.bukkit.command.CommandSender;
@@ -44,7 +44,7 @@ public class SearchArgument<C extends CommandSender> extends Argument<C, SearchF
         if (list.size() == 1) {
             out.put(name, list.getFirst());
         } else {
-            out.put(name, new SearchFilterList(list));
+            out.put(name, new SearchFilterAndList(list));
         }
     }
 
