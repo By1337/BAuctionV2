@@ -2,6 +2,7 @@ package com.by1337.auc;
 
 import com.by1337.auc.command.SearchCommand;
 import com.by1337.auc.command.SellCommand;
+import com.by1337.auc.command.args.NumberArgument;
 import com.by1337.auc.common.auc.log.AuctionLogBoot;
 import com.by1337.auc.common.network.AucPackets;
 import com.by1337.auc.config.Config;
@@ -13,6 +14,7 @@ import com.by1337.auc.menu.MenuBooter;
 import com.by1337.auc.metrics.MetricFormatter;
 import com.by1337.auc.metrics.Metrics;
 import com.by1337.auc.search.filter.SearchFilterParser;
+import com.by1337.auc.transaction.AddLotTransaction;
 import com.by1337.auc.util.mc.PlayerList;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import dev.by1337.bmenu.BMenu;
@@ -41,6 +43,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.IntConsumer;
 
 public class BAuction extends JavaPlugin {
     private Config config;
@@ -84,7 +88,7 @@ public class BAuction extends JavaPlugin {
         economy = new VaultHook();
         auction = new SimpleAuction(config, this);
         Metrics.METRICS.create("loop", MetricFormatter.nanos(), () -> auction.pipeline().eventLoop().busyNanosThenReset());
-        Boot.boot(this, auction);
+        plugin.config().tags.search.forEach((k, v) -> v.boot(k));
         //new BukkitRunnable() {
         //    @Override
         //    public void run() {
@@ -104,6 +108,36 @@ public class BAuction extends JavaPlugin {
         ah.register();
         aha = new CommandWrapper(new Command<CommandSender>("aha")
                 .requires(new RequiresPermission<>("aha.use"))
+                .sub(new Command<CommandSender>("push").executor(
+                        new NumberArgument<>("price"),
+                        new NumberArgument<>("count"),
+                        (s, price, count) -> {
+                            if (price == null || count == null) {
+                                s.sendMessage("use /aha push <price> <count>");
+                                return;
+                            }
+                            if (s instanceof Player pl) {
+                                var item = pl.getInventory().getItemInMainHand();
+                                if (item.isEmpty()) {
+                                    s.sendMessage("Has no item un main hand!");
+                                    return;
+                                }
+                                AtomicReference<IntConsumer> ref = new AtomicReference<>();
+                                long nanos = System.nanoTime();
+                                ref.set(x -> {
+                                    if (x <= 0) {
+                                        Metrics.METRICS.dump(getSLF4JLogger());
+                                        s.sendMessage("done in " + (System.nanoTime() - nanos) / 1_000_000D);
+                                        return;
+                                    }
+                                    auction.auction().apply(new AddLotTransaction(item.asOne(), pl.getUniqueId(), price.doubleValue(), 1))
+                                            .then(v -> {
+                                                auction.pipeline().eventLoop().schedule(() -> ref.get().accept(x - 1));
+                                            });
+                                });
+                                ref.get().accept(count.intValue());
+                            }
+                        }))
                 .sub(new Command<CommandSender>("tags").executor(s -> {
                     if (s instanceof Player pl) {
                         var item = pl.getInventory().getItemInMainHand();

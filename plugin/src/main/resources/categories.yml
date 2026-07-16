@@ -1,24 +1,4 @@
-#hw
-#- "<white><gold>✔ Все подряд"
-#- "<white><#9CF9FF>●<white>Инструменты"
-#- "<white><#9CF9FF>●<white>Оружие"
-#- "<white><#9CF9FF>●<white>Блоки"
-#- "<white><#9CF9FF>●<white>Декоративные блоки"
-#- "<white><#9CF9FF>●<white>Механизмы"
-#- "<white><#9CF9FF>●<white>Алхимия"
-#- "<white><#9CF9FF>●<white>Еда"
-#- "<white><#9CF9FF>●<white>Зелья"
-#- "<white><#9CF9FF>●<white>Зачарование"
-#- "<white><#9CF9FF>●<white>Броня"
-#- "<white><#9CF9FF>●<white>Уникальные предметы"
-#- "<white><#9CF9FF>●<white>Донатные вещи"
-#- "<white><#9CF9FF>●<white>Хранитель опыта"
-#- "<white><#9CF9FF>●<white>Сферы и талисманы"
-#- "<white><#9CF9FF>●<white>Драгоценности"
-#- "<white><#9CF9FF>●<white>Растительность"
-#- "<white><#9CF9FF>●<white>Разное"
-#- "<white><#9CF9FF>●<white>Лут с мобов"
-#- "<white><#9CF9FF>●<white>Титулы"
+# Паттерны с * работают только для материалов
 # Читаемые названия категорий должны быть в lang.yml
 categories:
   any: ""
@@ -99,9 +79,7 @@ categories:
   edible: 'edible'
   potions: '*potion'
   books: '*book'
-  spawners_and_eggs:
-    - 'spawner'
-    - '*spawn_egg'
+  spawners_and_eggs: 'spawner|spawn_egg'
   talismans: 'totem & !has_no_componets'
   donat_items: 'totem & !has_no_componets'
   brewing:

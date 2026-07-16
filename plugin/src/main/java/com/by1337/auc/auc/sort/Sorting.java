@@ -4,5 +4,5 @@ import com.by1337.auc.auc.ClientAucLot;
 
 import java.util.Comparator;
 
-public record Sorting(int id ,String key, Comparator<ClientAucLot> comparator) {
+public record Sorting(String id, Comparator<ClientAucLot> comparator) {
 }

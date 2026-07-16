@@ -34,6 +34,7 @@ tag_rewriter:
 
 #+wildcard
 tag_appender:
+  '*spawn_egg': 'spawn_egg'
   'totem_of_undying': 'totem'
   '*shulker_box': 'shulker_box'
   'tnt & !btnt*': 'default_tnt'
@@ -51,6 +52,7 @@ search:
       "всполох": 'блейз'
       "всполоха": 'блейза'
       "эффективность": 'эф'
+      "защита": 'з'
       "спавнер": 'сп'
     search:
       "damage_10": 'целый'
@@ -68,10 +70,15 @@ search:
       "кирка": 'pickaxes'
       "мотыга": 'hoes'
 
-      "з1": 'protection:1'
-      "з2": 'protection:2'
-      "з3": 'protection:3'
-      "з4": 'protection:4'
+      "защита1": 'protection:1'
+      "защита2": 'protection:2'
+      "защита3": 'protection:3'
+      "защита4": 'protection:4'
+      "эффективность1": 'efficiency:1'
+      "эффективность2": 'efficiency:2'
+      "эффективность3": 'efficiency:3'
+      "эффективность4": 'efficiency:4'
+      "эффективность5": 'efficiency:5'
       "шёлк": 'silk_touch'
 
       "спавнер": 'spawner'

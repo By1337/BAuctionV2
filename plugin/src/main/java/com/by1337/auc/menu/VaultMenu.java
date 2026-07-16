@@ -2,7 +2,7 @@ package com.by1337.auc.menu;
 
 import com.by1337.auc.auc.ClientVaultLot;
 import com.by1337.auc.auc.LotData;
-import com.by1337.auc.auc.sort.SortingRegistry;
+import com.by1337.auc.auc.sort.Sorting;
 import com.by1337.auc.search.LotsResult;
 import dev.by1337.bmenu.menu.Menu;
 import dev.by1337.yaml.codec.PipelineYamlCodecBuilder;
@@ -16,19 +16,22 @@ public class VaultMenu extends LotsMenu {
 
     private final UUID player;
     private final VaultMenuConfig cfg;
+    private final Sorting sorting;
 
     public VaultMenu(VaultMenuConfig config, Player viewer, @Nullable Menu previousMenu) {
         super(config, viewer, previousMenu);
         cfg = config;
         player = viewer.getUniqueId();
+        sorting = auction.registries().sorting.iterator().next();
     }
 
     @Override
     protected LotsResult search() {
-        return switch (cfg.type){
+        return switch (cfg.type) {
             case ONLY_VAULT -> auction.playerVaultLots(player);
-            case ONLY_ACTIVE -> auction.search(player, null, SortingRegistry.NEWEST);
-            case VAULT_AND_ACTIVE -> auction.playerVaultLots(player).and(auction.search(player, null, SortingRegistry.NEWEST));
+            case ONLY_ACTIVE -> auction.search(player, null, sorting);
+            case VAULT_AND_ACTIVE ->
+                    auction.playerVaultLots(player).and(auction.search(player, null, sorting));
         };
     }
 
@@ -43,7 +46,7 @@ public class VaultMenu extends LotsMenu {
     public static class VaultMenuConfig extends LotsMenuConfig {
         public static final YamlCodec<VaultMenuConfig> CODEC = new PipelineYamlCodecBuilder<>(VaultMenuConfig::new)
                 .and(LotsMenuConfig.RAW_CODEC)
-                .field(YamlCodec.fromEnum(Type.class), "vault_type", v -> v.type, (m,v) -> m.type = v)
+                .field(YamlCodec.fromEnum(Type.class), "vault_type", v -> v.type, (m, v) -> m.type = v)
                 .build();
         public Type type;
 

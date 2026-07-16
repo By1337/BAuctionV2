@@ -1,10 +1,8 @@
 package com.by1337.auc.menu;
 
-import com.by1337.auc.BAuction;
 import com.by1337.auc.auc.LotData;
 import com.by1337.auc.auc.category.Category;
 import com.by1337.auc.auc.sort.Sorting;
-import com.by1337.auc.auc.sort.SortingRegistry;
 import com.by1337.auc.search.LotsResult;
 import com.by1337.auc.search.filter.SearchFilter;
 import com.by1337.auc.util.CyclicListIterator;
@@ -28,7 +26,7 @@ public class HomeMenu extends LotsMenu {
                 var cfg = v.cfg.categoryLine;
                 if (cfg == null) return "has no category_line in config!";
                 var selected = v.category;
-                for (Category category : BAuction.plugin().config().categories.list()) {
+                for (Category category : v.auction.registries().category) {
                     if (category == selected) {
                         sb.append(cfg.if_selected.replace("{id}", category.id()));
                     } else {
@@ -39,7 +37,25 @@ public class HomeMenu extends LotsMenu {
                 if (sb.isEmpty()) return "";
                 sb.setLength(sb.length() - 1);
                 return sb.toString();
-            });
+            })
+            .withContext("all_sorting", v -> {
+                StringBuilder sb = new StringBuilder();
+                var cfg = v.cfg.sortingLine;
+                if (cfg == null) return "has no sorting_line in config!";
+                var selected = v.sorting;
+                for (var sort : v.auction.registries().sorting) {
+                    if (sort == selected) {
+                        sb.append(cfg.if_selected.replace("{id}", sort.id()));
+                    } else {
+                        sb.append(cfg.if_not_selected.replace("{id}", sort.id()));
+                    }
+                    sb.append("\n");
+                }
+                if (sb.isEmpty()) return "";
+                sb.setLength(sb.length() - 1);
+                return sb.toString();
+            })
+            ;
     private static final Command<ExecuteContext> COMMANDS = MenuCommands.getCommands()
             .and(LotsMenu.COMMANDS)
             .sub(new Command<ExecuteContext>("[next_sorting]").executor(ctx -> {
@@ -65,24 +81,25 @@ public class HomeMenu extends LotsMenu {
                 }
             }));
 
-    private final CyclicListIterator<Sorting> sortingIterator = SortingRegistry.cycle();
+    private final CyclicListIterator<Sorting> sortingIterator;
     private Sorting sorting;
     private @Nullable SearchFilter filter;
-    private final CyclicListIterator<Category> categoryIterator = BAuction.plugin().config().categories.cycle();
-    private Category category = categoryIterator.current();
+    private final CyclicListIterator<Category> categoryIterator;
+    private Category category;
     private final HomeMenuV2Config cfg;
 
     public HomeMenu(HomeMenuV2Config config, Player viewer, @Nullable Menu previousMenu) {
         super(config, viewer, previousMenu);
         cfg = config;
+        categoryIterator = auction.registries().category.cycle();
+        category = categoryIterator.current();
+        sortingIterator = auction.registries().sorting.cycle();
+        sorting = sortingIterator.current();
         addPlaceholderResolver(PLACEHOLDERS.bindCtx(this));
     }
 
     @Override
     protected LotsResult search() {
-        if (sorting == null) {
-            sorting = sortingIterator.current();
-        }
         SearchFilter f = filter != null ? filter : category.filter();
         return auction.search(f, sorting);
     }
@@ -110,18 +127,20 @@ public class HomeMenu extends LotsMenu {
     public static class HomeMenuV2Config extends LotsMenuConfig {
         public static final YamlCodec<HomeMenuV2Config> CODEC = new PipelineYamlCodecBuilder<>(HomeMenuV2Config::new)
                 .and(LotsMenuConfig.RAW_CODEC)
-                .field(CategoryLine.CODEC, "category_line", v -> v.categoryLine, (m, v) -> m.categoryLine = v)
+                .field(DataLine.CODEC, "category_line", v -> v.categoryLine, (m, v) -> m.categoryLine = v)
+                .field(DataLine.CODEC, "sorting_line", v -> v.sortingLine, (m, v) -> m.sortingLine = v)
                 .build();
-        public CategoryLine categoryLine;
+        public DataLine categoryLine;
+        public DataLine sortingLine;
 
         @Override
         public Menu create(Player viewer, @Nullable Menu previousMenu) {
             return new HomeMenu(this, viewer, previousMenu);
         }
 
-        public record CategoryLine(String if_selected, String if_not_selected) {
-            public static final YamlCodec<CategoryLine> CODEC = RecordYamlCodecBuilder.mapOf(
-                    CategoryLine::new,
+        public record DataLine(String if_selected, String if_not_selected) {
+            public static final YamlCodec<DataLine> CODEC = RecordYamlCodecBuilder.mapOf(
+                    DataLine::new,
                     YamlCodec.STRING.fieldOf("if_selected", v -> v.if_selected),
                     YamlCodec.STRING.fieldOf("else", v -> v.if_not_selected)
             );

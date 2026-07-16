@@ -5,8 +5,8 @@ import java.util.Objects;
 
 public final class CyclicListIterator<E> {
     private final List<E> list;
-    public int current = 0;
-    
+    private int current = 0;
+
     public CyclicListIterator(List<E> list) {
         this.list = Objects.requireNonNull(list);
         if (list.isEmpty()) {
@@ -26,6 +26,10 @@ public final class CyclicListIterator<E> {
 
     public E current() {
         return list.get(current);
+    }
+
+    public int pos() {
+        return current;
     }
 
 }

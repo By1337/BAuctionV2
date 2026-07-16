@@ -1,5 +1,7 @@
 package com.by1337.auc.config;
 
+import com.by1337.auc.auc.sort.SortingBoot;
+import com.by1337.auc.handler.SimpleAuction;
 import com.by1337.auc.tag.TagsConfig;
 import com.by1337.auc.tag.TagsExtractor;
 import dev.by1337.bmenu.BMenu;
@@ -16,7 +18,10 @@ import org.bukkit.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class Config {
     public static final YamlDecoder<Config> DECODER = RecordYamlDecoder.mapOf(
@@ -25,7 +30,8 @@ public class Config {
             readFile("tags.yml").and(TagsConfig.DECODER).fieldOf(),
             YamlDecoder.mapOf(YamlDecoder.STRING, SlotFactory.CODEC.asDecoder())
                     .fieldOf("visual", Map.of()),
-            readFile("categories.yml").and(Categories.DECODER).fieldOf(null, new Categories(Map.of()))
+            readFile("categories.yml").and(Categories.DECODER).fieldOf(null, new Categories(Map.of())),
+            YamlDecoder.STRING.listOf().fieldOf("sorting")
     );
     private static final Logger log = LoggerFactory.getLogger(Config.class);
     public final MessageManager eventCtx;
@@ -33,13 +39,15 @@ public class Config {
     public final TagsExtractor tagsExtractor;
     private final Map<String, SlotFactory> visual;
     public final Categories categories;
+    public final List<String> sorting;
 
-    public Config(MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual, Categories categories) {
+    public Config(MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual, Categories categories, List<String> sorting) {
         this.eventCtx = eventCtx;
         this.tags = tags;
         tagsExtractor = new TagsExtractor(tags);
         this.visual = visual;
         this.categories = categories;
+        this.sorting = sorting;
         eventCtx.commands().sub(new Command<EventContext>("[visual]").executor(
                 new ArgumentStrings<>("visual"),
                 (s, v) -> {
@@ -54,6 +62,11 @@ public class Config {
                     }
                 }
         ));
+    }
+
+    public void boot(SimpleAuction auction) {
+        categories.boot(auction);
+        SortingBoot.boot(auction.registries().sorting, sorting);
     }
 
     private static YamlDecoder<YamlMap> readFile(String name) {

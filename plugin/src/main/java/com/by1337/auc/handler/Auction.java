@@ -9,6 +9,7 @@ import com.by1337.auc.common.auc.log.AuctionLog;
 import com.by1337.auc.common.auc.log.LogRecord;
 import com.by1337.auc.handler.event.ActionResult;
 import com.by1337.auc.handler.index.LotsIndexer;
+import com.by1337.auc.registry.AucRegistries;
 import com.by1337.auc.search.PlayerVaultResult;
 import com.by1337.auc.search.SearchResult;
 import com.by1337.auc.handler.item.ItemStackRepository;
@@ -139,6 +140,10 @@ public class Auction implements LocalChannelHandler {
 
     public ResponseFuture<@Nullable LogRecord> getLog(int uid) {
         return log.getLog(uid);
+    }
+
+    public AucRegistries registries() {
+        return auction.registries();
     }
 
     @Override

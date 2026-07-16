@@ -15,6 +15,7 @@ import com.by1337.auc.handler.name.PlayerNameService;
 import com.by1337.auc.handler.notify.LotSoldNotifier;
 import com.by1337.auc.pipeline.LocalPipeline;
 import com.by1337.auc.pipeline.Remote;
+import com.by1337.auc.registry.AucRegistries;
 import com.by1337.auc.user.AucUser;
 import dev.by1337.sync.DataManager;
 import dev.by1337.sync.PlayerDataRepository;
@@ -49,9 +50,15 @@ public class SimpleAuction {
     private final Auction auction;
     private final PlayerDataRepository<AucUser> users;
     private final LogRepository logRepo;
+    private final AucRegistries registries;
 
     public SimpleAuction(Config config, Plugin plugin) {
         this.config = config;
+        registries = new AucRegistries();
+        this.config.boot(this);
+        if (registries.sorting.size() == 0) throw new IllegalStateException("The sort list cannot be empty!");
+        if (registries.category.size() == 0) throw new IllegalStateException("The category list cannot be empty!");
+
         users = PlayerDataRepository.create(
                 "main",
                 plugin,
@@ -169,5 +176,9 @@ public class SimpleAuction {
 
     public LogRepository logRepo() {
         return logRepo;
+    }
+
+    public AucRegistries registries() {
+        return registries;
     }
 }

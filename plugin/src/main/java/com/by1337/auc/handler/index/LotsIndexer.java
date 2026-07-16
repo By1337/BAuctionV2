@@ -3,18 +3,18 @@ package com.by1337.auc.handler.index;
 import com.by1337.auc.auc.ClientAucLot;
 import com.by1337.auc.auc.ClientVaultLot;
 import com.by1337.auc.auc.sort.Sorting;
-import com.by1337.auc.auc.sort.SortingRegistry;
 import com.by1337.auc.handler.SimpleAuction;
-import com.by1337.auc.search.PlayerVaultResult;
-import com.by1337.auc.search.SearchResult;
 import com.by1337.auc.pipeline.LocalChannelContext;
 import com.by1337.auc.pipeline.LocalChannelHandler;
 import com.by1337.auc.pipeline.LocalPipeline;
 import com.by1337.auc.pipeline.Remote;
+import com.by1337.auc.search.PlayerVaultResult;
+import com.by1337.auc.search.SearchResult;
 import com.by1337.auc.search.filter.SearchFilter;
 import dev.by1337.sync.common.channel.ChannelMessage;
 import dev.by1337.sync.common.work.EventLoopWorker;
 import it.unimi.dsi.fastutil.longs.LongArrayPriorityQueue;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -37,17 +37,13 @@ public class LotsIndexer implements LocalChannelHandler {
     private BitSet[] index = new BitSet[2048];
     private final BitSet used = new BitSet();
     private EventLoopWorker eventLoop;
-    private final ConcurrentSkipListMap<ClientAucLot, Boolean>[] sorted;
+    private final Object2IntOpenHashMap<String> sorting2id = new Object2IntOpenHashMap<>();
+    private ConcurrentSkipListMap<ClientAucLot, Boolean>[] sorted;
     private final Object2ObjectOpenHashMap<UUID, ConcurrentSkipListMap<ClientVaultLot, Boolean>> owner2vaultLots = new Object2ObjectOpenHashMap<>();
     private final Object2ObjectOpenHashMap<UUID, BitSet> owner2ownedLots = new Object2ObjectOpenHashMap<>();
 
     public LotsIndexer() {
-        var list = SortingRegistry.sortings();
-        //noinspection unchecked
-        sorted = new ConcurrentSkipListMap[list.size()];
-        for (Sorting sorting : list) {
-            sorted[sorting.id()] = new ConcurrentSkipListMap<>(sorting.comparator());
-        }
+        sorting2id.defaultReturnValue(0);
     }
 
     @Override
@@ -58,6 +54,12 @@ public class LotsIndexer implements LocalChannelHandler {
     @Override
     public void init(LocalPipeline pipeline, Remote remote, SimpleAuction auction) {
         eventLoop = pipeline.eventLoop();
+        int x = 0;
+        sorted = new ConcurrentSkipListMap[auction.registries().sorting.size()];
+        for (Sorting sorting : auction.registries().sorting) {
+            sorting2id.put(sorting.id(), x);
+            sorted[x++] = new ConcurrentSkipListMap<>(sorting.comparator());
+        }
     }
 
 
@@ -70,13 +72,13 @@ public class LotsIndexer implements LocalChannelHandler {
         } else {
             mask.and(ownerMask);
         }
-        var set = sorted[sorting.id()];
+        var set = sorted[sorting2id.getInt(sorting.id())];
         return new SearchResult(mask.cardinality(), mask, set.navigableKeySet().iterator());
     }
 
     public SearchResult search(@Nullable SearchFilter filter, Sorting sorting) {
         @Nullable BitSetPool.PooledBitSet mask = filter != null ? filter.search(this) : null;
-        var set = sorted[sorting.id()];
+        var set = sorted[sorting2id.getInt(sorting.id())];
         return new SearchResult(mask != null ? mask.cardinality() : set.size(), mask, set.navigableKeySet().iterator());
     }
 

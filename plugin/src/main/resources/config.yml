@@ -1,4 +1,12 @@
-barrier: &auto_removal
+# Здесь можно удалить не нужные сортировки или поменять порядок
+sorting:
+  - newest
+  - cheaper
+  - oldest
+  - expensive
+
+
+$barrier: &auto_removal
   material: red_dye
   tick_speed: 25
   on_tick: '[die]'

@@ -9,7 +9,10 @@ slots: 0-44
 
 category_line:
   if_selected: '<white><gold>✔ <lang:bauctionv2.categories.{id}.name>'
-  else: '<white><#9CF9FF>●<white><lang:bauctionv2.categories.{id}.name>'
+  else: '<white><#9CF9FF>●<white> <lang:bauctionv2.categories.{id}.name>'
+sorting_line:
+  if_selected: '<white><gold>✔ <lang:bauctionv2.sorting.{id}.name>'
+  else: '<white><#9CF9FF>●<white> <lang:bauctionv2.sorting.{id}.name>'
 
 items:
   vault:
@@ -63,6 +66,19 @@ items:
     on_right_click:
       - sound: 'ui.button.click 1 1'
       - previous_category: ''
+
+  sorting_HW:
+    slot: 45
+    name: "<#00D8FF> Сортировка"
+    lore:
+      - '{all_sorting}'
+    material: hopper
+    on_left_click:
+      - sound: 'ui.button.click 1 1'
+      - next_sorting: ''
+    on_right_click:
+      - sound: 'ui.button.click 1 1'
+      - previous_sorting: ''
 
   rent:
     slot: 53
