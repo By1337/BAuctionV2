@@ -5,6 +5,7 @@ import com.by1337.auc.search.filter.SearchFilter;
 import com.by1337.auc.search.filter.SearchFilterAndList;
 import com.by1337.auc.util.ByLocaleSelector;
 import dev.by1337.cmd.*;
+import dev.by1337.core.util.misc.Pair;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.slf4j.Logger;
@@ -12,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
 
-public class SearchArgument<C extends CommandSender> extends Argument<C, SearchFilter> {
+public class SearchArgument<C extends CommandSender> extends Argument<C, Pair<String, SearchFilter>> {
     private static final Logger log = LoggerFactory.getLogger(SearchArgument.class);
     private final ByLocaleSelector<SearchManager> search;
 
@@ -42,14 +43,14 @@ public class SearchArgument<C extends CommandSender> extends Argument<C, SearchF
             }
         }*/
         if (list.size() == 1) {
-            out.put(name, list.getFirst());
+            out.put(name, Pair.of(str, list.getFirst()));
         } else {
-            out.put(name, new SearchFilterAndList(list));
+            out.put(name, Pair.of(str, new SearchFilterAndList(list)));
         }
     }
 
     @Override
-    public void suggest(C c, CommandReader reader, SuggestionsList suggestions, ArgumentMap out) throws CommandMsgError {
+    public void suggest(C c, CommandReader reader, SuggestionsList suggestions, ArgumentMap ignored) throws CommandMsgError {
         if (!(c instanceof Player player)) return;
         SearchManager manager = search.select(player.locale());
         if (manager == null) {

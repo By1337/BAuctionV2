@@ -18,15 +18,19 @@ import dev.by1337.yaml.codec.YamlCodec;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class HomeMenu extends LotsMenu {
     private static final PlaceholderResolver<HomeMenu> PLACEHOLDERS = Placeholders.<HomeMenu>create()
             .withContext("current_category_id", v -> v.category.id())
+            .withContext("search_input", v -> v.category.id().equals("search") ? v.searchInput : "")
             .withContext("all_categories", v -> {
                 StringBuilder sb = new StringBuilder();
                 var cfg = v.cfg.categoryLine;
                 if (cfg == null) return "has no category_line in config!";
                 var selected = v.category;
-                for (Category category : v.auction.registries().category) {
+                for (Category category : v.categoryIterator.list()) {
                     if (category == selected) {
                         sb.append(cfg.if_selected.replace("{id}", category.id()));
                     } else {
@@ -43,7 +47,7 @@ public class HomeMenu extends LotsMenu {
                 var cfg = v.cfg.sortingLine;
                 if (cfg == null) return "has no sorting_line in config!";
                 var selected = v.sorting;
-                for (var sort : v.auction.registries().sorting) {
+                for (var sort : v.sortingIterator.list()) {
                     if (sort == selected) {
                         sb.append(cfg.if_selected.replace("{id}", sort.id()));
                     } else {
@@ -54,8 +58,7 @@ public class HomeMenu extends LotsMenu {
                 if (sb.isEmpty()) return "";
                 sb.setLength(sb.length() - 1);
                 return sb.toString();
-            })
-            ;
+            });
     private static final Command<ExecuteContext> COMMANDS = MenuCommands.getCommands()
             .and(LotsMenu.COMMANDS)
             .sub(new Command<ExecuteContext>("[next_sorting]").executor(ctx -> {
@@ -81,18 +84,19 @@ public class HomeMenu extends LotsMenu {
                 }
             }));
 
-    private final CyclicListIterator<Sorting> sortingIterator;
+    private CyclicListIterator<Sorting> sortingIterator;
     private Sorting sorting;
-    private @Nullable SearchFilter filter;
-    private final CyclicListIterator<Category> categoryIterator;
+    private CyclicListIterator<Category> categoryIterator;
     private Category category;
     private final HomeMenuV2Config cfg;
+    private String searchInput = "";
 
     public HomeMenu(HomeMenuV2Config config, Player viewer, @Nullable Menu previousMenu) {
         super(config, viewer, previousMenu);
         cfg = config;
         categoryIterator = auction.registries().category.cycle();
         category = categoryIterator.current();
+
         sortingIterator = auction.registries().sorting.cycle();
         sorting = sortingIterator.current();
         addPlaceholderResolver(PLACEHOLDERS.bindCtx(this));
@@ -100,8 +104,8 @@ public class HomeMenu extends LotsMenu {
 
     @Override
     protected LotsResult search() {
-        SearchFilter f = filter != null ? filter : category.filter();
-        return auction.search(f, sorting);
+        //  SearchFilter f = search != null ? search : category.filter();
+        return auction.search(category.filter(), sorting);
     }
 
     @Override
@@ -109,13 +113,25 @@ public class HomeMenu extends LotsMenu {
         return auction.getLot(uid);
     }
 
-    public void setFilter(@Nullable SearchFilter filter) {
-        this.filter = filter;
+    public void setSearch(@Nullable SearchFilter search) {
+        if (search == null) {
+            categoryIterator = auction.registries().category.cycle();
+            category = categoryIterator.current();
+        } else {
+            category = new Category("search", search);
+            List<Category> categories = new ArrayList<>();
+            categories.add(category);
+            categories.addAll(auction.registries().category.values());
+            categoryIterator = new CyclicListIterator<>(categories);
+        }
     }
 
-    public void setSorting(Sorting sorting) {
-        this.sorting = sorting;
-        research();
+    public String searchInput() {
+        return searchInput;
+    }
+
+    public void setSearchInput(String searchInput) {
+        this.searchInput = searchInput;
     }
 
     @Override

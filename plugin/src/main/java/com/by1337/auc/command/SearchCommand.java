@@ -7,6 +7,7 @@ import com.by1337.auc.search.filter.SearchFilter;
 import com.by1337.auc.util.ByLocaleSelector;
 import dev.by1337.bmenu.BMenu;
 import dev.by1337.cmd.Command;
+import dev.by1337.core.util.misc.Pair;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -25,15 +26,16 @@ public class SearchCommand extends Command<CommandSender> {
         );
     }
 
-    private void run(CommandSender sender, SearchFilter filter) {
+    private void run(CommandSender sender, Pair<String, SearchFilter> pair) {
         if (!(sender instanceof Player player)) return;
-        if (filter == null) {
+        if (pair == null) {
             BMenu.menuLoader().create("bauc:home", player, null).open();
             return;
         }
         var menu = BMenu.menuLoader().create("bauc:home", player, null);
         if (menu instanceof HomeMenu h) {
-            h.setFilter(filter);
+            h.setSearch(pair.getRight());
+            h.setSearchInput(pair.getLeft());
         }
         menu.open();
     }

@@ -59,6 +59,9 @@ ru_RU:
   categories.grief.title: '<#FF0000>☃ <#FF6600>Категория: <#FF0000>Для Грифа'
   categories.grief.name: 'Для Грифа'
 
+  categories.search.title: '<#FF0000>☃ <#FF6600>Поиск:<#FF0000> '
+  categories.search.name: 'Поиск'
+
   sorting.newest.name: 'Сначала новые'
   sorting.oldest.name: 'Сначала старые'
   sorting.cheaper.name: 'Сначала дешевые'

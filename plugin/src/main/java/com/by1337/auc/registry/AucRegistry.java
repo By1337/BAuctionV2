@@ -33,6 +33,9 @@ public class AucRegistry<T> implements Iterable<T> {
         if (list == null) list = List.copyOf(id2value.values());
         return new CyclicListIterator<>(list);
     }
+    public Collection<T> values(){
+        return Collections.unmodifiableCollection(id2value.values());
+    }
 
     @Override
     public @NonNull Iterator<T> iterator() {

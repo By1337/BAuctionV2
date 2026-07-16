@@ -3,7 +3,7 @@ include: [
 ]
 id: bauc:home
 provider: bauc:home
-title: "<lang:bauctionv2.categories.{current_category_id}.title><off_title><b><gray>[<gold>{current_page}<gray>/<gold>{max_page}<gray>]"
+title: "<lang:bauctionv2.categories.{current_category_id}.title>{search_input}<off_title><b><gray>[<gold>{current_page}<gray>/<gold>{max_page}<gray>]"
 
 slots: 0-44
 

@@ -1,5 +1,6 @@
 package com.by1337.auc.util;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -32,4 +33,7 @@ public final class CyclicListIterator<E> {
         return current;
     }
 
+    public List<E> list() {
+        return Collections.unmodifiableList(list);
+    }
 }
