@@ -8,5 +8,6 @@ public class MenuBooter {
         subLoader.menuCodecRegistry().register("bauc:vault", VaultMenu.VaultMenuConfig.CODEC);
         subLoader.menuCodecRegistry().register("bauc:confirm", ConfirmMenu.ConfirmMenuConfig.CODEC);
         subLoader.menuCodecRegistry().register("bauc:select_count", SelectCountMenu.SelectCountConfig.CODEC);
+        subLoader.menuCodecRegistry().register("bauc:container_view", ContainerViewMenu.ContainerViewConfig.CODEC);
     }
 }

@@ -21,3 +21,7 @@ visual:
     <<: *auto_removal
     material: yellow_dye
     name: '&e<lang:bauctionv2.visual.added_to_vault>'
+  insufficient_balance:
+    <<: *auto_removal
+    material: red_dye
+    name: '&c<lang:bauctionv2.visual.insufficient_balance>'

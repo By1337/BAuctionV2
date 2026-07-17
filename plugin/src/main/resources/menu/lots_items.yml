@@ -105,7 +105,7 @@ container:
   on_shift_left_click:
     - buy_lot: ''
   on_right_click:
-    - осмотреть шалкер
+    - open: 'bauc:container_view'
 
 many:
   lore:

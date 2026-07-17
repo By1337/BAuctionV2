@@ -86,6 +86,7 @@ public class BAuction extends JavaPlugin {
         ResourceUtil.saveIfNotExist("menu/home.yml", this, new File(bmHome, "bauc/home.yml"));
         ResourceUtil.saveIfNotExist("menu/confirm.yml", this, new File(bmHome, "bauc/confirm.yml"));
         ResourceUtil.saveIfNotExist("menu/select_count.yml", this, new File(bmHome, "bauc/select_count.yml"));
+        ResourceUtil.saveIfNotExist("menu/container_view.yml", this, new File(bmHome, "bauc/container_view.yml"));
     }
 
     @Override

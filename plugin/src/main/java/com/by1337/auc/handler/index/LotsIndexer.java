@@ -80,7 +80,6 @@ public class LotsIndexer implements LocalChannelHandler {
     }
 
     public SearchResult search(@Nullable SearchFilter filter, Sorting sorting) {
-
         @Nullable BitSetPool.PooledBitSet mask = filter != null ? filter.search(this) : null;
         var set = sorted[sorting2id.getInt(sorting.id())];
         return new SearchResult(mask != null ? mask.cardinality() : set.size(), mask, set.navigableKeySet().iterator());

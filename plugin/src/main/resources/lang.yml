@@ -13,6 +13,7 @@ ru_RU:
   visual.inv_is_full: 'Ваш инвентарь полон!'
   visual.not_owner_lot: 'Вы не владелец этого товара'
   visual.added_to_vault: 'Предмет перемещен в хранилище!'
+  visual.insufficient_balance: 'У Вас не достаточно монет!'
 
   categories.any.title: '<#FF0000>☃ <#FF6600>Аукцион'
   categories.any.name: 'Все товары'
