@@ -17,6 +17,7 @@ import it.unimi.dsi.fastutil.longs.LongArrayPriorityQueue;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.jetbrains.annotations.Nullable;
+import org.roaringbitmap.RoaringBitmap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,13 +35,13 @@ public class LotsIndexer implements LocalChannelHandler {
 
     private final LongArrayPriorityQueue freeIds = new LongArrayPriorityQueue();
     private int shortIdCounter;
-    private BitSet[] index = new BitSet[2048];
-    private final BitSet used = new BitSet();
+    private RoaringBitmap[] index = new RoaringBitmap[2048];
+    private final RoaringBitmap used = new RoaringBitmap();
     private EventLoopWorker eventLoop;
     private final Object2IntOpenHashMap<String> sorting2id = new Object2IntOpenHashMap<>();
     private ConcurrentSkipListMap<ClientAucLot, Boolean>[] sorted;
     private final Object2ObjectOpenHashMap<UUID, ConcurrentSkipListMap<ClientVaultLot, Boolean>> owner2vaultLots = new Object2ObjectOpenHashMap<>();
-    private final Object2ObjectOpenHashMap<UUID, BitSet> owner2ownedLots = new Object2ObjectOpenHashMap<>();
+    private final Object2ObjectOpenHashMap<UUID, RoaringBitmap> owner2ownedLots = new Object2ObjectOpenHashMap<>();
 
     public LotsIndexer() {
         sorting2id.defaultReturnValue(0);
@@ -49,6 +50,8 @@ public class LotsIndexer implements LocalChannelHandler {
     @Override
     public void handle(LocalChannelContext ctx, ChannelMessage msg) throws Exception {
         ctx.fire(msg);
+       // RoaringBitmap m = new RoaringBitmap();
+       // m.remove();
     }
 
     @Override
@@ -77,6 +80,7 @@ public class LotsIndexer implements LocalChannelHandler {
     }
 
     public SearchResult search(@Nullable SearchFilter filter, Sorting sorting) {
+
         @Nullable BitSetPool.PooledBitSet mask = filter != null ? filter.search(this) : null;
         var set = sorted[sorting2id.getInt(sorting.id())];
         return new SearchResult(mask != null ? mask.cardinality() : set.size(), mask, set.navigableKeySet().iterator());
@@ -229,21 +233,25 @@ public class LotsIndexer implements LocalChannelHandler {
     }
 
     private void removeIndex(ClientAucLot lot, int localId) {
-        used.clear(localId);
+        //used.clear(localId);
+        used.remove(localId);
         for (int tag : lot.itemStack.tags()) {
             index(tag, localId, false);
         }
         var set = owner2ownedLots.get(lot.owner());
-        if (set != null) set.clear(localId);
+        //if (set != null) set.clear(localId);
+        if (set != null) set.remove(localId);
     }
 
     private void reindex(ClientAucLot lot, int localId) {
-        used.set(localId);
+        //used.set(localId);
+        used.add(localId);
         for (int tag : lot.itemStack.tags()) {
             index(tag, localId, true);
         }
-        var set = owner2ownedLots.computeIfAbsent(lot.owner(), k -> new BitSet());
-        set.set(localId, true);
+        var set = owner2ownedLots.computeIfAbsent(lot.owner(), k -> new RoaringBitmap());
+       // set.set(localId, true);
+        set.add(localId);
     }
 
     private void releaseShortId(int id) {
@@ -279,9 +287,11 @@ public class LotsIndexer implements LocalChannelHandler {
         if (tag >= index.length) index = ensureCapacity(index, tag+1);
         var bitset = index[tag];
         if (bitset == null) {
-            bitset = index[tag] = new BitSet();
+            bitset = index[tag] = new RoaringBitmap();
         }
-        bitset.set(lot, state);
+        if (state) bitset.add(lot);
+        else bitset.remove(lot);
+        //bitset.set(lot, state);
     }
 
     private <T> T[] ensureCapacity(T[] arr, int minCapacity) {

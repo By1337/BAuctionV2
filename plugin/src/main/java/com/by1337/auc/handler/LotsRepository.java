@@ -39,6 +39,7 @@ public class LotsRepository implements LocalChannelHandler {
     private ItemStackRepository itemService;
     private LotsIndexer indexer;
     private PlayerNameService players;
+    private boolean closing;
 
     private final Int2ObjectOpenHashMap<ClientAucLot> lots = new Int2ObjectOpenHashMap<>();
     private final Int2ObjectOpenHashMap<ClientVaultLot> vault = new Int2ObjectOpenHashMap<>();
@@ -153,12 +154,12 @@ public class LotsRepository implements LocalChannelHandler {
             if (r.payload() instanceof S2CActualLotsUids uids) {
                 loadAllLots(
                         IntIterators.wrap(uids.uids()),
-                        () -> r.response(uids, new A2AFlagResponse(true))
+                        () -> r.response(uids, new A2AFlagResponse(!closing))
                 );
             } else if (r.payload() instanceof S2CActualVaultLotsUids uids) {
                 loadAllVaultLots(
                         IntIterators.wrap(uids.uids()),
-                        () -> r.response(uids, new A2AFlagResponse(true))
+                        () -> r.response(uids, new A2AFlagResponse(!closing))
                 );
             } else {
                 ctx.fire(msg);
@@ -185,26 +186,25 @@ public class LotsRepository implements LocalChannelHandler {
             indexer.insertOrUpdateLot(v2);
         } else if (msg instanceof S2CLotUpdate(com.by1337.auc.common.auc.AucLot newLot)) {
             placeLot(newLot);
-        } else {
-            if (msg instanceof S2CRemoveVaultLotPacket(int uid)) {
-                var lot = vault.remove(uid);
-                if (lot != null) {
-                    indexer.removeVaultLot(lot);
-                }
-            } else if (msg instanceof S2CRemoveLotPacket(int uid)) {
-                var lot = lots.remove(uid);
-                if (lot != null) {
-                    indexer.removeLot(lot);
-                }
-            } else if (msg instanceof S2CVaultLotUpdate(VaultLot lot)) {
-                placeVaultLot(lot);
+        } else if (msg instanceof S2CRemoveVaultLotPacket(int uid)) {
+            var lot = vault.remove(uid);
+            if (lot != null) {
+                indexer.removeVaultLot(lot);
             }
+        } else if (msg instanceof S2CRemoveLotPacket(int uid)) {
+            var lot = lots.remove(uid);
+            if (lot != null) {
+                indexer.removeLot(lot);
+            }
+        } else if (msg instanceof S2CVaultLotUpdate(VaultLot lot)) {
+            placeVaultLot(lot);
+        } else {
             ctx.fire(msg);
         }
     }
 
     private void loadAllLots(IntListIterator uids, Runnable r) {
-        if (!uids.hasNext()) {
+        if (!uids.hasNext() || closing) {
             r.run();
             return;
         }
@@ -218,7 +218,7 @@ public class LotsRepository implements LocalChannelHandler {
     }
 
     private void loadAllVaultLots(IntListIterator uids, Runnable r) {
-        if (!uids.hasNext()) {
+        if (!uids.hasNext() || closing) {
             r.run();
             return;
         }
@@ -268,6 +268,6 @@ public class LotsRepository implements LocalChannelHandler {
 
     @Override
     public void close() {
-
+        closing = true;
     }
 }

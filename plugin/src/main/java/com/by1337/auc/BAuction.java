@@ -94,7 +94,8 @@ public class BAuction extends JavaPlugin {
         getServer().getPluginManager().registerEvents(playerList = new PlayerList(), this);
         economy = new VaultHook();
         auction = new SimpleAuction(config, this);
-        Metrics.METRICS.create("loop", MetricFormatter.nanos(), () -> auction.pipeline().eventLoop().busyNanosThenReset());
+        Metrics.METRICS.create("loop", MetricFormatter.nanos(), () -> auction.worker().busyNanosThenReset());
+        Metrics.METRICS.create("loop-io", MetricFormatter.nanos(), () -> auction.ioWorker().busyNanosThenReset());
         plugin.config().tags.search.forEach((k, v) -> v.boot(k));
         //new BukkitRunnable() {
         //    @Override

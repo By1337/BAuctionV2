@@ -45,6 +45,7 @@ public class SimpleAuction {
 
     private static final Logger log = LoggerFactory.getLogger(SimpleAuction.class);
     private final EventLoopWorker worker;
+    private final EventLoopWorker ioWorker;
     private final LocalPipeline pipeline;
     private final Pipeline backend;
     private final Config config;
@@ -91,6 +92,7 @@ public class SimpleAuction {
                 }
         );
         worker = new EventLoopWorker("bauc");
+        ioWorker = new EventLoopWorker("bauc-io");
         pipeline = new LocalPipeline(worker);
         pipeline
                 .addLast("$r", new LocalRequestsHandler())
@@ -111,6 +113,11 @@ public class SimpleAuction {
                 .addLast("log_repository", new LogRepositoryBackend())
         ;
         backend.registerAll(new BAucRuntime() {
+
+            @Override
+            public EventLoopWorker ioWorker() {
+                return ioWorker;
+            }
 
             @Override
             public DatabaseSource database() {
@@ -193,5 +200,13 @@ public class SimpleAuction {
 
     public AucRegistries registries() {
         return registries;
+    }
+
+    public EventLoopWorker worker() {
+        return worker;
+    }
+
+    public EventLoopWorker ioWorker() {
+        return ioWorker;
     }
 }
