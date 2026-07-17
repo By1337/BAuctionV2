@@ -60,19 +60,6 @@ public class LocalPipeline {
         return future;
     }
 
-    public <T> ResponseFuture<T> submit0(Supplier<T> s) {
-        ResponseFuture<T> future = new ResponseFuture<>();
-        eventLoop.execute(() -> future.complete(s.get()));
-        eventLoop.schedule(() -> {
-            //todo?
-            if (!future.hasResult()) {
-                log.error("Timeout request {}", s);
-                future.complete(null);
-            }
-        }, 5_000);
-        return future;
-    }
-
     public void schedule(ChannelMessage msg) {
         eventLoop.schedule(() -> {
             execute0(msg, 0);

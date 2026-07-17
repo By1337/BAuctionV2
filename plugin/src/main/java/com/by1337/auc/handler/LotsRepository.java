@@ -50,8 +50,10 @@ public class LotsRepository implements LocalChannelHandler {
         itemService = pipeline.get(ItemStackRepository.class);
         indexer = pipeline.get(LotsIndexer.class);
         players = pipeline.get(PlayerNameService.class);
-        remote.write(new C2SGetAllLotsRequest());
-        remote.write(new C2SGetAllVaultLotsRequest());
+        pipeline.eventLoop().schedule(() -> {
+            remote.write(new C2SGetAllLotsRequest());
+            remote.write(new C2SGetAllVaultLotsRequest());
+        });
     }
 
     public @Nullable ClientAucLot getLot(int uid) {
@@ -211,7 +213,7 @@ public class LotsRepository implements LocalChannelHandler {
                 var lot = v.lot();
                 if (lot != null) placeLot(lot);
             }
-            loadAllLots(uids, r);
+            pipeline.eventLoop().schedule(() -> loadAllLots(uids, r));
         });
     }
 
@@ -225,7 +227,7 @@ public class LotsRepository implements LocalChannelHandler {
                 var lot = v.lot();
                 if (lot != null) placeVaultLot(lot);
             }
-            loadAllVaultLots(uids, r);
+            pipeline.eventLoop().schedule(() -> loadAllVaultLots(uids, r));
         });
     }
 

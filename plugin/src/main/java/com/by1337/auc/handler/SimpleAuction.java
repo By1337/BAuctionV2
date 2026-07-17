@@ -16,6 +16,7 @@ import com.by1337.auc.handler.name.PlayerNameService;
 import com.by1337.auc.handler.notify.LotSoldNotifier;
 import com.by1337.auc.pipeline.LocalPipeline;
 import com.by1337.auc.pipeline.Remote;
+import com.by1337.auc.pipeline.request.LocalRequestsHandler;
 import com.by1337.auc.registry.AucRegistries;
 import com.by1337.auc.user.AucUser;
 import dev.by1337.sync.DataManager;
@@ -92,6 +93,7 @@ public class SimpleAuction {
         worker = new EventLoopWorker("bauc");
         pipeline = new LocalPipeline(worker);
         pipeline
+                .addLast("$r", new LocalRequestsHandler())
                 .addLast("item_stack_repository", new ItemStackRepository(config))
                 .addLast("client_lots_repository", lotsRepository = new LotsRepository())
                 .addLast("indexer", indexer = new LotsIndexer())
