@@ -7,15 +7,15 @@ import io.netty.handler.codec.DecoderException;
 
 import java.util.UUID;
 
-public class AucLot {
+public class AucLot implements BaseLot{
     public static final byte VERSION = 1;
     private final int uid;
     private final int item;
     private final UUID owner;
     private final long createdDate;
     private final long removalDate;
-    private int count;
-    private long lprice;
+    private final int count;
+    private final long lprice;
     public final transient long lprice_for_one;
 
     public AucLot(int uid, int item, UUID owner, long createdDate, long removalDate, int count, long lprice) {
@@ -29,15 +29,11 @@ public class AucLot {
         lprice_for_one = lprice / count;
     }
 
-    public byte[] toBytes(){
-        ByteBuf buf = Unpooled.buffer(255, 255);
-        write(buf);
-        byte[] arr = new byte[buf.readableBytes()];
-        buf.readBytes(arr);
-        return arr;
+    public AucLot withUid(int uid) {
+        return new AucLot(uid, item, owner, createdDate, removalDate, count, lprice);
     }
 
-    public void write(ByteBuf buf){
+    public void write(ByteBuf buf) {
         buf.writeByte(VERSION);
         buf.writeInt(uid);
         buf.writeInt(item);
@@ -48,11 +44,15 @@ public class AucLot {
         buf.writeLong(lprice);
     }
 
-    public static AucLot read(byte[] buf){
+    public static AucLot read(byte[] buf) {
         return read(Unpooled.wrappedBuffer(buf));
     }
 
-    public static AucLot read(ByteBuf buf){
+    public static AucLot read(ByteBuf buf) {
+        return read(buf, -1);
+    }
+
+    public static AucLot read(ByteBuf buf, int overrideUID) {
         byte version = buf.readByte();
         if (version != 1) throw new DecoderException("Bad version " + version);
 
@@ -64,7 +64,7 @@ public class AucLot {
         int quantity = buf.readInt();
         long price = buf.readLong();
 
-        return new AucLot(uid, item, owner, createdDate, removalDate, quantity, price);
+        return new AucLot(overrideUID != -1 ? overrideUID : uid, item, owner, createdDate, removalDate, quantity, price);
     }
 
     public int uid() {
@@ -91,16 +91,8 @@ public class AucLot {
         return count;
     }
 
-    public void setCount(int count) {
-        this.count = count;
-    }
-
     public long lprice() {
         return lprice;
-    }
-
-    public void setLprice(long lprice) {
-        this.lprice = lprice;
     }
 
     @Override
@@ -115,5 +107,17 @@ public class AucLot {
                 ", price=" + lprice +
                 ", lprice_for_one=" + lprice_for_one +
                 '}';
+    }
+
+    public byte[] asBytes() {
+        ByteBuf buf = Unpooled.buffer();
+        try {
+            write(buf);
+            byte[] arr = new byte[buf.readableBytes()];
+            buf.readBytes(arr);
+            return arr;
+        } finally {
+            buf.release();
+        }
     }
 }

@@ -6,14 +6,15 @@ import dev.by1337.sync.common.packet.ExpectsResponse;
 import dev.by1337.sync.common.packet.Packet;
 import io.netty.buffer.ByteBuf;
 
-public record C2SPushItemRequest(byte[] itemStack) implements Packet, ExpectsResponse<S2CItemIdResponsePacket> {
+public record C2SPushItemRequest(byte[] itemStack, byte[] sha256) implements Packet, ExpectsResponse<S2CItemIdResponsePacket> {
 
     public C2SPushItemRequest(ByteBuf buf, int protocolVersion) {
-        this(ByteBufCodecs.readByteArray(buf));
+        this(ByteBufCodecs.readByteArray(buf), ByteBufCodecs.readByteArray(buf));
     }
 
     @Override
     public void write(ByteBuf buf, int protocolVersion) {
         ByteBufCodecs.writeByteArray(buf, itemStack);
+        ByteBufCodecs.writeByteArray(buf, sha256);
     }
 }

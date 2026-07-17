@@ -1,7 +1,7 @@
 package com.by1337.auc.common.network;
 
 import com.by1337.auc.common.network.a2a.A2AFlagResponse;
-import com.by1337.auc.common.network.a2a.A2AI32Response;
+import com.by1337.auc.common.network.a2a.A2ALongResponse;
 import com.by1337.auc.common.network.a2a.A2ASetPlayerNamePacket;
 import com.by1337.auc.common.network.c2s.*;
 import com.by1337.auc.common.network.s2c.*;
@@ -37,11 +37,19 @@ public class AucPackets {
                 .add(S2CLogAdded.class, S2CLogAdded::new)
                 .add(S2CLogsLoadResponse.class, S2CLogsLoadResponse::read)
                 .add(C2SLoadLogsRequest.class, C2SLoadLogsRequest::read)
-                .add(A2AI32Response.class, A2AI32Response::new)
+                .add(A2ALongResponse.class, A2ALongResponse::new)
                 .add(S2COptionalLogRecord.class, S2COptionalLogRecord::new)
-                .add(C2SGetLogRequest.class, C2SGetLogRequest::new)
+                .add(C2SGetLogRecordRequest.class, C2SGetLogRecordRequest::new)
                 .add(C2SSubtractLotRequest.class, C2SSubtractLotRequest::new)
                 .add(S2CLotCountChange.class, S2CLotCountChange::new)
+                .add(S2COptionalLot.class, S2COptionalLot::new)
+                .add(C2SGetLotRequest.class, C2SGetLotRequest::new)
+                .add(C2SGetAllLotsRequest.class, C2SGetAllLotsRequest::new)
+                .add(S2CActualLotsUids.class, S2CActualLotsUids::new)
+                .add(S2COptionalVaultLot.class, S2COptionalVaultLot::new)
+                .add(C2SGetAllVaultLotsRequest.class, C2SGetAllVaultLotsRequest::new)
+                .add(S2CActualVaultLotsUids.class, S2CActualVaultLotsUids::new)
+                .add(C2SGetVaultLotRequest.class, C2SGetVaultLotRequest::new)
         );
     }
 }

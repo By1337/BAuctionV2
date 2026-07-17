@@ -32,6 +32,10 @@ public class BuyLotTransaction implements Transaction<ActionResult> {
 
     @Override
     public ResponseFuture<ActionResult> apply(Auction auction) {
+        if (count <= 0){
+            log.error("Bad count {}", count);
+            return DENY;
+        }
         var eco = BAuction.economy();
         long balanceCents = eco.getCents(who);
         long priceCents = lot.lprice_for_one * count;

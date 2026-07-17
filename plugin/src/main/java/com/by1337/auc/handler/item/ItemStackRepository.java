@@ -96,7 +96,7 @@ public class ItemStackRepository implements LocalChannelHandler {
         if (bySha != -1) {
             return new ResponseFuture<>(bySha);
         } else {
-            return remote.request(new C2SPushItemRequest(itemStack))
+            return remote.request(new C2SPushItemRequest(itemStack, sha256.asBytes()))
                     .map(result -> {
                         int id = result.id();
                         items.put(id, ClientItemStack.make(

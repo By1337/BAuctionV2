@@ -5,6 +5,7 @@ api-version: "1.21"
 depend:
   - BLib
   - BMenu
+  - BSync
 permissions:
   aha.*:
     default: op
@@ -13,3 +14,4 @@ libraries:
   - com.github.ben-manes.caffeine:caffeine:3.2.3
   - com.zaxxer:HikariCP:7.0.2
   - org.mariadb.jdbc:mariadb-java-client:3.5.2
+  - com.h2database:h2:2.4.240

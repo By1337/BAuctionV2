@@ -5,14 +5,14 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-public record LogRecord(int uid, AuctionLog log) {
+public record LogRecord(long uid, AuctionLog log) {
 
     public void write(ByteBuf buf, int protocolVersion){
-        buf.writeInt(uid);
+        buf.writeLong(uid);
         log.write(buf, protocolVersion);
     }
     public static LogRecord read(ByteBuf buf, int protocolVersion){
-        int uid = buf.readInt();
+        long uid = buf.readLong();
         AuctionLog log = AuctionLog.read(buf, protocolVersion);
         return new LogRecord(uid, log);
     }

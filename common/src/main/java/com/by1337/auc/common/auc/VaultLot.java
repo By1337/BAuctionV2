@@ -2,11 +2,12 @@ package com.by1337.auc.common.auc;
 
 import dev.by1337.sync.common.packet.ByteBufCodecs;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
 
 import java.util.UUID;
 
-public class VaultLot {
+public class VaultLot implements BaseLot{
     public static final byte VERSION = 1;
 
     private final int uid;
@@ -24,6 +25,9 @@ public class VaultLot {
         this.count = count;
         this.lprice = lprice;
     }
+    public VaultLot withUid(int uid){
+        return new VaultLot(uid, item, owner, removalDate, count, lprice);
+    }
 
     public void write(ByteBuf buf) {
         buf.writeByte(VERSION);
@@ -36,6 +40,10 @@ public class VaultLot {
     }
 
     public static VaultLot read(ByteBuf buf) {
+        return read(buf, -1);
+    }
+
+    public static VaultLot read(ByteBuf buf, int overrideUID) {
         byte version = buf.readByte();
         if (version != VERSION) throw new DecoderException("Bad version " + version);
 
@@ -46,9 +54,8 @@ public class VaultLot {
         int count = buf.readInt();
         long price = buf.readLong();
 
-        return new VaultLot(uid, item, owner, removalDate, count, price);
+        return new VaultLot(overrideUID != -1 ? overrideUID : uid, item, owner, removalDate, count, price);
     }
-
     public int uid() {
         return uid;
     }
@@ -71,5 +78,17 @@ public class VaultLot {
 
     public long lprice() {
         return lprice;
+    }
+
+    public byte[] asBytes() {
+        ByteBuf buf = Unpooled.buffer();
+        try {
+            write(buf);
+            byte[] arr = new byte[buf.readableBytes()];
+            buf.readBytes(arr);
+            return arr;
+        } finally {
+            buf.release();
+        }
     }
 }

@@ -18,7 +18,10 @@ import com.by1337.auc.pipeline.LocalPipeline;
 import com.by1337.auc.pipeline.Remote;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import dev.by1337.sync.common.channel.ChannelMessage;
+import dev.by1337.sync.common.channel.handler.request.IncomingRequest;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntIterators;
+import it.unimi.dsi.fastutil.ints.IntListIterator;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -47,6 +50,8 @@ public class LotsRepository implements LocalChannelHandler {
         itemService = pipeline.get(ItemStackRepository.class);
         indexer = pipeline.get(LotsIndexer.class);
         players = pipeline.get(PlayerNameService.class);
+        remote.write(new C2SGetAllLotsRequest());
+        remote.write(new C2SGetAllVaultLotsRequest());
     }
 
     public @Nullable ClientAucLot getLot(int uid) {
@@ -142,7 +147,21 @@ public class LotsRepository implements LocalChannelHandler {
 
     @Override
     public void handle(LocalChannelContext ctx, ChannelMessage msg) throws Exception {
-        if (msg instanceof S2CLotCountChange(int uid, int newCount)) {
+        if (msg instanceof IncomingRequest r) {
+            if (r.payload() instanceof S2CActualLotsUids uids) {
+                loadAllLots(
+                        IntIterators.wrap(uids.uids()),
+                        () -> r.response(uids, new A2AFlagResponse(true))
+                );
+            } else if (r.payload() instanceof S2CActualVaultLotsUids uids) {
+                loadAllVaultLots(
+                        IntIterators.wrap(uids.uids()),
+                        () -> r.response(uids, new A2AFlagResponse(true))
+                );
+            } else {
+                ctx.fire(msg);
+            }
+        } else if (msg instanceof S2CLotCountChange(int uid, int newCount)) {
             ClientAucLot lot = lots.get(uid);
             if (lot == null) return;
             var baseLot = lot.lot;
@@ -163,22 +182,7 @@ public class LotsRepository implements LocalChannelHandler {
             lots.put(v2.uid(), v2);
             indexer.insertOrUpdateLot(v2);
         } else if (msg instanceof S2CLotUpdate(com.by1337.auc.common.auc.AucLot newLot)) {
-            itemService.loadItem(newLot.item())
-                    .ifEmpty(() -> log.error("Failed to load ItemStack for {}", newLot))
-                    .map(item -> players.loadName(newLot.owner())
-                            .then(name -> {
-                                var old = lots.get(newLot.uid());
-                                int shortId;
-                                if (old != null) {
-                                    shortId = old.shortId;
-                                } else {
-                                    shortId = indexer.nextShortId();
-                                }
-                                var newItem = new ClientAucLot(newLot, item, shortId, name);
-                                lots.put(newLot.uid(), newItem);
-                                indexer.insertOrUpdateLot(newItem);
-                            }))
-            ;
+            placeLot(newLot);
         } else {
             if (msg instanceof S2CRemoveVaultLotPacket(int uid)) {
                 var lot = vault.remove(uid);
@@ -191,22 +195,73 @@ public class LotsRepository implements LocalChannelHandler {
                     indexer.removeLot(lot);
                 }
             } else if (msg instanceof S2CVaultLotUpdate(VaultLot lot)) {
-                itemService.loadItem(lot.item())
-                        .ifEmpty(() -> log.error("Failed to load itemstack for {}", lot))
-                        .map(item -> players.loadName(lot.owner())
-                                .then(name -> {
-                                    ClientVaultLot cvl = new ClientVaultLot(
-                                            lot,
-                                            name,
-                                            item
-                                    );
-                                    vault.put(cvl.uid(), cvl);
-                                    indexer.addVaultLot(cvl);
-                                }))
-                ;
+                placeVaultLot(lot);
             }
             ctx.fire(msg);
         }
+    }
+
+    private void loadAllLots(IntListIterator uids, Runnable r) {
+        if (!uids.hasNext()) {
+            r.run();
+            return;
+        }
+        remote.request(new C2SGetLotRequest(uids.nextInt())).then(v -> {
+            if (v != null) {
+                var lot = v.lot();
+                if (lot != null) placeLot(lot);
+            }
+            loadAllLots(uids, r);
+        });
+    }
+
+    private void loadAllVaultLots(IntListIterator uids, Runnable r) {
+        if (!uids.hasNext()) {
+            r.run();
+            return;
+        }
+        remote.request(new C2SGetVaultLotRequest(uids.nextInt())).then(v -> {
+            if (v != null) {
+                var lot = v.lot();
+                if (lot != null) placeVaultLot(lot);
+            }
+            loadAllVaultLots(uids, r);
+        });
+    }
+
+    private void placeLot(AucLot newLot) {
+        itemService.loadItem(newLot.item())
+                .ifEmpty(() -> log.error("Failed to load ItemStack for {}", newLot))
+                .map(item -> players.loadName(newLot.owner())
+                        .then(name -> {
+                            var old = lots.get(newLot.uid());
+                            int shortId;
+                            if (old != null) {
+                                shortId = old.shortId;
+                            } else {
+                                shortId = indexer.nextShortId();
+                            }
+                            var newItem = new ClientAucLot(newLot, item, shortId, name);
+                            lots.put(newLot.uid(), newItem);
+                            indexer.insertOrUpdateLot(newItem);
+                        }))
+        ;
+    }
+
+    private void placeVaultLot(VaultLot lot) {
+        itemService.loadItem(lot.item())
+                .ifEmpty(() -> log.error("Failed to load itemstack for {}", lot))
+                .map(item -> players.loadName(lot.owner())
+                        .then(name -> {
+                            ClientVaultLot cvl = new ClientVaultLot(
+                                    lot,
+                                    name,
+                                    item
+                            );
+                            vault.put(cvl.uid(), cvl);
+                            indexer.addVaultLot(cvl);
+                        }))
+        ;
     }
 
     @Override

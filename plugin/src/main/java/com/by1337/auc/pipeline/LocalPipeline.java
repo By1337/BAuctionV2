@@ -3,11 +3,15 @@ package com.by1337.auc.pipeline;
 import com.by1337.auc.handler.SimpleAuction;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import dev.by1337.sync.common.channel.ChannelMessage;
+import dev.by1337.sync.common.channel.pipeline.Connection;
+import dev.by1337.sync.common.channel.pipeline.Pipeline;
+import dev.by1337.sync.common.channel.pipeline.SocketConnection;
 import dev.by1337.sync.common.work.EventLoopWorker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 public class LocalPipeline {
@@ -18,8 +22,26 @@ public class LocalPipeline {
     private final EventLoopWorker eventLoop;
     private InitData initData;
 
+    private final Connection connection = new Connection() {
+        final SocketConnection socketConnection = this::write;
+
+        @Override
+        public void write(ChannelMessage msg) {
+            execute(msg);
+        }
+
+        @Override
+        public SocketConnection transport() {
+            return socketConnection;
+        }
+    };
+
     public LocalPipeline(EventLoopWorker eventLoop) {
         this.eventLoop = eventLoop;
+    }
+
+    public Connection asConnection(){
+        return connection;
     }
 
     public <T> ResponseFuture<T> submit(Supplier<ResponseFuture<T>> s) {
@@ -116,6 +138,20 @@ public class LocalPipeline {
         throw new IllegalArgumentException("Unknown handler " + t);
     }
 
+    public CompletableFuture<Void> closeAll() {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        eventLoop.execute(() -> {
+            try {
+                for (Entry handler : handlers) {
+                    handler.handler.close();
+                }
+            } finally {
+                //сами handler'ы могут ложить новые таски в eventLoop, отпустим future после тех тасков
+                eventLoop.execute(() -> future.complete(null));
+            }
+        });
+        return future;
+    }
 
     private class ChannelContextImpl implements LocalChannelContext, AutoCloseable {
         private final int idx;

@@ -188,6 +188,7 @@ public class BAuction extends JavaPlugin {
         ah.close();
         aha.close();
         HandlerList.unregisterAll(playerList);
+        auction.close();
     }
 
     public BukkitEventListener eventListener() {

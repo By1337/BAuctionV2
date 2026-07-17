@@ -4,7 +4,7 @@ public class UserMails {
     public static final String LOT_SOLD = "native:lot_sold|";
     public static final String ECO_DEPOSIT_CENTS = "native:eco_deposit_cents|";
 
-    public static String makeLotSold(int logUid) {
+    public static String makeLotSold(long logUid) {
         return LOT_SOLD + logUid;
     }
 

@@ -10,10 +10,12 @@ import dev.by1337.sync.common.packet.ExpectsResponse;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public abstract class GetPostChannelHandler implements ChannelHandler {
     private final Map<Class<?>, Responser<?, ?>> gets = new HashMap<>();
-    private final Map<Class<?>, EConsumer<?>> posts = new HashMap<>();
+    private final Map<Class<?>, BiConsumer<ChannelContext, ?>> posts = new HashMap<>();
 
     @Override
     public void handle(ChannelContext ctx, ChannelMessage msg) throws Exception {
@@ -22,11 +24,11 @@ public abstract class GetPostChannelHandler implements ChannelHandler {
                 Responser f = gets.get(e.getClass());
                 if (f != null) {
                     ResponseFuture res = f.response(e, ctx.connection());
-                    System.out.println(e + " -> " + res);
-                    res.then(v -> {
-                        System.out.println(e + " -> " + v);
-                        r.response((ExpectsResponse) e, (ChannelMessage) v);
-                    });
+                    if (res != null) {
+                        res.then(v -> {
+                            r.response((ExpectsResponse) e, (ChannelMessage) v);
+                        });
+                    }
                 } else {
                     ctx.fire(msg);
                 }
@@ -34,9 +36,9 @@ public abstract class GetPostChannelHandler implements ChannelHandler {
                 ctx.fire(msg);
             }
         } else {
-            EConsumer c = posts.get(msg.getClass());
+            BiConsumer c = posts.get(msg.getClass());
             if (c != null) {
-                c.accept(msg);
+                c.accept(ctx, msg);
             } else {
                 ctx.fire(msg);
             }
@@ -47,7 +49,10 @@ public abstract class GetPostChannelHandler implements ChannelHandler {
         gets.put(type, responser);
     }
 
-    public <T extends ChannelMessage> void registerPost(Class<T> t, EConsumer<T> c) {
+    public <T extends ChannelMessage> void registerPost(Class<T> t, Consumer<T> c) {
+        posts.put(t, (ctx, v) -> c.accept((T)v));
+    }
+    public <T extends ChannelMessage> void registerPost(Class<T> t, BiConsumer<ChannelContext, T> c) {
         posts.put(t, c);
     }
 
@@ -65,8 +70,8 @@ public abstract class GetPostChannelHandler implements ChannelHandler {
         R apply(T t) throws Exception;
     }
 
-    @FunctionalInterface
+
     public interface EConsumer<T> {
-        void accept(T t);
+         void accept(ChannelContext ctx, T t);
     }
 }

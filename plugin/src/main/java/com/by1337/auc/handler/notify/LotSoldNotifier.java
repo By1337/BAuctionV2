@@ -15,7 +15,7 @@ import com.by1337.auc.user.UserMails;
 import dev.by1337.edsl.context.EventContext;
 import dev.by1337.sync.common.channel.ChannelMessage;
 import dev.by1337.sync.common.work.EventLoopWorker;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 import java.util.UUID;
@@ -49,14 +49,14 @@ public class LotSoldNotifier implements LocalChannelHandler {
             worker.schedule(this::tick, 1_000);
     }
 
-    private void sendMessages(IntArrayList operations) {
-        var iter = operations.intIterator();
+    private void sendMessages(LongArrayList operations) {
+        var iter = operations.longIterator();
         while (iter.hasNext()) {
-            sendSoldMessage(iter.nextInt());
+            sendSoldMessage(iter.nextLong());
         }
     }
 
-    public void sendSoldMessage(int uid) {
+    public void sendSoldMessage(long uid) {
         aucLogs.getLog(uid).ifPresent(log -> {
             if (!(log.log() instanceof BuyAuctionLog buy)) return;
             var auction = BAuction.auction();
@@ -74,7 +74,7 @@ public class LotSoldNotifier implements LocalChannelHandler {
     public void handle(LocalChannelContext ctx, ChannelMessage msg) throws Exception {
         if (msg instanceof UserMailEvent(AucUser user, String mail)) {
             if (UserMails.isLotSold(mail)) {
-                int uid = UserMails.getInt(mail);
+                long uid = UserMails.getLong(mail);
                 if (BAuction.playerList().isOnline(user.uuid)) {
                     sendSoldMessage(uid);
                 } else {
@@ -97,6 +97,6 @@ public class LotSoldNotifier implements LocalChannelHandler {
 
     private static class SoldData {
         public long lastAccess;
-        private final IntArrayList uids = new IntArrayList();
+        private final LongArrayList uids = new LongArrayList();
     }
 }

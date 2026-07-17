@@ -31,7 +31,8 @@ public class Config {
             YamlDecoder.mapOf(YamlDecoder.STRING, SlotFactory.CODEC.asDecoder())
                     .fieldOf("visual", Map.of()),
             readFile("categories.yml").and(Categories.DECODER).fieldOf(null, new Categories(Map.of())),
-            YamlDecoder.STRING.listOf().fieldOf("sorting")
+            YamlDecoder.STRING.listOf().fieldOf("sorting"),
+            readFile("database.yml").and(DbConfig.DECODER).fieldOf()
     );
     private static final Logger log = LoggerFactory.getLogger(Config.class);
     public final MessageManager eventCtx;
@@ -40,14 +41,16 @@ public class Config {
     private final Map<String, SlotFactory> visual;
     public final Categories categories;
     public final List<String> sorting;
+    public final DbConfig dbConfig;
 
-    public Config(MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual, Categories categories, List<String> sorting) {
+    public Config(MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual, Categories categories, List<String> sorting, DbConfig dbConfig) {
         this.eventCtx = eventCtx;
         this.tags = tags;
         tagsExtractor = new TagsExtractor(tags);
         this.visual = visual;
         this.categories = categories;
         this.sorting = sorting;
+        this.dbConfig = dbConfig;
         eventCtx.commands().sub(new Command<EventContext>("[visual]").executor(
                 new ArgumentStrings<>("visual"),
                 (s, v) -> {

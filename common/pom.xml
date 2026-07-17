@@ -71,6 +71,24 @@
     <dependencies>
         <dependency>
             <groupId>dev.by1337.sync</groupId>
+            <artifactId>bsync-db</artifactId>
+            <version>1.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>7.0.2</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>3.2.3</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>dev.by1337.sync</groupId>
             <artifactId>bsync-common</artifactId>
             <version>1.0</version>
             <scope>provided</scope>
@@ -111,5 +129,6 @@
             <scope>provided</scope>
             <version>2.23.0</version>
         </dependency>
+
     </dependencies>
 </project>

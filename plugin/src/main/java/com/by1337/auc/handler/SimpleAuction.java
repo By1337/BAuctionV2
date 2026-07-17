@@ -1,10 +1,11 @@
 package com.by1337.auc.handler;
 
+import com.by1337.auc.common.handler.BAucRuntime;
 import com.by1337.auc.config.Config;
-import com.by1337.auc.handler.backend.ClientItemServiceBackend;
-import com.by1337.auc.handler.backend.ClientLotsRepositoryBackend;
-import com.by1337.auc.handler.backend.LogRepositoryBackend;
-import com.by1337.auc.handler.backend.PlayerNameBackend;
+import com.by1337.auc.common.backend.item.ItemServiceBackend;
+import com.by1337.auc.common.backend.lot.LotsRepositoryBackend;
+import com.by1337.auc.common.backend.log.LogRepositoryBackend;
+import com.by1337.auc.common.backend.PlayerNameBackend;
 import com.by1337.auc.handler.eco.EcoGiver;
 import com.by1337.auc.handler.event.UserMailEvent;
 import com.by1337.auc.handler.index.LotsIndexer;
@@ -19,14 +20,15 @@ import com.by1337.auc.registry.AucRegistries;
 import com.by1337.auc.user.AucUser;
 import dev.by1337.sync.DataManager;
 import dev.by1337.sync.PlayerDataRepository;
-import dev.by1337.sync.client.channel.ClientChannelRuntime;
+import dev.by1337.sync.bd.DatabaseSource;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import dev.by1337.sync.common.channel.ChannelMessage;
+import dev.by1337.sync.common.channel.pipeline.BaseServerChannelRuntime;
 import dev.by1337.sync.common.channel.pipeline.Connection;
 import dev.by1337.sync.common.channel.pipeline.Pipeline;
-import dev.by1337.sync.common.channel.pipeline.SocketConnection;
 import dev.by1337.sync.common.packet.ExpectsResponse;
 import dev.by1337.sync.common.packet.Packet;
+import dev.by1337.sync.common.util.BSUtils;
 import dev.by1337.sync.common.work.EventLoopWorker;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -35,6 +37,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class SimpleAuction {
 
@@ -51,6 +55,7 @@ public class SimpleAuction {
     private final PlayerDataRepository<AucUser> users;
     private final LogRepository logRepo;
     private final AucRegistries registries;
+    private DatabaseSource databaseSource;
 
     public SimpleAuction(Config config, Plugin plugin) {
         this.config = config;
@@ -58,6 +63,7 @@ public class SimpleAuction {
         this.config.boot(this);
         if (registries.sorting.size() == 0) throw new IllegalStateException("The sort list cannot be empty!");
         if (registries.category.size() == 0) throw new IllegalStateException("The category list cannot be empty!");
+        databaseSource = new DatabaseSource(config.dbConfig.database, "./bsync");
 
         users = PlayerDataRepository.create(
                 "main",
@@ -90,33 +96,33 @@ public class SimpleAuction {
                 .addLast("client_lots_repository", lotsRepository = new LotsRepository())
                 .addLast("indexer", indexer = new LotsIndexer())
                 .addLast("name_service", nameService = new PlayerNameService(plugin))
-                .addLast("log", logRepo = new LogRepository())
+                .addLast("lot", logRepo = new LogRepository())
                 .addLast("auction", auction = new Auction())
                 .addLast("eco_giver", new EcoGiver())
                 .addLast("lot_sold_notifier", new LotSoldNotifier())
         ;
         backend = new Pipeline(worker);
         backend
-                .addLast("item_stack_repository", new ClientItemServiceBackend())
-                .addLast("lots_repository", new ClientLotsRepositoryBackend())
+                .addLast("item_stack_repository", new ItemServiceBackend())
+                .addLast("lots_repository", new LotsRepositoryBackend())
                 .addLast("name_repository", new PlayerNameBackend())
                 .addLast("log_repository", new LogRepositoryBackend())
         ;
-        backend.registerAll(new ClientChannelRuntime() {
-            @Override
-            public Connection remote() {
-                return new Connection() {
-                    @Override
-                    public void write(ChannelMessage msg) {
-                        //    log.info("backend -> local {}", msg);
-                        pipeline.execute(msg);
-                    }
+        backend.registerAll(new BAucRuntime() {
 
-                    @Override
-                    public SocketConnection transport() {
-                        return this::write;
-                    }
-                };
+            @Override
+            public DatabaseSource database() {
+                return databaseSource;
+            }
+
+            @Override
+            public void forEachConnections(Consumer<Connection> c) {
+                c.accept(pipeline.asConnection());
+            }
+
+            @Override
+            public String name() {
+                return "bauction";
             }
 
             @Override
@@ -137,17 +143,22 @@ public class SimpleAuction {
         pipeline.initAll(new Remote() {
             @Override
             public <T extends ChannelMessage> ResponseFuture<T> request(ExpectsResponse<T> msg) {
-                //    log.info("local -> request backend {}", msg);
+                //    lot.info("local -> request backend {}", msg);
                 return msg.request(backend, backend.local());
             }
 
             @Override
             public void write(Packet packet) {
-                //   log.info("local -> write backend {}", packet);
-                backend.local().write(packet);
+                //   lot.info("local -> write backend {}", packet);
+                backend.execute(packet, pipeline.asConnection());
             }
         }, this);
 
+    }
+    public void close(){
+        BSUtils.safe(() -> pipeline.closeAll().get(15, TimeUnit.SECONDS));
+        BSUtils.safe(() -> backend.closeAll().get(15, TimeUnit.SECONDS));
+        BSUtils.safe(() -> databaseSource.close());
     }
 
     public LocalPipeline pipeline() {
