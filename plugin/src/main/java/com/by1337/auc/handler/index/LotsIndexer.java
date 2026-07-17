@@ -276,7 +276,7 @@ public class LotsIndexer implements LocalChannelHandler {
 
     private void index(int tag, int lot, boolean state) {
         if (tag < 0) throw new IllegalArgumentException("pos < 0");
-        if (tag >= index.length) index = ensureCapacity(index, tag);
+        if (tag >= index.length) index = ensureCapacity(index, tag+1);
         var bitset = index[tag];
         if (bitset == null) {
             bitset = index[tag] = new BitSet();

@@ -1,10 +1,11 @@
-/*
+
 package com.by1337.auc.tag.tester;
 
 import com.by1337.auc.util.WildcardMatcher;
 import dev.by1337.yaml.codec.DataResult;
 import dev.by1337.yaml.decoder.YamlDecoder;
 
+import java.util.Collection;
 import java.util.Locale;
 
 public class WildcardTagTester {
@@ -95,6 +96,13 @@ public class WildcardTagTester {
     public interface Tester {
         boolean test(String m);
 
+        default boolean test(Collection<String> set) {
+            for (String s : set) {
+                if (test(s)) return true;
+            }
+            return false;
+        }
+
         default Tester and(Tester o) {
             return m -> test(m) && o.test(m);
         }
@@ -117,4 +125,3 @@ public class WildcardTagTester {
     }
 
 }
-*/

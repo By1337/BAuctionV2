@@ -30,6 +30,8 @@ import dev.by1337.yaml.YamlMap;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.Registry;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.entity.Player;
@@ -44,6 +46,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.IntConsumer;
@@ -139,6 +143,36 @@ public class BAuction extends JavaPlugin {
                                 });
                                 ref.get().accept(count.intValue());
                             }
+                        }))
+                .sub(new Command<CommandSender>("push_rand").executor(
+                        new NumberArgument<>("price"),
+                        new NumberArgument<>("count"),
+                        (s, price, count) -> {
+                            if (price == null || count == null) {
+                                s.sendMessage("use /aha push_rand <price> <count>");
+                                return;
+                            }
+                            Random random = new Random();
+                            List<Material> materials = Registry.MATERIAL.stream().filter(i -> !i.isAir() && i.isItem()).toList();
+                            AtomicReference<IntConsumer> ref = new AtomicReference<>();
+                            long nanos = System.nanoTime();
+                            ref.set(x -> {
+                                if (x <= 0) {
+                                    Metrics.METRICS.dump(getSLF4JLogger());
+                                    s.sendMessage("done in " + (System.nanoTime() - nanos) / 1_000_000D);
+                                    return;
+                                }
+                                ItemStack item = new ItemStack(materials.get(random.nextInt(materials.size()-1)));
+                                if (item.isEmpty()){
+                                    ref.get().accept(x);
+                                    return;
+                                }
+                                auction.auction().apply(new AddLotTransaction(item.asOne(), new UUID(1337, random.nextLong()), price.doubleValue() + random.nextInt(0, 250), 1))
+                                        .then(v -> {
+                                            auction.pipeline().eventLoop().schedule(() -> ref.get().accept(x - 1));
+                                        });
+                            });
+                            ref.get().accept(count.intValue());
                         }))
                 .sub(new Command<CommandSender>("tags").executor(s -> {
                     if (s instanceof Player pl) {

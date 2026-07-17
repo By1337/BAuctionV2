@@ -47,15 +47,108 @@ tag_rewriter:
 
 #+wildcard
 tag_appender:
-  '*spawn_egg': 'spawn_egg'
-  'totem_of_undying': 'totem'
-  '*shulker_box': 'shulker_box'
-  'tnt & !btnt*': 'default_tnt'
-  'shulker_box & empty_container': 'empty_shulker_box'
-  '*_copper_bulb': 'copper_bulb'
+  spawn_egg: '*spawn_egg'
+  totem: 'totem_of_undying'
+  shulker_box: '*shulker_box'
+  default_tnt: 'tnt & !btnt*'
+  empty_shulker_box: 'shulker_box & empty_container'
+  copper_bulb: '*_copper_bulb'
+
+  category_tools: 'pickaxes|hoes|axes|shovels|shears|flint_and_steel'
+  category_weapons: 'swords|spears|trident|mace|bow|crossbow'
+  category_armor: 'totem|elytra|*_helmet|*_chestplate|*_leggings|*_boots'
+  category_resources:
+    - netherite_ingot
+    - redstone_ore
+    - iron_block
+    - diamond_ore
+    - glowstone
+    - iron_ingot
+    - redstone_block
+    - gold_ingot
+    - lapis_lazuli
+    - quartz_block
+    - coal_block
+    - emerald_block
+    - quartz
+    - diamond_block
+    - gray_dye
+    - lapis_block
+    - ancient_debris
+    - lapis_ore
+    - diamond
+    - beacon
+    - gold_block
+    - netherite_block
+    - glowstone_dust
+    - coal
+    - emerald_ore
+    - emerald
+    - redstone
+  category_other_resources:
+    - dragon_breath
+    - feather
+    - experience_bottle
+    - chorus_fruit
+    - nether_star
+    - blaze_rod
+    - slime_ball
+    - gunpowder
+    - leather
+    - rabbit_foot
+    - flint
+    - string
+    - conduit
+    - bone_meal
+    - ender_pearl
+    - cactus
+    - glistering_melon_slice
+    - sugar
+    - bone
+    - golden_carrot
+    - phantom_membrane
+    - magma_cream
+    - sugar_cane
+  potions: '*potion'
+  books: '*book'
+  category_spawners_and_eggs: 'spawner|spawn_egg'
+  category_talismans: 'totem & !has_no_componets'
+  category_donat_items: 'totem & !has_no_componets'
+  category_brewing:
+    - dragon_breath
+    - glass_bottle
+    - brewing_stand
+    - blaze_rod
+    - glistering_melon_slice
+    - nether_wart
+    - ghast_tear
+    - gunpowder
+    - fermented_spider_eye
+    - golden_carrot
+    - blaze_powder
+    - magma_cream
+    - glowstone_dust
+    - cauldron
+    - sugar
+    - redstone
+  category_grief:
+    - water_bucket
+    - tnt
+    - redstone_torch
+    - lava_bucket
+    - piston
+    - rail
+    - tnt_minecart
+    - lever
+    - sticky_piston
+    - powered_rail
+    - flint_and_steel
+    - redstone
 
 
-# без wildcard паттернов
+
+
+# паттерны только на материал
 search:
   ru_RU:
     aliases:

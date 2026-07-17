@@ -53,7 +53,9 @@ public class SearchFilterParser {
                     case "\0" -> {
                         break loop;
                     }
-                    default -> and.add(Tag2IdService.INSTANCE.getId(token));
+                    default -> {
+                        and.add(Tag2IdService.INSTANCE.getId(token));
+                    }
                 }
             }
         }
@@ -113,9 +115,11 @@ public class SearchFilterParser {
                 var key = material.getKey().value();
                 if (WildcardMatcher.match(word, key)) {
                     result.add(key);
+                    result.add("|");
                 }
             }
-            return result;
+            if (!result.isEmpty())
+                return result.subList(0, result.size()-1);
         }
         return List.of(word);
     }

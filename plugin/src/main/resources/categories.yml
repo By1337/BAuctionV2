@@ -1,114 +1,19 @@
 # Паттерны с * работают только для материалов
 # Читаемые названия категорий должны быть в lang.yml
+# по сути здесь можно укзать больше 1 тега, но если делать это в tags.yml то там паттерны не только на материалы и аук будет работать быстрее
 categories:
   any: ""
   blocks: 'block'
-  tools:
-    - pickaxes
-    - hoes
-    - axes
-    - shovels
-    - shears
-    - flint_and_steel
-  weapons:
-    - swords
-    - spears
-    - trident
-    - mace
-    - bow
-    - crossbow
-  armor:
-    - totem
-    - elytra
-    - '*_helmet'
-    - '*_chestplate'
-    - '*_leggings'
-    - '*_boots'
-  resources:
-    - netherite_ingot
-    - redstone_ore
-    - iron_block
-    - diamond_ore
-    - glowstone
-    - iron_ingot
-    - redstone_block
-    - gold_ingot
-    - lapis_lazuli
-    - quartz_block
-    - coal_block
-    - emerald_block
-    - quartz
-    - diamond_block
-    - gray_dye
-    - lapis_block
-    - ancient_debris
-    - lapis_ore
-    - diamond
-    - beacon
-    - gold_block
-    - netherite_block
-    - glowstone_dust
-    - coal
-    - emerald_ore
-    - emerald
-    - redstone
-  other_resources:
-    - dragon_breath
-    - feather
-    - experience_bottle
-    - chorus_fruit
-    - nether_star
-    - blaze_rod
-    - slime_ball
-    - gunpowder
-    - leather
-    - rabbit_foot
-    - flint
-    - string
-    - conduit
-    - bone_meal
-    - ender_pearl
-    - cactus
-    - glistering_melon_slice
-    - sugar
-    - bone
-    - golden_carrot
-    - phantom_membrane
-    - magma_cream
-    - sugar_cane
+  tools: 'category_tools'
+  weapons: 'category_weapons'
+  armor: 'category_armor'
+  resources: 'category_resources'
+  other_resources: 'category_other_resources'
   edible: 'edible'
-  potions: '*potion'
-  books: '*book'
-  spawners_and_eggs: 'spawner|spawn_egg'
-  talismans: 'totem & !has_no_componets'
-  donat_items: 'totem & !has_no_componets'
-  brewing:
-    - dragon_breath
-    - glass_bottle
-    - brewing_stand
-    - blaze_rod
-    - glistering_melon_slice
-    - nether_wart
-    - ghast_tear
-    - gunpowder
-    - fermented_spider_eye
-    - golden_carrot
-    - blaze_powder
-    - magma_cream
-    - glowstone_dust
-    - cauldron
-    - sugar
-    - redstone
-  grief:
-    - water_bucket
-    - tnt
-    - redstone_torch
-    - lava_bucket
-    - piston
-    - rail
-    - tnt_minecart
-    - lever
-    - sticky_piston
-    - powered_rail
-    - flint_and_steel
-    - redstone
+  potions: 'potions'
+  books: 'books'
+  spawners_and_eggs: 'category_spawners_and_eggs'
+  talismans: 'category_talismans'
+  donat_items: 'category_donat_items'
+  brewing: 'category_brewing'
+  grief: 'category_grief'

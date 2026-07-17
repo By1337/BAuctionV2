@@ -105,7 +105,10 @@ public class HomeMenu extends LotsMenu {
     @Override
     protected LotsResult search() {
         //  SearchFilter f = search != null ? search : category.filter();
-        return auction.search(category.filter(), sorting);
+        long nanos = System.nanoTime();
+        var v = auction.search(category.filter(), sorting);
+        System.out.println((System.nanoTime() -nanos) / 1000D + "us " + category.id());
+        return v;
     }
 
     @Override

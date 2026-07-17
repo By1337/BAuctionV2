@@ -64,7 +64,7 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         if (from >= uids.length) return;
         int len = Math.min(uids.length - from, limit);
         if (len <= 0) return;
-        //log.info("SEND {}-{} of {}", from, from+len, uids.length);
+        log.info("SEND {}-{} of {}", from, from+len, uids.length);
         int[] arr = new int[len];
         System.arraycopy(uids, from, arr, 0, len);
         f.apply(arr).request(pipeline, connection, 60_000).ifPresent(flag -> {
@@ -87,6 +87,7 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         try {
             lots.loadAll();
             vault.loadAll();
+            log.info("loaded {} lots & {} vault lots", lots.lots.size(), vault.lots.size());
         } catch (SQLException e) {
             throw new RuntimeException("Failed to load lots!", e);
         }
