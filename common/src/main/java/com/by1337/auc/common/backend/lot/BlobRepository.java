@@ -4,6 +4,7 @@ import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 
 public class BlobRepository {
     private final DataSource dataSource;
@@ -19,12 +20,28 @@ public class BlobRepository {
         }
     }
 
+    public int getMaxId() throws SQLException {
+        String sql = "SELECT MAX(id) FROM %s;".formatted(tableName);
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet rs = statement.executeQuery()) {
+
+            List<Record> result = new ArrayList<>();
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+            return 0;
+        }
+    }
+
     public void createTable() throws SQLException {
         String sql = """
                 CREATE TABLE IF NOT EXISTS `%s` (
-                    id INT NOT NULL AUTO_INCREMENT,
+                    id INT NOT NULL,
                     data BLOB NOT NULL,
-
+                
                     PRIMARY KEY (id)
                 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC
                 """.formatted(tableName);
@@ -35,40 +52,68 @@ public class BlobRepository {
         }
     }
 
-    public int insert(byte[] data) throws SQLException {
+    public void set(int id, byte[] data) throws SQLException {
         String sql = """
-                INSERT INTO `%s` (data)
-                VALUES (?)
+                INSERT INTO `%s` (id, data)
+                VALUES (?, ?)
+                ON DUPLICATE KEY UPDATE
+                data = VALUES(data)
                 """.formatted(tableName);
-
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
-            statement.setBytes(1, data);
-            statement.executeUpdate();
-
-            try (ResultSet rs = statement.getGeneratedKeys()) {
-                if (!rs.next()) {
-                    throw new SQLException("Failed to obtain generated id.");
-                }
-                return rs.getInt(1);
-            }
-        }
-    }
-    public boolean update(int id, byte[] data) throws SQLException {
-        String sql = """
-            UPDATE `%s`
-            SET data = ?
-            WHERE id = ?
-            """.formatted(tableName);
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            statement.setBytes(1, data);
-            statement.setInt(2, id);
+            statement.setInt(1, id);
+            statement.setBytes(2, data);
+            statement.executeUpdate();
+        }
+    }
 
-            return statement.executeUpdate() != 0;
+    public void setBath(Queue<Record> records) throws SQLException {
+        if (records.isEmpty()) return;
+
+        String sql = """
+                INSERT INTO `%s` (id, data)
+                VALUES (?, ?)
+                ON DUPLICATE KEY UPDATE
+                data = VALUES(data)
+                """.formatted(tableName);
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            connection.setAutoCommit(false);
+            Record r;
+            while ((r = records.poll()) != null) {
+                statement.setInt(1, r.id());
+                statement.setBytes(2, r.data());
+                statement.addBatch();
+            }
+
+            statement.executeBatch();
+            connection.commit();
+        }
+    }
+
+    public void removeBath(Queue<Integer> queue) throws SQLException {
+        if (queue.isEmpty()) return;
+        String sql = """
+                DELETE FROM `%s`
+                WHERE id = ?
+                """.formatted(tableName);
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            connection.setAutoCommit(false);
+
+            Integer i;
+            while ((i = queue.poll()) != null) {
+                statement.setInt(1, i);
+                statement.addBatch();
+            }
+            statement.executeBatch();
+            connection.commit();
         }
     }
 

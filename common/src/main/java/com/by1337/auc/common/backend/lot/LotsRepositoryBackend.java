@@ -17,7 +17,8 @@ import dev.by1337.sync.common.packet.ExpectsResponse;
 import dev.by1337.sync.common.util.BSUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueue;
+import it.unimi.dsi.fastutil.ints.*;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,7 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
 
     private AucLotRepo<AucLot> lots;
     private AucLotRepo<VaultLot> vault;
+    private volatile boolean closing;
 
     public LotsRepositoryBackend() {
         registerGet(C2SSubtractLotRequest.class, this::onSubtractLot);
@@ -51,6 +53,7 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         int[] uids = vault.lots.keySet().toIntArray();
         sendUids(uids, 0, 4096, ctx.connection(), S2CActualVaultLotsUids::new);
     }
+
     private ResponseFuture<S2COptionalVaultLot> getVaultLot(C2SGetVaultLotRequest r) {
         return new ResponseFuture<>(new S2COptionalVaultLot(vault.get(r.uid())));
     }
@@ -64,7 +67,7 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         if (from >= uids.length) return;
         int len = Math.min(uids.length - from, limit);
         if (len <= 0) return;
-        log.info("SEND {}-{} of {}", from, from+len, uids.length);
+        log.info("SEND {}-{} of {}", from, from + len, uids.length);
         int[] arr = new int[len];
         System.arraycopy(uids, from, arr, 0, len);
         f.apply(arr).request(pipeline, connection, 60_000).ifPresent(flag -> {
@@ -84,6 +87,7 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         pipeline = server.pipeline();
         lots = new AucLotRepo<>(AucLot::read, new BlobRepository(server.database().dataSource(), server.name() + "_lots_repository"));
         vault = new AucLotRepo<>(VaultLot::read, new BlobRepository(server.database().dataSource(), server.name() + "_vault_repository"));
+        server.ioWorker().schedule(this::flushIo, 100);
         try {
             lots.loadAll();
             vault.loadAll();
@@ -91,6 +95,13 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         } catch (SQLException e) {
             throw new RuntimeException("Failed to load lots!", e);
         }
+    }
+
+    private void flushIo() {
+        if (closing) return;
+        lots.asyncFlush();
+        vault.asyncFlush();
+        channel.ioWorker().schedule(this::flushIo, 100);
     }
 
     private ResponseFuture<A2AFlagResponse> onSubtractLot(C2SSubtractLotRequest r) {
@@ -181,22 +192,30 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
 
     @Override
     public void close() {
+        closing = true;
+        lots.close();
+        vault.close();
     }
 
-    private static class AucLotRepo<T extends BaseLot> {
+    private class AucLotRepo<T extends BaseLot> {
         private final Int2ObjectOpenHashMap<T> lots = new Int2ObjectOpenHashMap<>();
         private final BiFunction<ByteBuf, Integer, T> reader;
         private final BlobRepository lost_repo;
+        private int lastUid;
+        private final MpscArrayQueue<BlobRepository.Record> insertBatch = new MpscArrayQueue<>(2048);
+        private final MpscArrayQueue<Integer> removeBatch = new MpscArrayQueue<>(2048);
 
         private AucLotRepo(BiFunction<ByteBuf, Integer, T> reader, BlobRepository lostRepo) {
             this.reader = reader;
             lost_repo = lostRepo;
+
         }
 
         private void loadAll() throws SQLException {
             lots.clear();
             for (BlobRepository.Record record : lost_repo.loadAll()) {
                 int uid = record.id();
+                lastUid = Math.max(lastUid, uid);
                 T lot = reader.apply(Unpooled.wrappedBuffer(record.data()), uid);
                 lots.put(uid, lot);
             }
@@ -207,26 +226,45 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         }
 
         public @Nullable T insert(T lot0) {
-            try {
-                int id = lost_repo.insert(lot0.asBytes());
-                T lot = (T) lot0.withUid(id);
-                lots.put(id, lot);
-                return lot;
-            } catch (SQLException e) {
-                log.error("Failed to insert lot", e);
-                return null;
+            int id = ++lastUid;
+            insert2Db(id, lot0);
+            T lot = (T) lot0.withUid(id);
+            lots.put(id, lot);
+            return lot;
+        }
+
+        private void insert2Db(int id, T lot) {
+            var r = new BlobRepository.Record(id, lot.asBytes());
+            if (!insertBatch.offer(r)) {
+                log.error("insertBatch is full? {}", insertBatch.size());
+                BSUtils.safe(() -> lost_repo.set(r.id(), r.data()));
             }
         }
 
+        public void asyncFlush() {
+            BSUtils.safe(() -> lost_repo.setBath(insertBatch));
+            BSUtils.safe(() -> lost_repo.removeBath(removeBatch));
+        }
+
+
         public @Nullable T remove(int id) {
             var v = lots.remove(id);
-            if (v != null) BSUtils.safe(() -> lost_repo.remove(id));
+            if (v != null) {
+                if (!removeBatch.add(id)){
+                    log.error("removeBatch is full? {}", removeBatch.size());
+                    BSUtils.safe(() -> lost_repo.remove(id));
+                }
+            }
             return v;
         }
 
         public void update(T lot) {
             lots.put(lot.uid(), lot);
-            BSUtils.safe(() -> lost_repo.update(lot.uid(), lot.asBytes()));
+            insert2Db(lot.uid(), lot);
+        }
+
+        public void close() {
+            asyncFlush();
         }
     }
 }
