@@ -10,10 +10,7 @@ import io.netty.buffer.Unpooled;
 import org.jspecify.annotations.Nullable;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 
 public class AuctionLogRepository {
@@ -34,7 +31,7 @@ public class AuctionLogRepository {
     public void createTable() throws SQLException {
         String sql = """
                 CREATE TABLE IF NOT EXISTS `%s` (
-                    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                    id BIGINT UNSIGNED PRIMARY KEY,
                     timestamp BIGINT NOT NULL,
                     actor BINARY(16),
                     subject BINARY(16),
@@ -53,34 +50,62 @@ public class AuctionLogRepository {
         }
     }
 
-    public long insert(AuctionLog log) throws SQLException {
+    public long getMaxId() throws SQLException {
+        String sql = "SELECT MAX(id) FROM %s;".formatted(tableName);
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet rs = statement.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getLong(1);
+            }
+            return 0;
+        }
+    }
+
+    public void putAll(Queue<LogRecord> queue, int limit) throws SQLException {
         String sql = """
-                INSERT INTO `%s` (`timestamp`, `actor`, `subject`, `type`, `payload`)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT IGNORE INTO `%s` (`id`, `timestamp`, `actor`, `subject`, `type`, `payload`)
+                VALUES (?, ?, ?, ?, ?, ?)
                 """.formatted(tableName);
 
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            statement.setLong(1, log.timestamp());
-            statement.setBytes(2, uuidToBytesNullable(log.actor()));
-            statement.setBytes(3, uuidToBytesNullable(log.subject()));
-            statement.setString(4, log.type());
-            statement.setBytes(5, payloadToBytes(log));
-
-            int affectedRows = statement.executeUpdate();
-
-            if (affectedRows == 0) {
-                throw new SQLException("Insert failed, no rows affected");
+            connection.setAutoCommit(false);
+            LogRecord log;
+            while (limit-- > 0 && (log = queue.poll()) != null){
+                statement.setLong(1, log.uid());
+                statement.setLong(2, log.timestamp());
+                statement.setBytes(3, uuidToBytesNullable(log.actor()));
+                statement.setBytes(4, uuidToBytesNullable(log.subject()));
+                statement.setString(5, log.type());
+                statement.setBytes(6, payloadToBytes(log.log()));
+                statement.addBatch();
             }
+            statement.executeBatch();
+            connection.commit();
+        }
 
-            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    return generatedKeys.getLong(1);
-                } else {
-                    throw new SQLException("Insert failed, no ID obtained");
-                }
-            }
+    }
+    public void put(LogRecord log) throws SQLException {
+        String sql = """
+                INSERT IGNORE INTO `%s` (`id`, `timestamp`, `actor`, `subject`, `type`, `payload`)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """.formatted(tableName);
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setLong(1, log.uid());
+            statement.setLong(2, log.timestamp());
+            statement.setBytes(3, uuidToBytesNullable(log.actor()));
+            statement.setBytes(4, uuidToBytesNullable(log.subject()));
+            statement.setString(5, log.type());
+            statement.setBytes(6, payloadToBytes(log.log()));
+
+            statement.executeUpdate();
         }
     }
 

@@ -124,7 +124,7 @@ public class CommandBooter {
                 if (s instanceof Player pl) {
                     var item = pl.getInventory().getItemInMainHand();
                     if (item.isEmpty()) {
-                        s.sendMessage("Has no item un main hand!");
+                        s.sendMessage("Has no item in main hand!");
                         return;
                     }
                     var tags = config.tagsExtractor.extractTags(item);

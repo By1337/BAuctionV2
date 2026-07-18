@@ -3,6 +3,7 @@ package com.by1337.auc.common.backend.lot;
 import com.by1337.auc.common.auc.AucLot;
 import com.by1337.auc.common.auc.BaseLot;
 import com.by1337.auc.common.auc.VaultLot;
+import com.by1337.auc.common.db.DataBatcher;
 import com.by1337.auc.common.handler.BAucRuntime;
 import com.by1337.auc.common.handler.GetPostChannelHandler;
 import com.by1337.auc.common.network.a2a.A2AFlagResponse;
@@ -14,10 +15,9 @@ import dev.by1337.sync.common.channel.pipeline.ChannelRuntime;
 import dev.by1337.sync.common.channel.pipeline.Connection;
 import dev.by1337.sync.common.channel.pipeline.Pipeline;
 import dev.by1337.sync.common.packet.ExpectsResponse;
-import dev.by1337.sync.common.util.BSUtils;
+import dev.by1337.sync.common.work.EventLoopWorker;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueue;
 import it.unimi.dsi.fastutil.ints.*;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -85,9 +85,8 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         if (!(runtime instanceof BAucRuntime server)) throw new IllegalArgumentException("Invalid runtime type");
         channel = server;
         pipeline = server.pipeline();
-        lots = new AucLotRepo<>(AucLot::read, new BlobRepository(server.database().dataSource(), server.name() + "_lots_repository"));
-        vault = new AucLotRepo<>(VaultLot::read, new BlobRepository(server.database().dataSource(), server.name() + "_vault_repository"));
-        server.ioWorker().schedule(this::flushIo, 100);
+        lots = new AucLotRepo<>(AucLot::read, new BlobRepository(server.database().dataSource(), server.name() + "_lots_repository"), server.ioWorker());
+        vault = new AucLotRepo<>(VaultLot::read, new BlobRepository(server.database().dataSource(), server.name() + "_vault_repository"), server.ioWorker());
         try {
             lots.loadAll();
             vault.loadAll();
@@ -95,13 +94,6 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         } catch (SQLException e) {
             throw new RuntimeException("Failed to load lots!", e);
         }
-    }
-
-    private void flushIo() {
-        if (closing) return;
-        lots.asyncFlush();
-        vault.asyncFlush();
-        channel.ioWorker().schedule(this::flushIo, 100);
     }
 
     private ResponseFuture<A2AFlagResponse> onSubtractLot(C2SSubtractLotRequest r) {
@@ -197,18 +189,19 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         vault.close();
     }
 
-    private class AucLotRepo<T extends BaseLot> {
+    private static class AucLotRepo<T extends BaseLot> {
         private final Int2ObjectOpenHashMap<T> lots = new Int2ObjectOpenHashMap<>();
         private final BiFunction<ByteBuf, Integer, T> reader;
         private final BlobRepository lost_repo;
         private int lastUid;
-        private final MpscArrayQueue<BlobRepository.Record> insertBatch = new MpscArrayQueue<>(2048);
-        private final MpscArrayQueue<Integer> removeBatch = new MpscArrayQueue<>(2048);
+        private final DataBatcher<BlobRepository.Record> insertBatch;
+        private final DataBatcher<Integer> removeBatch;
 
-        private AucLotRepo(BiFunction<ByteBuf, Integer, T> reader, BlobRepository lostRepo) {
+        private AucLotRepo(BiFunction<ByteBuf, Integer, T> reader, BlobRepository lostRepo, EventLoopWorker ioWorker) {
             this.reader = reader;
             lost_repo = lostRepo;
-
+            insertBatch = new DataBatcher<>(4096, lost_repo::putAll, ioWorker);
+            removeBatch = new DataBatcher<>(4096, lost_repo::removeAll, ioWorker);
         }
 
         private void loadAll() throws SQLException {
@@ -234,27 +227,12 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         }
 
         private void insert2Db(int id, T lot) {
-            var r = new BlobRepository.Record(id, lot.asBytes());
-            if (!insertBatch.offer(r)) {
-                log.error("insertBatch is full? {}", insertBatch.size());
-                BSUtils.safe(() -> lost_repo.set(r.id(), r.data()));
-            }
+            insertBatch.offer(new BlobRepository.Record(id, lot.asBytes()));
         }
-
-        public void asyncFlush() {
-            BSUtils.safe(() -> lost_repo.setBath(insertBatch));
-            BSUtils.safe(() -> lost_repo.removeBath(removeBatch));
-        }
-
 
         public @Nullable T remove(int id) {
             var v = lots.remove(id);
-            if (v != null) {
-                if (!removeBatch.add(id)){
-                    log.error("removeBatch is full? {}", removeBatch.size());
-                    BSUtils.safe(() -> lost_repo.remove(id));
-                }
-            }
+            removeBatch.offer(id);
             return v;
         }
 
@@ -264,7 +242,8 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         }
 
         public void close() {
-            asyncFlush();
+            insertBatch.close();
+            removeBatch.close();
         }
     }
 }

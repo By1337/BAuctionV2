@@ -27,8 +27,6 @@ public class BlobRepository {
              PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet rs = statement.executeQuery()) {
 
-            List<Record> result = new ArrayList<>();
-
             if (rs.next()) {
                 return rs.getInt(1);
             }
@@ -52,7 +50,7 @@ public class BlobRepository {
         }
     }
 
-    public void set(int id, byte[] data) throws SQLException {
+    public void put(int id, byte[] data) throws SQLException {
         String sql = """
                 INSERT INTO `%s` (id, data)
                 VALUES (?, ?)
@@ -69,7 +67,7 @@ public class BlobRepository {
         }
     }
 
-    public void setBath(Queue<Record> records) throws SQLException {
+    public void putAll(Queue<Record> records, int limit) throws SQLException {
         if (records.isEmpty()) return;
 
         String sql = """
@@ -84,7 +82,7 @@ public class BlobRepository {
 
             connection.setAutoCommit(false);
             Record r;
-            while ((r = records.poll()) != null) {
+            while (limit-- > 0 && (r = records.poll()) != null) {
                 statement.setInt(1, r.id());
                 statement.setBytes(2, r.data());
                 statement.addBatch();
@@ -95,7 +93,7 @@ public class BlobRepository {
         }
     }
 
-    public void removeBath(Queue<Integer> queue) throws SQLException {
+    public void removeAll(Queue<Integer> queue, int limit) throws SQLException {
         if (queue.isEmpty()) return;
         String sql = """
                 DELETE FROM `%s`
@@ -108,7 +106,7 @@ public class BlobRepository {
             connection.setAutoCommit(false);
 
             Integer i;
-            while ((i = queue.poll()) != null) {
+            while (limit-- > 0 && (i = queue.poll()) != null) {
                 statement.setInt(1, i);
                 statement.addBatch();
             }

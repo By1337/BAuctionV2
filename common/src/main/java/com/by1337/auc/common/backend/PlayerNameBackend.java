@@ -1,5 +1,6 @@
 package com.by1337.auc.common.backend;
 
+import com.by1337.auc.common.db.BatchedK2VCache;
 import com.by1337.auc.common.handler.BAucRuntime;
 import com.by1337.auc.common.handler.GetPostChannelHandler;
 import com.by1337.auc.common.network.a2a.A2ASetPlayerNamePacket;
@@ -19,7 +20,7 @@ import java.util.UUID;
 public class PlayerNameBackend extends GetPostChannelHandler {
     private BAucRuntime channel;
 
-    private K2VCache<UUID, String> uuid2name;
+    private BatchedK2VCache<UUID, String> uuid2name;
 
     public PlayerNameBackend() {
         registerGet(C2SPlayerNameRequest.class, this::getName);
@@ -30,8 +31,9 @@ public class PlayerNameBackend extends GetPostChannelHandler {
     public void init(ChannelRuntime runtime) {
         if (!(runtime instanceof BAucRuntime server)) throw new IllegalArgumentException("Invalid runtime type");
         channel = server;
-        uuid2name = new K2VCache<>(
+        uuid2name = new BatchedK2VCache<>(
                 new UUID2VarChar16Repository(server.database().dataSource(), server.name() + "_uuid2name_repository"),
+                server.ioWorker(),
                 b -> b
                         .maximumSize(65536)
                         .expireAfterAccess(Duration.ofHours(2))

@@ -1,6 +1,7 @@
 package com.by1337.auc.common.backend.log;
 
 import com.by1337.auc.common.auc.log.LogRecord;
+import com.by1337.auc.common.db.DataBatcher;
 import com.by1337.auc.common.handler.BAucRuntime;
 import com.by1337.auc.common.handler.GetPostChannelHandler;
 import com.by1337.auc.common.network.a2a.A2ALongResponse;
@@ -26,6 +27,8 @@ public class LogRepositoryBackend extends GetPostChannelHandler {
     private BAucRuntime channel;
     private final Cache<Long, LogRecord> cache;
     private AuctionLogRepository repository;
+    private DataBatcher<LogRecord> addBatcher;
+    private long lastId;
 
     public LogRepositoryBackend() {
         registerGet(C2SGetLogRecordRequest.class, this::getLog);
@@ -43,10 +46,17 @@ public class LogRepositoryBackend extends GetPostChannelHandler {
         if (!(runtime instanceof BAucRuntime server)) throw new IllegalArgumentException("Invalid runtime type");
         channel = server;
         repository = new AuctionLogRepository(server.database().dataSource(), server.name() + "_logs_repository");
+        try {
+            lastId = repository.getMaxId();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        addBatcher = new DataBatcher<>(4096, repository::putAll, server.ioWorker());
     }
 
     @Override
     public void close() {
+        addBatcher.close();
         repository = null;
         cache.invalidateAll();
     }
@@ -66,15 +76,10 @@ public class LogRepositoryBackend extends GetPostChannelHandler {
     }
 
     private ResponseFuture<A2ALongResponse> publishLog(C2SPublishLog log) {
-        try {
-            long id = repository.insert(log.log());
-            var record = new LogRecord(id, log.log());
-            cache.put(id, record);
-            channel.broadcast(new S2CLogAdded(record));
-            return new ResponseFuture<>(new A2ALongResponse(record.uid()));
-        } catch (SQLException e) {
-            LogRepositoryBackend.log.error("Failed to insert lot", e);
-            return new ResponseFuture<>(null);
-        }
+        var record = new LogRecord(lastId++, log.log());
+        addBatcher.offer(record);
+        cache.put(record.uid(), record);
+        channel.broadcast(new S2CLogAdded(record));
+        return new ResponseFuture<>(new A2ALongResponse(record.uid()));
     }
 }
