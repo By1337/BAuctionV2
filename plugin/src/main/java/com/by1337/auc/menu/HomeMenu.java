@@ -8,7 +8,6 @@ import com.by1337.auc.search.filter.SearchFilter;
 import com.by1337.auc.util.CyclicListIterator;
 import dev.by1337.bmenu.command.ExecuteContext;
 import dev.by1337.bmenu.menu.Menu;
-import dev.by1337.bmenu.menu.command.MenuCommands;
 import dev.by1337.cmd.Command;
 import dev.by1337.plc.PlaceholderResolver;
 import dev.by1337.plc.Placeholders;
@@ -59,30 +58,7 @@ public class HomeMenu extends LotsMenu {
                 sb.setLength(sb.length() - 1);
                 return sb.toString();
             });
-    private static final Command<ExecuteContext> COMMANDS = MenuCommands.getCommands()
-            .and(LotsMenu.COMMANDS)
-            .sub(new Command<ExecuteContext>("[next_sorting]").executor(ctx -> {
-                if (ctx.menu instanceof HomeMenu h) {
-                    h.sorting = h.sortingIterator.next();
-                    h.research();
-                }
-            })).sub(new Command<ExecuteContext>("[previous_sorting]").executor(ctx -> {
-                if (ctx.menu instanceof HomeMenu h) {
-                    h.sorting = h.sortingIterator.previous();
-                    h.research();
-                }
-            }))
-            .sub(new Command<ExecuteContext>("[next_category]").executor(ctx -> {
-                if (ctx.menu instanceof HomeMenu h) {
-                    h.category = h.categoryIterator.next();
-                    h.research();
-                }
-            })).sub(new Command<ExecuteContext>("[previous_category]").executor(ctx -> {
-                if (ctx.menu instanceof HomeMenu h) {
-                    h.category = h.categoryIterator.previous();
-                    h.research();
-                }
-            }));
+    private static Command<ExecuteContext> COMMANDS;
 
     private CyclicListIterator<Sorting> sortingIterator;
     private Sorting sorting;
@@ -107,7 +83,7 @@ public class HomeMenu extends LotsMenu {
         //  SearchFilter f = search != null ? search : category.filter();
         long nanos = System.nanoTime();
         var v = auction.search(category.filter(), sorting);
-        System.out.println((System.nanoTime() -nanos) / 1000D + "us " + category.id());
+        System.out.println((System.nanoTime() - nanos) / 1000D + "us " + category.id());
         return v;
     }
 
@@ -135,6 +111,33 @@ public class HomeMenu extends LotsMenu {
 
     public void setSearchInput(String searchInput) {
         this.searchInput = searchInput;
+    }
+
+    static void bootCommands(Command<ExecuteContext> base) {
+        COMMANDS = base
+                .and(LotsMenu.LOTS_COMMANDS)
+                .sub(new Command<ExecuteContext>("[next_sorting]").executor(ctx -> {
+                    if (ctx.menu instanceof HomeMenu h) {
+                        h.sorting = h.sortingIterator.next();
+                        h.research();
+                    }
+                })).sub(new Command<ExecuteContext>("[previous_sorting]").executor(ctx -> {
+                    if (ctx.menu instanceof HomeMenu h) {
+                        h.sorting = h.sortingIterator.previous();
+                        h.research();
+                    }
+                }))
+                .sub(new Command<ExecuteContext>("[next_category]").executor(ctx -> {
+                    if (ctx.menu instanceof HomeMenu h) {
+                        h.category = h.categoryIterator.next();
+                        h.research();
+                    }
+                })).sub(new Command<ExecuteContext>("[previous_category]").executor(ctx -> {
+                    if (ctx.menu instanceof HomeMenu h) {
+                        h.category = h.categoryIterator.previous();
+                        h.research();
+                    }
+                }));
     }
 
     @Override

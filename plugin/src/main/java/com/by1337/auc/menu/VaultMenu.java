@@ -4,7 +4,9 @@ import com.by1337.auc.auc.ClientVaultLot;
 import com.by1337.auc.auc.LotData;
 import com.by1337.auc.auc.sort.Sorting;
 import com.by1337.auc.search.LotsResult;
+import dev.by1337.bmenu.command.ExecuteContext;
 import dev.by1337.bmenu.menu.Menu;
+import dev.by1337.cmd.Command;
 import dev.by1337.yaml.codec.PipelineYamlCodecBuilder;
 import dev.by1337.yaml.codec.YamlCodec;
 import org.bukkit.entity.Player;
@@ -30,8 +32,7 @@ public class VaultMenu extends LotsMenu {
         return switch (cfg.type) {
             case ONLY_VAULT -> auction.playerVaultLots(player);
             case ONLY_ACTIVE -> auction.search(player, null, sorting);
-            case VAULT_AND_ACTIVE ->
-                    auction.playerVaultLots(player).and(auction.search(player, null, sorting));
+            case VAULT_AND_ACTIVE -> auction.playerVaultLots(player).and(auction.search(player, null, sorting));
         };
     }
 
@@ -41,6 +42,9 @@ public class VaultMenu extends LotsMenu {
         if (old.getClass() == ClientVaultLot.class)
             return auction.getVaultLot(uid);
         return auction.getLot(uid);
+    }
+
+    static void bootCommands(Command<ExecuteContext> base) {
     }
 
     public static class VaultMenuConfig extends LotsMenuConfig {

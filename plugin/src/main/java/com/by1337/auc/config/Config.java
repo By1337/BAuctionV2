@@ -2,6 +2,7 @@ package com.by1337.auc.config;
 
 import com.by1337.auc.auc.sort.SortingBoot;
 import com.by1337.auc.handler.SimpleAuction;
+import com.by1337.auc.lifecycle.AucLifecycle;
 import com.by1337.auc.tag.TagsConfig;
 import com.by1337.auc.tag.TagsExtractor;
 import dev.by1337.bmenu.BMenu;
@@ -18,21 +19,21 @@ import org.bukkit.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class Config {
     public static final YamlDecoder<Config> DECODER = RecordYamlDecoder.mapOf(
             Config::new,
+            YamlDecoder.fromContext(AucLifecycle.class).fieldOf(),
             MessageManager.decoder("messages.yml", "lang.yml").fieldOf(),
             readFile("tags.yml").and(TagsConfig.DECODER).fieldOf(),
             YamlDecoder.mapOf(YamlDecoder.STRING, SlotFactory.CODEC.asDecoder())
                     .fieldOf("visual", Map.of()),
             readFile("categories.yml").and(Categories.DECODER).fieldOf(null, new Categories(Map.of())),
             YamlDecoder.STRING.listOf().fieldOf("sorting"),
-            readFile("database.yml").and(DbConfig.DECODER).fieldOf()
+            readFile("database.yml").and(DbConfig.DECODER).fieldOf(),
+            CommandsConf.DECODER.fieldOf("commands")
     );
     private static final Logger log = LoggerFactory.getLogger(Config.class);
     public final MessageManager eventCtx;
@@ -42,8 +43,9 @@ public class Config {
     public final Categories categories;
     public final List<String> sorting;
     public final DbConfig dbConfig;
+    public final CommandsConf commands;
 
-    public Config(MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual, Categories categories, List<String> sorting, DbConfig dbConfig) {
+    public Config(AucLifecycle lifecycle, MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual, Categories categories, List<String> sorting, DbConfig dbConfig, CommandsConf commands) {
         this.eventCtx = eventCtx;
         this.tags = tags;
         tagsExtractor = new TagsExtractor(tags);
@@ -51,7 +53,9 @@ public class Config {
         this.categories = categories;
         this.sorting = sorting;
         this.dbConfig = dbConfig;
-        eventCtx.commands().sub(new Command<EventContext>("[visual]").executor(
+        this.commands = commands;
+        var cmd = lifecycle.bootMessagesCommand(eventCtx.commands());
+        cmd.sub(new Command<EventContext>("[visual]").executor(
                 new ArgumentStrings<>("visual"),
                 (s, v) -> {
                     var f = this.visual.get(v);
@@ -65,6 +69,7 @@ public class Config {
                     }
                 }
         ));
+        eventCtx.setCommands(cmd);
     }
 
     public void boot(SimpleAuction auction) {

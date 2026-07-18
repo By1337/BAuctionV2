@@ -22,41 +22,7 @@ public class SelectCountMenu extends AbstractMenu {
     private static final PlaceholderResolver<SelectCountMenu> PLACEHOLDERS = Placeholders.<SelectCountMenu>create()
             .withContext("result_count", v -> v.count)
             .withContext("result_price", v -> NumberFormatter.format(v.lot.dprice_for_one() * v.count));
-    public static final Command<ExecuteContext> COMMANDS = MenuCommands.getCommands()
-            .and(Commands.commands())
-            .sub(new Command<ExecuteContext>("[accept]").executor(ctx -> {
-                if (ctx.menu instanceof SelectCountMenu c) {
-                    var cmd = c.args.getOrDefault("on_accept_command", "[console] say bauc:select_count no command!");
-                    if (c.previousMenu != null) {
-                        c.lastClickedItem = c.previousMenu.lastClickedItem();
-                        ctx.menu = c.previousMenu;
-                        c.previousMenu.reopen();
-                    }
-                    c.executeCommand(ctx, c.setPlaceholders(cmd));
-                }
-            }))
-            .sub(new Command<ExecuteContext>("[add]").executor(
-                    new NumberArgument<>("count"),
-                    (ctx, count0) -> {
-                        if (count0 == null) throw new CommandMsgError("use [add] <count>");
-                        if (ctx.menu instanceof SelectCountMenu c) {
-                            c.count += count0.intValue();
-                            c.count = Math.clamp(c.count, 1, c.lot.count());
-                            c.refresh();
-                        }
-                    })
-            )
-            .sub(new Command<ExecuteContext>("[sub]").executor(
-                    new NumberArgument<>("count"),
-                    (ctx, count0) -> {
-                        if (count0 == null) throw new CommandMsgError("use [add] <count>");
-                        if (ctx.menu instanceof SelectCountMenu c) {
-                            c.count -= count0.intValue();
-                            c.count = Math.clamp(c.count, 1, c.lot.count());
-                            c.refresh();
-                        }
-                    })
-            );
+    public static Command<ExecuteContext> COMMANDS;
     private final SelectCountConfig cfg;
     private int count = 1;
     private LotData lot;
@@ -83,6 +49,44 @@ public class SelectCountMenu extends AbstractMenu {
         for (int slot : cfg.show_item.slots()) {
             setItem(cfg.show_item.build(lot.itemStack().itemModel(count), lot.placeholders()), slot);
         }
+    }
+
+    static void bootCommands(Command<ExecuteContext> base){
+        COMMANDS = base
+                .and(Commands.create())
+                .sub(new Command<ExecuteContext>("[accept]").executor(ctx -> {
+                    if (ctx.menu instanceof SelectCountMenu c) {
+                        var cmd = c.args.getOrDefault("on_accept_command", "[console] say bauc:select_count no command!");
+                        if (c.previousMenu != null) {
+                            c.lastClickedItem = c.previousMenu.lastClickedItem();
+                            ctx.menu = c.previousMenu;
+                            c.previousMenu.reopen();
+                        }
+                        c.executeCommand(ctx, c.setPlaceholders(cmd));
+                    }
+                }))
+                .sub(new Command<ExecuteContext>("[add]").executor(
+                        new NumberArgument<>("count"),
+                        (ctx, count0) -> {
+                            if (count0 == null) throw new CommandMsgError("use [add] <count>");
+                            if (ctx.menu instanceof SelectCountMenu c) {
+                                c.count += count0.intValue();
+                                c.count = Math.clamp(c.count, 1, c.lot.count());
+                                c.refresh();
+                            }
+                        })
+                )
+                .sub(new Command<ExecuteContext>("[sub]").executor(
+                        new NumberArgument<>("count"),
+                        (ctx, count0) -> {
+                            if (count0 == null) throw new CommandMsgError("use [add] <count>");
+                            if (ctx.menu instanceof SelectCountMenu c) {
+                                c.count -= count0.intValue();
+                                c.count = Math.clamp(c.count, 1, c.lot.count());
+                                c.refresh();
+                            }
+                        })
+                );
     }
 
     @Override

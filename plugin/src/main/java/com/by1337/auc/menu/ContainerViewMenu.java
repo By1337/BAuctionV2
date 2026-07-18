@@ -16,8 +16,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 public class ContainerViewMenu extends AbstractMenu {
-    public static final Command<ExecuteContext> COMMANDS = MenuCommands.getCommands()
-            .and(Commands.commands());
+    public static Command<ExecuteContext> COMMANDS;
     private final ContainerViewConfig cfg;
     private LotData lot;
     private int offset;
@@ -86,6 +85,9 @@ public class ContainerViewMenu extends AbstractMenu {
         //      item.setPayload(lot);
     }
 
+    static void bootCommands(Command<ExecuteContext> base){
+        COMMANDS = base;
+    }
     @Override
     public Command<ExecuteContext> getCommands() {
         if (previousMenu != null){

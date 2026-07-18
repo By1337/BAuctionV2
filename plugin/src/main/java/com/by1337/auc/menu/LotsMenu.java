@@ -34,8 +34,7 @@ public abstract class LotsMenu extends AbstractMenu {
             .withContext("current_page", v -> v.currentPage + 1)
             .withContext("max_page", v -> v.maxPage + 1)
             .withContext("has_next_page", v -> v.hasNextPage);
-    public static final Command<ExecuteContext> COMMANDS = MenuCommands.getCommands()
-            .and(Commands.commands())
+    public static final Command<ExecuteContext> LOTS_COMMANDS = MenuCommands.getCommands()
             .sub(new Command<ExecuteContext>("[research]").executor(ctx -> {
                 if (ctx.menu instanceof LotsMenu h) {
                     h.research();
@@ -54,6 +53,8 @@ public abstract class LotsMenu extends AbstractMenu {
                     h.refresh();
                 }
             }));
+    private static Command<ExecuteContext> COMMANDS;
+
     protected int currentPage = 0;
     protected int maxPage = 0;
     private final LotsMenuConfig cfg;
@@ -112,6 +113,9 @@ public abstract class LotsMenu extends AbstractMenu {
 
     protected abstract LotData getByUid(int uid, LotData old);
 
+    static void bootCommands(Command<ExecuteContext> base){
+        COMMANDS = base.and(LOTS_COMMANDS);
+    }
     @Override
     public Command<ExecuteContext> getCommands() {
         return COMMANDS;

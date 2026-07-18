@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Comparator;
 import java.util.Locale;
 
 public class SearchArgument<C extends CommandSender> extends Argument<C, Pair<String, SearchFilter>> {
@@ -64,11 +65,13 @@ public class SearchArgument<C extends CommandSender> extends Argument<C, Pair<St
             }
             return;
         }
-        var s = manager.trie().getSuggestions(input, 30);
+
         int lastSpace;
         if ((lastSpace = input.lastIndexOf(' ')) != -1) {
             suggestions.setStart(suggestions.start() + lastSpace + 1);
         }
+        var s = manager.trie().getSuggestions(input, 100);
+        s.sort(Comparator.comparingInt(String::length));
         for (String suggestion : s) {
             int idx = suggestion.lastIndexOf(' ', input.length() - 1);
 
@@ -76,6 +79,7 @@ public class SearchArgument<C extends CommandSender> extends Argument<C, Pair<St
                     ? suggestion
                     : suggestion.substring(idx + 1);
             suggestions.suggest(completion);
+            if (!suggestions.hasFree()) break;
         }
     }
 

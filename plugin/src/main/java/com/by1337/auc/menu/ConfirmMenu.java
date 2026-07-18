@@ -14,19 +14,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 public class ConfirmMenu extends AbstractMenu {
-    public static final Command<ExecuteContext> COMMANDS = MenuCommands.getCommands()
-            .and(Commands.commands())
-            .sub(new Command<ExecuteContext>("[accept]").executor(ctx -> {
-                if (ctx.menu instanceof ConfirmMenu c) {
-                    var cmd = c.args.getOrDefault("on_accept_command", "[console] say bauc:confirm no command!");
-                    if (c.previousMenu != null) {
-                        c.lastClickedItem = c.previousMenu.lastClickedItem();
-                        ctx.menu = c.previousMenu;
-                        c.previousMenu.reopen();
-                    }
-                    c.executeCommand(ctx, c.setPlaceholders(cmd));
-                }
-            }));
+    public static Command<ExecuteContext> COMMANDS;
     private final ConfirmMenuConfig cfg;
 
     public ConfirmMenu(ConfirmMenuConfig config, Player viewer, @Nullable Menu previousMenu) {
@@ -46,6 +34,21 @@ public class ConfirmMenu extends AbstractMenu {
     @Override
     public Command<ExecuteContext> getCommands() {
         return COMMANDS;
+    }
+    static void bootCommands(Command<ExecuteContext> base){
+        COMMANDS = MenuCommands.getCommands()
+                .and(base)
+                .sub(new Command<ExecuteContext>("[accept]").executor(ctx -> {
+                    if (ctx.menu instanceof ConfirmMenu c) {
+                        var cmd = c.args.getOrDefault("on_accept_command", "[console] say bauc:confirm no command!");
+                        if (c.previousMenu != null) {
+                            c.lastClickedItem = c.previousMenu.lastClickedItem();
+                            ctx.menu = c.previousMenu;
+                            c.previousMenu.reopen();
+                        }
+                        c.executeCommand(ctx, c.setPlaceholders(cmd));
+                    }
+                }));
     }
 
     public static class ConfirmMenuConfig extends MenuConfig {

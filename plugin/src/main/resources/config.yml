@@ -5,6 +5,24 @@ sorting:
   - oldest
   - expensive
 
+commands:
+  ah_menu: 'bauc:home'
+  # удалите не нужные команды
+  commands:
+    - sell
+    - search
+    - push
+    - push_rand
+    - tags
+    - tagsa
+    - filter
+  # ренейм команд
+  commands_renamer:
+    ah: ah
+    sell: sell
+    search: search
+
+
 
 $barrier: &auto_removal
   material: red_dye

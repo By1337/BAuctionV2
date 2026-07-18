@@ -1,0 +1,40 @@
+package com.by1337.auc.lifecycle;
+
+import com.by1337.auc.common.auc.log.AuctionLog;
+import com.by1337.auc.common.registry.NetworkRegistry;
+import com.by1337.auc.pipeline.LocalPipeline;
+import com.by1337.auc.registry.AucRegistries;
+import dev.by1337.bmenu.command.ExecuteContext;
+import dev.by1337.bmenu.loader.MenuSubLoader;
+import dev.by1337.cmd.Command;
+import dev.by1337.edsl.context.EventContext;
+import org.bukkit.command.CommandSender;
+
+public class AucLifecycle {
+
+    public Command<ExecuteContext> bootMenuCommand(Command<ExecuteContext> base) {
+        return base;
+    }
+
+    public void menuRegister(MenuSubLoader subLoader) {
+    }
+
+    public void logRegister(NetworkRegistry<AuctionLog> r) {
+
+    }
+
+    public Command<EventContext> bootMessagesCommand(Command<EventContext> base) {
+        return base;
+    }
+    public Command<CommandSender> bootUserCommands(Command<CommandSender> base){
+        return base;
+    }
+    public Command<CommandSender> bootAdminCommands(Command<CommandSender> base){
+        return base;
+    }
+    public void bootAucRegistries(AucRegistries registries){
+    }
+    public void bootAucPipeline(LocalPipeline localPipeline){
+
+    }
+}

@@ -14,6 +14,7 @@ import com.by1337.auc.handler.item.ItemStackRepository;
 import com.by1337.auc.handler.log.LogRepository;
 import com.by1337.auc.handler.name.PlayerNameService;
 import com.by1337.auc.handler.notify.LotSoldNotifier;
+import com.by1337.auc.lifecycle.AucLifecycle;
 import com.by1337.auc.pipeline.LocalPipeline;
 import com.by1337.auc.pipeline.Remote;
 import com.by1337.auc.pipeline.request.LocalRequestsHandler;
@@ -24,7 +25,6 @@ import dev.by1337.sync.PlayerDataRepository;
 import dev.by1337.sync.bd.DatabaseSource;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import dev.by1337.sync.common.channel.ChannelMessage;
-import dev.by1337.sync.common.channel.pipeline.BaseServerChannelRuntime;
 import dev.by1337.sync.common.channel.pipeline.Connection;
 import dev.by1337.sync.common.channel.pipeline.Pipeline;
 import dev.by1337.sync.common.packet.ExpectsResponse;
@@ -42,10 +42,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class SimpleAuction {
-
+    private static final EventLoopWorker WORKER = new EventLoopWorker("bauc");
+    private static final EventLoopWorker IO_WORKER = new EventLoopWorker("bauc-io");
     private static final Logger log = LoggerFactory.getLogger(SimpleAuction.class);
-    private final EventLoopWorker worker;
-    private final EventLoopWorker ioWorker;
+
     private final LocalPipeline pipeline;
     private final Pipeline backend;
     private final Config config;
@@ -59,10 +59,13 @@ public class SimpleAuction {
     private final AucRegistries registries;
     private DatabaseSource databaseSource;
 
-    public SimpleAuction(Config config, Plugin plugin) {
+    public SimpleAuction(Config config, Plugin plugin, AucLifecycle lifecycle) {
         this.config = config;
         registries = new AucRegistries();
         this.config.boot(this);
+        lifecycle.bootAucRegistries(registries);
+        registries.writeLock();
+
         if (registries.sorting.size() == 0) throw new IllegalStateException("The sort list cannot be empty!");
         if (registries.category.size() == 0) throw new IllegalStateException("The category list cannot be empty!");
         databaseSource = new DatabaseSource(config.dbConfig.database, "./bsync");
@@ -91,9 +94,7 @@ public class SimpleAuction {
                     }
                 }
         );
-        worker = new EventLoopWorker("bauc");
-        ioWorker = new EventLoopWorker("bauc-io");
-        pipeline = new LocalPipeline(worker);
+        pipeline = new LocalPipeline(WORKER);
         pipeline
                 .addLast("$r", new LocalRequestsHandler())
                 .addLast("item_stack_repository", new ItemStackRepository(config))
@@ -105,7 +106,8 @@ public class SimpleAuction {
                 .addLast("eco_giver", new EcoGiver())
                 .addLast("lot_sold_notifier", new LotSoldNotifier())
         ;
-        backend = new Pipeline(worker);
+        lifecycle.bootAucPipeline(pipeline);
+        backend = new Pipeline(WORKER);
         backend
                 .addLast("item_stack_repository", new ItemServiceBackend())
                 .addLast("lots_repository", new LotsRepositoryBackend())
@@ -116,7 +118,7 @@ public class SimpleAuction {
 
             @Override
             public EventLoopWorker ioWorker() {
-                return ioWorker;
+                return IO_WORKER;
             }
 
             @Override
@@ -141,7 +143,7 @@ public class SimpleAuction {
 
             @Override
             public EventLoopWorker eventLoop() {
-                return worker;
+                return WORKER;
             }
 
             @Override
@@ -168,6 +170,7 @@ public class SimpleAuction {
         BSUtils.safe(() -> pipeline.closeAll().get(15, TimeUnit.SECONDS));
         BSUtils.safe(() -> backend.closeAll().get(15, TimeUnit.SECONDS));
         BSUtils.safe(() -> databaseSource.close());
+        BSUtils.safe(users::close);
     }
 
     public LocalPipeline pipeline() {
@@ -203,10 +206,14 @@ public class SimpleAuction {
     }
 
     public EventLoopWorker worker() {
-        return worker;
+        return WORKER;
     }
 
     public EventLoopWorker ioWorker() {
-        return ioWorker;
+        return IO_WORKER;
+    }
+
+    public Config config() {
+        return config;
     }
 }

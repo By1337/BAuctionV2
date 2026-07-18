@@ -8,13 +8,12 @@ import com.by1337.auc.transaction.BuyLotTransaction;
 import com.by1337.auc.transaction.TakeLotTransaction;
 import com.by1337.auc.transaction.TakeVaultLotTransaction;
 import dev.by1337.bmenu.command.ExecuteContext;
-import dev.by1337.bmenu.menu.Menu;
 import dev.by1337.cmd.Command;
 import org.bukkit.entity.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Commands {
+class Commands {
     private static final Logger log = LoggerFactory.getLogger(Commands.class);
     private static final Command<ExecuteContext> MENU_COMMANDS = new Command<ExecuteContext>("root")
             .sub(new Command<ExecuteContext>("[take_lot]").executor(ctx -> {
@@ -82,7 +81,7 @@ public class Commands {
             }))
             ;
 
-    public static Command<ExecuteContext> commands() {
-        return MENU_COMMANDS;
+    public static Command<ExecuteContext> create() {
+        return MENU_COMMANDS.copy();
     }
 }

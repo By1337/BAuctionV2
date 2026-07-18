@@ -1,8 +1,7 @@
 package com.by1337.auc;
 
-import com.by1337.auc.command.SearchCommand;
-import com.by1337.auc.command.SellCommand;
-import com.by1337.auc.command.args.NumberArgument;
+import com.by1337.auc.command.CommandBooter;
+import com.by1337.auc.common.auc.log.AuctionLog;
 import com.by1337.auc.common.auc.log.AuctionLogBoot;
 import com.by1337.auc.common.network.AucPackets;
 import com.by1337.auc.config.Config;
@@ -10,49 +9,41 @@ import com.by1337.auc.eco.VaultHook;
 import com.by1337.auc.event.BukkitEventListener;
 import com.by1337.auc.handler.Auction;
 import com.by1337.auc.handler.SimpleAuction;
+import com.by1337.auc.lifecycle.AucLifecycle;
 import com.by1337.auc.menu.MenuBooter;
 import com.by1337.auc.metrics.MetricFormatter;
 import com.by1337.auc.metrics.Metrics;
-import com.by1337.auc.search.filter.SearchFilterParser;
-import com.by1337.auc.transaction.AddLotTransaction;
 import com.by1337.auc.util.mc.PlayerList;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import dev.by1337.bmenu.BMenu;
 import dev.by1337.bmenu.loader.MenuSubLoader;
 import dev.by1337.cmd.Command;
-import dev.by1337.cmd.argument.ArgumentStrings;
-import dev.by1337.core.BCore;
 import dev.by1337.core.command.bcmd.CommandWrapper;
-import dev.by1337.core.command.bcmd.requires.RequiresPermission;
 import dev.by1337.edsl.context.EventContext;
 import dev.by1337.plc.PlaceholderResolver;
+import dev.by1337.sync.common.util.BSUtils;
 import dev.by1337.yaml.YamlMap;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.Registry;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredListener;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.List;
-import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.IntConsumer;
 
 public class BAuction extends JavaPlugin {
+    private static final Logger log = LoggerFactory.getLogger(BAuction.class);
     private Config config;
     private SimpleAuction auction;
     private static BAuction plugin;
@@ -62,22 +53,28 @@ public class BAuction extends JavaPlugin {
     private CommandWrapper aha;
     private PlayerList playerList;
     private BukkitEventListener eventListener;
-
+    private AucLifecycle lifecycle;
+    private Metrics metrics;
+    private BukkitTask metricsTick;
 
     @Override
     public void onLoad() {
-        AucPackets.boot();
+        lifecycle = new AucLifecycle();
         AuctionLogBoot.boot();
+        lifecycle.logRegister(AuctionLog.REGISTRY);
+
         plugin = this;
-        var res = Config.DECODER.decode(ResourceUtil.load("config.yml", this).get(), this);
+        var res = Config.DECODER.decode(ResourceUtil.load("config.yml", this).get(), this, lifecycle);
         config = res.result();
         if (config == null) {
             throw new RuntimeException(res.error());
         } else if (res.hasError()) {
             getSLF4JLogger().error("Failed to load cfg\n{}", res.error());
         }
+        config.tags.search.forEach((k, v) -> v.boot(k));
+
         subLoader = new MenuSubLoader(new File(getDataFolder(), "menus"), this, BMenu.menuLoader());
-        MenuBooter.boot(subLoader);
+        MenuBooter.boot(subLoader, lifecycle);
         BMenu.menuLoader().registerSubLoader(this, subLoader);
 
         File bmHome = BMenu.menuLoader().homeDir();
@@ -91,126 +88,31 @@ public class BAuction extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        playerList = new PlayerList(this);
         eventListener = new BukkitEventListener(this);
-        getServer().getPluginManager().registerEvents(playerList = new PlayerList(), this);
         economy = new VaultHook();
-        auction = new SimpleAuction(config, this);
-        Metrics.METRICS.create("loop", MetricFormatter.nanos(), () -> auction.worker().busyNanosThenReset());
-        Metrics.METRICS.create("loop-io", MetricFormatter.nanos(), () -> auction.ioWorker().busyNanosThenReset());
-        plugin.config().tags.search.forEach((k, v) -> v.boot(k));
+        auction = new SimpleAuction(config, this, lifecycle);
+        metrics = new Metrics();
+        metrics.create("loop", MetricFormatter.nanos(), () -> auction.worker().busyNanosThenReset());
+        metrics.create("loop-io", MetricFormatter.nanos(), () -> auction.ioWorker().busyNanosThenReset());
+        metricsTick = getServer().getScheduler().runTaskTimerAsynchronously(this, metrics::tick, 20, 20);
         //new BukkitRunnable() {
         //    @Override
         //    public void run() {
         //        Metrics.METRICS.dump(getSLF4JLogger());
         //    }
         //}.runTaskTimerAsynchronously(this, 20, 20);
-        ah = new CommandWrapper(new Command<CommandSender>("ah")
-                .sub(new SellCommand("sell"))
-                .sub(new SearchCommand("search", config.tags.search))
-                .executor(s -> {
-                    if (s instanceof Player pl) {
-                        BMenu.menuLoader().create("bauc:home", pl, null).open();
-                    }
-                })
-                , this);
+        ah = new CommandWrapper(CommandBooter.bootUserCommands(config, auction, lifecycle), this);
         ah.register();
-        aha = new CommandWrapper(new Command<CommandSender>("aha")
-                .requires(new RequiresPermission<>("aha.use"))
-                .sub(new Command<CommandSender>("push").executor(
-                        new NumberArgument<>("price"),
-                        new NumberArgument<>("count"),
-                        (s, price, count) -> {
-                            if (price == null || count == null) {
-                                s.sendMessage("use /aha push <price> <count>");
-                                return;
-                            }
-                            if (s instanceof Player pl) {
-                                var item = pl.getInventory().getItemInMainHand();
-                                if (item.isEmpty()) {
-                                    s.sendMessage("Has no item un main hand!");
-                                    return;
-                                }
-                                AtomicReference<IntConsumer> ref = new AtomicReference<>();
-                                long nanos = System.nanoTime();
-                                ref.set(x -> {
-                                    if (x <= 0) {
-                                        Metrics.METRICS.dump(getSLF4JLogger());
-                                        s.sendMessage("done in " + (System.nanoTime() - nanos) / 1_000_000D);
-                                        return;
-                                    }
-                                    auction.auction().apply(new AddLotTransaction(item.asOne(), pl.getUniqueId(), price.doubleValue(), 1))
-                                            .then(v -> {
-                                                auction.pipeline().eventLoop().schedule(() -> ref.get().accept(x - 1));
-                                            });
-                                });
-                                ref.get().accept(count.intValue());
-                            }
-                        }))
-                .sub(new Command<CommandSender>("push_rand").executor(
-                        new NumberArgument<>("price"),
-                        new NumberArgument<>("count"),
-                        (s, price, count) -> {
-                            if (price == null || count == null) {
-                                s.sendMessage("use /aha push_rand <price> <count>");
-                                return;
-                            }
-                            Random random = new Random();
-                            List<Material> materials = Registry.MATERIAL.stream().filter(i -> !i.isAir() && i.isItem()).toList();
-                            AtomicReference<IntConsumer> ref = new AtomicReference<>();
+        aha = new CommandWrapper(
+                CommandBooter.bootAdminCommands(config, auction, lifecycle)
+                        .sub(new Command<CommandSender>("reload").executor(s -> {
                             long nanos = System.nanoTime();
-                            ref.set(x -> {
-                                if (x <= 0) {
-                                    Metrics.METRICS.dump(getSLF4JLogger());
-                                    s.sendMessage("done in " + (System.nanoTime() - nanos) / 1_000_000D);
-                                    return;
-                                }
-                                ItemStack item = new ItemStack(materials.get(random.nextInt(materials.size()-1)));
-                                if (item.isEmpty()){
-                                    ref.get().accept(x);
-                                    return;
-                                }
-                                auction.auction().apply(new AddLotTransaction(item.asOne(), new UUID(1337, random.nextLong()), price.doubleValue() + random.nextInt(0, 250), 1))
-                                        .then(v -> {
-                                            auction.pipeline().eventLoop().schedule(() -> ref.get().accept(x - 1));
-                                        });
-                            });
-                            ref.get().accept(count.intValue());
-                        }))
-                .sub(new Command<CommandSender>("tags").executor(s -> {
-                    if (s instanceof Player pl) {
-                        var item = pl.getInventory().getItemInMainHand();
-                        if (item.isEmpty()) {
-                            s.sendMessage("Has no item un main hand!");
-                            return;
-                        }
-                        var tags = config.tagsExtractor.extractTags(item);
-                        Component c = Component.empty();
-                        for (String tag : tags) {
-                            c = c.append(Component.text(tag).hoverEvent(Component.text(tag)).clickEvent(ClickEvent.copyToClipboard(tag))).append(Component.text(", "));
-                        }
-                        pl.sendMessage(c);
-                    }
-                }))
-                .sub(new Command<CommandSender>("tagsa").executor(s -> {
-                    if (s instanceof Player pl) {
-                        for (ItemStack itemStack : pl.getInventory()) {
-                            if (itemStack == null || itemStack.isEmpty()) continue;
-                            var tags = config.tagsExtractor.extractTags(itemStack);
-                            StringBuilder sb = new StringBuilder(itemStack.getType().getKey().asString()).append(": ");
-                            Component c = Component.empty();
-                            for (String tag : tags) {
-                                sb.append(tag).append(", ");
-                                c = c.append(Component.text(tag).hoverEvent(Component.text(tag)).clickEvent(ClickEvent.copyToClipboard(tag))).append(Component.text(", "));
-                            }
-                            pl.sendMessage(c);
-                            getSLF4JLogger().info(sb.toString());
-                        }
-                    }
-                }))
-                .sub(new Command<CommandSender>("filter").executor(
-                        new ArgumentStrings<>("f"),
-                        (s, f) -> {
-                            System.out.println(SearchFilterParser.parse(f));
+                            onDisable();
+                            onLoad();
+                            onEnable();
+                            BMenu.menuLoader().reload();
+                            s.sendMessage("done in " + (System.nanoTime() - nanos) / 1_000_000D);
                         }))
                 , this);
         aha.setPermission("aha.use");
@@ -219,12 +121,26 @@ public class BAuction extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        eventListener.close();
-        BMenu.menuLoader().unregisterSubLoader(this);
-        ah.close();
-        aha.close();
-        HandlerList.unregisterAll(playerList);
-        auction.close();
+        BSUtils.safe(() -> metricsTick.cancel());
+        BSUtils.safe(() -> eventListener.close());
+        BSUtils.safe(() -> playerList.close());
+        BSUtils.safe(() -> BMenu.menuLoader().unregisterSubLoader(this));
+        BSUtils.safe(() -> ah.close());
+        BSUtils.safe(() -> aha.close());
+        BSUtils.safe(() -> auction.close());
+
+        for (HandlerList handlerList : HandlerList.getHandlerLists()) {
+            for (RegisteredListener listener : handlerList.getRegisteredListeners()) {
+                if (listener.getPlugin() == this){
+                    log.error("registered listener {}", listener);
+                }
+            }
+        }
+        for (BukkitTask task : Bukkit.getScheduler().getPendingTasks()) {
+            if (task.getOwner() == this){
+                log.error("bukkit task {}", task);
+            }
+        }
     }
 
     public BukkitEventListener eventListener() {
@@ -243,6 +159,10 @@ public class BAuction extends JavaPlugin {
         return config;
     }
 
+    public Metrics metrics() {
+        return metrics;
+    }
+
     public static @Nullable Auction auction() {
         var v = plugin.auction;
         if (v == null) return null;
@@ -259,7 +179,7 @@ public class BAuction extends JavaPlugin {
     }
 
     public static void sendMessage(String key, UUID player, PlaceholderResolver<EventContext> c) {
-        var pl = Bukkit.getPlayer(player);
+        var pl = plugin.playerList.getPlayer(player);
         if (pl != null) sendMessage(key, pl, c);
     }
 
@@ -268,12 +188,17 @@ public class BAuction extends JavaPlugin {
     }
 
     public static void sendMessage(String key, UUID player) {
-        var pl = Bukkit.getPlayer(player);
+        var pl = plugin.playerList.getPlayer(player);
         if (pl != null) sendMessage(key, pl);
     }
 
     public static void sendMessage(String key, Player player) {
         plugin().config.eventCtx.call(key, player);
+    }
+
+    static {
+        //static?
+        AucPackets.boot();
     }
 
     public static class ResourceUtil {

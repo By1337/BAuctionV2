@@ -10,24 +10,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.LongSupplier;
 
 public final class Metrics {
-    public static final Metrics METRICS = new Metrics();
-
     private final Map<String, WindowedMetric> metrics =
             new ConcurrentHashMap<>();
-
-    private final ScheduledExecutorService ticker;
-
     public Metrics() {
-        this.ticker = Executors.newSingleThreadScheduledExecutor(
-                Thread.ofVirtual().factory()
-        );
-
-        ticker.scheduleAtFixedRate(
-                this::tick,
-                1,
-                1,
-                TimeUnit.SECONDS
-        );
     }
 
     public WindowedMetric create(
@@ -48,7 +33,7 @@ public final class Metrics {
         return metrics.get(name);
     }
 
-    private void tick() {
+    public void tick() {
         for (WindowedMetric metric : metrics.values()) {
             metric.tick();
         }
