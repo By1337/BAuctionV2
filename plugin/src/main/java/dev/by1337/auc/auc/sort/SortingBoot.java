@@ -31,7 +31,6 @@ public class SortingBoot {
 
     private static Sorting make(String key, Comparator<ClientAucLot> comparator) {
         var s = new Sorting(key, (v, v1) -> {
-            if (v.lot.uid() == v1.lot.uid()) return 0;
             var x = comparator.compare(v, v1);
             if (x == 0) return Integer.compare(v.lot.uid(), v1.lot.uid());
             return x;

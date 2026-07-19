@@ -18,19 +18,24 @@ import dev.by1337.sync.common.packet.ExpectsResponse;
 import dev.by1337.sync.common.work.EventLoopWorker;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import it.unimi.dsi.fastutil.ints.*;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
+import java.util.Comparator;
+import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class LotsRepositoryBackend extends GetPostChannelHandler {
+    private static final long ONE_DAY_MS = TimeUnit.DAYS.toMillis(1);
     private static final Logger log = LoggerFactory.getLogger(LotsRepositoryBackend.class);
     private BAucRuntime channel;
     private Pipeline pipeline;
+    private EventLoopWorker worker;
 
     private AucLotRepo<AucLot> lots;
     private AucLotRepo<VaultLot> vault;
@@ -47,6 +52,24 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         registerGet(C2SGetVaultLotRequest.class, this::getVaultLot);
         registerPost(C2SGetAllLotsRequest.class, this::onGetAllLots);
         registerPost(C2SGetAllVaultLotsRequest.class, this::onGetAllVaultLots);
+    }
+
+    private void removalTick() {
+        if (closing) return;
+        var now = System.currentTimeMillis();
+        int limit = 1000;
+        while (limit-- > 0 && !lots.set.isEmpty()) {
+            var v = lots.set.getFirst();
+            if (v.removalDate() > now) break;
+            move2vault(new C2SMove2VaultRequest(v.uid(), v.owner(), now + ONE_DAY_MS));
+        }
+        limit = 1000;
+        while (limit-- > 0 && !vault.set.isEmpty()) {
+            var v = vault.set.getFirst();
+            if (v.removalDate() > now) break;
+            removeVaultLot(new C2SRemoveVaultLotRequest(v.uid()));
+        }
+        worker.schedule(this::removalTick, 100);
     }
 
     private void onGetAllVaultLots(ChannelContext ctx, C2SGetAllVaultLotsRequest r) {
@@ -85,8 +108,27 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         if (!(runtime instanceof BAucRuntime server)) throw new IllegalArgumentException("Invalid runtime type");
         channel = server;
         pipeline = server.pipeline();
-        lots = new AucLotRepo<>(AucLot::read, new BlobRepository(server.database().dataSource(), server.name() + "_lots_repository"), server.ioWorker());
-        vault = new AucLotRepo<>(VaultLot::read, new BlobRepository(server.database().dataSource(), server.name() + "_vault_repository"), server.ioWorker());
+        worker = runtime.eventLoop();
+        lots = new AucLotRepo<>(
+                AucLot::read,
+                new BlobRepository(server.database().dataSource(), server.name() + "_lots_repository"),
+                server.ioWorker(),
+                (o1, o2) -> {
+                    var l = Long.compare(o1.removalDate(), o2.removalDate());
+                    if (l == 0) return Integer.compare(o1.uid(), o2.uid());
+                    return l;
+                }
+        );
+        vault = new AucLotRepo<>(
+                VaultLot::read,
+                new BlobRepository(server.database().dataSource(), server.name() + "_vault_repository"),
+                server.ioWorker(),
+                (o1, o2) -> {
+                    var l = Long.compare(o1.removalDate(), o2.removalDate());
+                    if (l == 0) return Integer.compare(o1.uid(), o2.uid());
+                    return l;
+                }
+        );
         try {
             lots.loadAll();
             vault.loadAll();
@@ -94,6 +136,7 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         } catch (SQLException e) {
             throw new RuntimeException("Failed to load lots!", e);
         }
+        worker.schedule(this::removalTick, 100);
     }
 
     private ResponseFuture<A2AFlagResponse> onSubtractLot(C2SSubtractLotRequest r) {
@@ -196,8 +239,10 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         private int lastUid;
         private final DataBatcher<BlobRepository.Record> insertBatch;
         private final DataBatcher<Integer> removeBatch;
+        private final TreeSet<T> set;
 
-        private AucLotRepo(BiFunction<ByteBuf, Integer, T> reader, BlobRepository lostRepo, EventLoopWorker ioWorker) {
+        private AucLotRepo(BiFunction<ByteBuf, Integer, T> reader, BlobRepository lostRepo, EventLoopWorker ioWorker, Comparator<T> comparator) {
+            this.set = new TreeSet<>(comparator);
             this.reader = reader;
             lost_repo = lostRepo;
             insertBatch = new DataBatcher<>(4096, lost_repo::putAll, ioWorker);
@@ -211,6 +256,7 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
                 lastUid = Math.max(lastUid, uid);
                 T lot = reader.apply(Unpooled.wrappedBuffer(record.data()), uid);
                 lots.put(uid, lot);
+                set.add(lot);
             }
         }
 
@@ -223,6 +269,7 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
             insert2Db(id, lot0);
             T lot = (T) lot0.withUid(id);
             lots.put(id, lot);
+            set.add(lot);
             return lot;
         }
 
@@ -232,12 +279,16 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
 
         public @Nullable T remove(int id) {
             var v = lots.remove(id);
-            removeBatch.offer(id);
+            if (v != null) {
+                set.remove(v);
+                removeBatch.offer(id);
+            }
             return v;
         }
 
         public void update(T lot) {
             lots.put(lot.uid(), lot);
+            set.add(lot);
             insert2Db(lot.uid(), lot);
         }
 

@@ -1,7 +1,7 @@
 package dev.by1337.auc.registry;
 
-import dev.by1337.auc.util.CyclicListIterator;
 import com.google.common.collect.Iterators;
+import dev.by1337.auc.util.CyclicListIterator;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -22,17 +22,23 @@ public class AucRegistry<T> implements Iterable<T> {
         return value2id.get(value);
     }
 
+    public @Nullable T getByName(String name) {
+        return id2value.get(name);
+    }
+
     public void writeLock() {
         writeLock = true;
     }
 
     private List<T> list;
+
     public CyclicListIterator<T> cycle() {
         if (!writeLock) return new CyclicListIterator<>(List.copyOf(id2value.values()));
         if (list == null) list = List.copyOf(id2value.values());
         return new CyclicListIterator<>(list);
     }
-    public Collection<T> values(){
+
+    public Collection<T> values() {
         return Collections.unmodifiableCollection(id2value.values());
     }
 
@@ -40,7 +46,8 @@ public class AucRegistry<T> implements Iterable<T> {
     public @NonNull Iterator<T> iterator() {
         return Iterators.unmodifiableIterator(id2value.values().iterator());
     }
-    public int size(){
+
+    public int size() {
         return id2value.size();
     }
 }

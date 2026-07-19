@@ -1,20 +1,20 @@
 package dev.by1337.auc;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import dev.by1337.auc.command.CommandBooter;
 import dev.by1337.auc.common.auc.log.AuctionLog;
 import dev.by1337.auc.common.auc.log.AuctionLogBoot;
 import dev.by1337.auc.common.network.AucPackets;
 import dev.by1337.auc.config.Config;
 import dev.by1337.auc.eco.VaultHook;
-import dev.by1337.auc.listener.BukkitEventListener;
 import dev.by1337.auc.handler.Auction;
 import dev.by1337.auc.handler.SimpleAuction;
 import dev.by1337.auc.lifecycle.AucLifecycle;
+import dev.by1337.auc.listener.BukkitEventListener;
 import dev.by1337.auc.menu.MenuBooter;
 import dev.by1337.auc.metrics.MetricFormatter;
 import dev.by1337.auc.metrics.Metrics;
 import dev.by1337.auc.util.mc.PlayerList;
-import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import dev.by1337.bmenu.BMenu;
 import dev.by1337.bmenu.loader.MenuSubLoader;
 import dev.by1337.cmd.Command;
@@ -125,13 +125,13 @@ public class BAuction extends JavaPlugin {
 
         for (HandlerList handlerList : HandlerList.getHandlerLists()) {
             for (RegisteredListener listener : handlerList.getRegisteredListeners()) {
-                if (listener.getPlugin() == this){
+                if (listener.getPlugin() == this) {
                     log.error("registered listener {}", listener);
                 }
             }
         }
         for (BukkitTask task : Bukkit.getScheduler().getPendingTasks()) {
-            if (task.getOwner() == this){
+            if (task.getOwner() == this) {
                 log.error("bukkit task {}", task);
             }
         }
