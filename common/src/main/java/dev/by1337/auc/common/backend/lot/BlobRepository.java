@@ -5,6 +5,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
+import java.util.function.Consumer;
 
 public class BlobRepository {
     private final DataSource dataSource;
@@ -67,7 +68,7 @@ public class BlobRepository {
         }
     }
 
-    public void putAll(Queue<Record> records, int limit) throws SQLException {
+    public void putAll(Queue<Record> records, int limit, Consumer<Record> c) throws SQLException {
         if (records.isEmpty()) return;
 
         String sql = """
@@ -83,6 +84,7 @@ public class BlobRepository {
             connection.setAutoCommit(false);
             Record r;
             while (limit-- > 0 && (r = records.poll()) != null) {
+                c.accept(r);
                 statement.setInt(1, r.id());
                 statement.setBytes(2, r.data());
                 statement.addBatch();
@@ -93,7 +95,7 @@ public class BlobRepository {
         }
     }
 
-    public void removeAll(Queue<Integer> queue, int limit) throws SQLException {
+    public void removeAll(Queue<Integer> queue, int limit, Consumer<Integer> c) throws SQLException {
         if (queue.isEmpty()) return;
         String sql = """
                 DELETE FROM `%s`
@@ -107,6 +109,7 @@ public class BlobRepository {
 
             Integer i;
             while (limit-- > 0 && (i = queue.poll()) != null) {
+                c.accept(i);
                 statement.setInt(1, i);
                 statement.addBatch();
             }

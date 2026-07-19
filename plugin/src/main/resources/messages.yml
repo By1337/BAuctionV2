@@ -4,7 +4,7 @@
 #
 $lang: ru_RU
 
-sell_success: 'Вы успешно выставили {item_name}({count}) на продажу за {price}'
+sell_success: 'Вы успешно выставили {item_name} {count} на продажу за {price}'
 sell_req_item: 'Возьмите в руку предмет который хотите продать!'
 sell_req_price: 'Используйте /ah sell <цена>'
 sell_qa_moved_to_vault: 'некоторые предметы перемещены в хранилище'

@@ -35,6 +35,15 @@ public class ItemServiceBackend extends GetPostChannelHandler {
     }
 
     @Override
+    public void close() {
+        try {
+            repo.close();
+        }catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public void init(ChannelRuntime runtime) {
         if (!(runtime instanceof BAucRuntime server)) throw new IllegalArgumentException("Invalid runtime type");
         channel = server;
@@ -73,9 +82,5 @@ public class ItemServiceBackend extends GetPostChannelHandler {
         repo.put(id, push.itemStack());
         sha2id.put(hashCode, id);
         return new ResponseFuture<>(new S2CItemIdResponsePacket(id));
-    }
-
-    @Override
-    public void close() {
     }
 }

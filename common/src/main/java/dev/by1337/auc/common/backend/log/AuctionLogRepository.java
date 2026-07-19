@@ -11,6 +11,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.sql.*;
 import java.util.*;
+import java.util.function.Consumer;
 
 
 public class AuctionLogRepository {
@@ -64,7 +65,7 @@ public class AuctionLogRepository {
         }
     }
 
-    public void putAll(Queue<LogRecord> queue, int limit) throws SQLException {
+    public void putAll(Queue<LogRecord> queue, int limit, Consumer<LogRecord> c) throws SQLException {
         String sql = """
                 INSERT IGNORE INTO `%s` (`id`, `timestamp`, `actor`, `subject`, `type`, `payload`)
                 VALUES (?, ?, ?, ?, ?, ?)
@@ -76,6 +77,7 @@ public class AuctionLogRepository {
             connection.setAutoCommit(false);
             LogRecord log;
             while (limit-- > 0 && (log = queue.poll()) != null){
+                c.accept(log);
                 statement.setLong(1, log.uid());
                 statement.setLong(2, log.timestamp());
                 statement.setBytes(3, uuidToBytesNullable(log.actor()));
