@@ -15,6 +15,7 @@ lots_add_error_bad_count: 'не удалось выставить на аук'
 lots_add_error: 'не удалось выставимть на аук'
 auction_is_disabled: 'Аукцион временно не работает('
 outdated_lot: 'Этого товара больше нет'
+slots_limited: 'Вы достигли максимума по слотам!'
 insufficient_balance:
   - 'У Вас не достаточно монет!'
   - visual: 'insufficient_balance'

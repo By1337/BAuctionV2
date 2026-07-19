@@ -41,10 +41,10 @@ public class CommandBooter {
     public static Command<CommandSender> bootUserCommands(Config config, SimpleAuction auction, AucLifecycle lifecycle) {
         var cfg = config.commands;
         var cmd = lifecycle.bootUserCommands(new Command<CommandSender>(cfg.rename("ah")));
-        if (cfg.commands.contains("sell")) {
+        if (!cfg.disabled_commands.contains("sell")) {
             cmd.sub(new SellCommand(cfg.rename("sell")));
         }
-        if (cfg.commands.contains("search")) {
+        if (!cfg.disabled_commands.contains("search")) {
             cmd.sub(new SearchCommand(cfg.rename("search"), config.tags.search));
         }
 
@@ -117,7 +117,7 @@ public class CommandBooter {
                                         BAuction.plugin().metrics().dump(log);
                                         s.sendMessage("done in " + (System.nanoTime() - nanos) / 1_000_000D);
                                     },
-                                    () -> auction.auction().apply(new AddLotTransaction(item.asOne(), pl.getUniqueId(), price.doubleValue(), 1)),
+                                    () -> auction.auction().apply(new AddLotTransaction(item.asOne(), pl.getUniqueId(), price.doubleValue(), 1).skipSlotsCheck()),
                                     ignored -> {}
                             );
                         });
@@ -143,7 +143,7 @@ public class CommandBooter {
                                 },
                                 () -> {
                                     ItemStack item = new ItemStack(materials.get(random.nextInt(materials.size() - 1)));
-                                    return auction.auction().apply(new AddLotTransaction(item.asOne(), new UUID(1337, random.nextLong()), price.doubleValue() + random.nextInt(0, 250), 1));
+                                    return auction.auction().apply(new AddLotTransaction(item.asOne(), new UUID(1337, random.nextLong()), price.doubleValue() + random.nextInt(0, 250), 1).skipSlotsCheck());
                                 },
                                 ignored -> {}
                         );

@@ -6,17 +6,31 @@ sorting:
   - expensive
 
 commands:
+  # какое меню открывать по /ah
   ah_menu: 'bauc:home'
   # удалите не нужные команды
-  commands:
-    - sell
-    - search
+  disabled_commands: []
+    #- sell
+    #- search
   # ренейм команд
   commands_renamer:
     ah: ah
     sell: sell
     search: search
 
+slots:
+  # по пермишену выбираем максимальное количество лотов
+  # если у игрока есть bauc.default и bauc.vip то слотов у него будет 5 так как bauc.vip даёт 5 слотов против 3 у bauc.default
+  select_max:
+    - 3 bauc.default
+    - 5 bauc.vip
+    - 7 bauc.donate
+  # добавляемые слоты, у игрока будет (select_max) + все слоты на которые есть пермишен
+  add_slots:
+    - 1 bauc.add1
+    - 2 bauc.add2
+    - 3 bauc.add3
+    - 4 bauc.add4
 
 
 $barrier: &auto_removal

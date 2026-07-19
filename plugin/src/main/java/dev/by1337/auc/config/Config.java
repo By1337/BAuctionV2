@@ -33,7 +33,8 @@ public class Config {
             readFile("categories.yml").and(Categories.DECODER).fieldOf(null, new Categories(Map.of())),
             YamlDecoder.STRING.listOf().fieldOf("sorting"),
             readFile("database.yml").and(DbConfig.DECODER).fieldOf(),
-            CommandsConf.DECODER.fieldOf("commands")
+            CommandsConf.DECODER.fieldOf("commands"),
+            SlotsConf.DECODER.fieldOf("slots")
     );
     private static final Logger log = LoggerFactory.getLogger(Config.class);
     public final MessageManager eventCtx;
@@ -44,8 +45,9 @@ public class Config {
     public final List<String> sorting;
     public final DbConfig dbConfig;
     public final CommandsConf commands;
+    public final SlotsConf slots;
 
-    public Config(AucLifecycle lifecycle, MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual, Categories categories, List<String> sorting, DbConfig dbConfig, CommandsConf commands) {
+    public Config(AucLifecycle lifecycle, MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual, Categories categories, List<String> sorting, DbConfig dbConfig, CommandsConf commands, SlotsConf slots) {
         this.eventCtx = eventCtx;
         this.tags = tags;
         tagsExtractor = new TagsExtractor(tags);
@@ -54,6 +56,7 @@ public class Config {
         this.sorting = sorting;
         this.dbConfig = dbConfig;
         this.commands = commands;
+        this.slots = slots;
         var cmd = lifecycle.bootMessagesCommand(eventCtx.commands());
         cmd.sub(new Command<EventContext>("[visual]").executor(
                 new ArgumentStrings<>("visual"),

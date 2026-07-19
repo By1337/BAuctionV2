@@ -223,6 +223,12 @@ public class LotsIndexer implements LocalChannelHandler {
         return new PlayerVaultResult(map.navigableKeySet().iterator(), map.size());
     }
 
+    public int getPlayerOwnedLotsCount(UUID key){
+        var v = owner2ownedLots.get(key);
+        if (v == null) return 0;
+        return v.getCardinality();
+    }
+
     public @Nullable UUID name2uuid(String normalName){
         return normalName2UUID.get(normalName.toLowerCase(Locale.ROOT));
     }

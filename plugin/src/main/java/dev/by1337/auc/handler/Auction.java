@@ -170,6 +170,10 @@ public class Auction implements LocalChannelHandler {
         return index.findLotsWithTags(ands, nots);
     }
 
+    public int getPlayerOwnedLotsCount(UUID key) {
+        return index.getPlayerOwnedLotsCount(key);
+    }
+
     @Override
     public void handle(LocalChannelContext ctx, ChannelMessage msg) throws Exception {
         ctx.fire(msg);

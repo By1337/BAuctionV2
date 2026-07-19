@@ -17,6 +17,7 @@ public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
     private final UUID who;
     private final double price;
     private final int count;
+    private boolean skipSlotsCheck;
 
     public AddLotTransaction(ItemStack itemStack, UUID who, double price, int count) {
         this.itemStack = itemStack.getAmount() != 1 ? itemStack.asOne() : itemStack;
@@ -37,7 +38,16 @@ public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
             return EMPTY;
         }
         long lprice = (long) (price * 100D);
-        //todo checks limit
+        if (!skipSlotsCheck) {
+            var player = BAuction.playerList().getPlayer(who);
+            if (player == null) return EMPTY;
+            int limit = BAuction.plugin().config().slots.collectSlots(player);
+            int used = auction.getPlayerOwnedLotsCount(who);
+            if (limit - used <= 0) {
+                BAuction.sendMessage("slots_limited", who);
+                return EMPTY;
+            }
+        }
         return auction.addLot(
                 itemStack,
                 who,
@@ -45,5 +55,10 @@ public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
                 count,
                 lprice
         );
+    }
+
+    public AddLotTransaction skipSlotsCheck() {
+        this.skipSlotsCheck = true;
+        return this;
     }
 }
