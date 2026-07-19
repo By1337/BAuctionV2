@@ -6,6 +6,7 @@ import dev.by1337.sync.common.packet.ExpectsResponse;
 import dev.by1337.sync.common.packet.Packet;
 import io.netty.buffer.ByteBuf;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class C2SAddNewLotRequest implements Packet, ExpectsResponse<A2AFlagResponse> {
@@ -39,5 +40,17 @@ public class C2SAddNewLotRequest implements Packet, ExpectsResponse<A2AFlagRespo
         buf.writeLong(sellingDuration);
         buf.writeInt(count);
         buf.writeLong(price);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        C2SAddNewLotRequest that = (C2SAddNewLotRequest) o;
+        return itemId == that.itemId && sellingDuration == that.sellingDuration && count == that.count && price == that.price && Objects.equals(owner, that.owner);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(itemId, owner, sellingDuration, count, price);
     }
 }

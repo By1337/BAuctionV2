@@ -6,6 +6,8 @@ import dev.by1337.auc.auc.GhostLot;
 import dev.by1337.auc.common.auc.AucLot;
 import dev.by1337.auc.common.auc.VaultLot;
 import dev.by1337.auc.common.network.a2a.A2AFlagResponse;
+import dev.by1337.auc.common.network.c2s.*;
+import dev.by1337.auc.common.network.s2c.*;
 import dev.by1337.auc.handler.event.ActionResult;
 import dev.by1337.auc.handler.index.LotsIndexer;
 import dev.by1337.auc.handler.item.ItemStackRepository;
@@ -14,11 +16,11 @@ import dev.by1337.auc.pipeline.LocalChannelContext;
 import dev.by1337.auc.pipeline.LocalChannelHandler;
 import dev.by1337.auc.pipeline.LocalPipeline;
 import dev.by1337.auc.pipeline.Remote;
-import dev.by1337.auc.common.network.c2s.*;
-import dev.by1337.auc.common.network.s2c.*;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import dev.by1337.sync.common.channel.ChannelMessage;
 import dev.by1337.sync.common.channel.handler.request.IncomingRequest;
+import dev.by1337.sync.common.packet.ExpectsResponse;
+import dev.by1337.sync.common.work.EventLoopWorker;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntIterators;
 import it.unimi.dsi.fastutil.ints.IntListIterator;
@@ -29,7 +31,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.IntConsumer;
+import java.util.function.IntFunction;
 
 public class LotsRepository implements LocalChannelHandler {
     private static final long VAULT_STORE_DURATION_MS = TimeUnit.DAYS.toMillis(1);
@@ -40,6 +47,7 @@ public class LotsRepository implements LocalChannelHandler {
     private LotsIndexer indexer;
     private PlayerNameService players;
     private boolean closing;
+    private EventLoopWorker worker;
 
     private final Int2ObjectOpenHashMap<ClientAucLot> lots = new Int2ObjectOpenHashMap<>();
     private final Int2ObjectOpenHashMap<ClientVaultLot> vault = new Int2ObjectOpenHashMap<>();
@@ -48,6 +56,7 @@ public class LotsRepository implements LocalChannelHandler {
     public void init(LocalPipeline pipeline, Remote remote, SimpleAuction auction) {
         this.pipeline = pipeline;
         this.remote = remote;
+        worker = pipeline.eventLoop();
         itemService = pipeline.get(ItemStackRepository.class);
         indexer = pipeline.get(LotsIndexer.class);
         players = pipeline.get(PlayerNameService.class);
@@ -204,31 +213,53 @@ public class LotsRepository implements LocalChannelHandler {
     }
 
     private void loadAllLots(IntListIterator uids, Runnable r) {
-        if (!uids.hasNext() || closing) {
-            r.run();
-            return;
-        }
-        remote.request(new C2SGetLotRequest(uids.nextInt())).then(v -> {
+        parallel(uids, r, C2SGetLotRequest::new, v -> {
             if (v != null) {
                 var lot = v.lot();
                 if (lot != null) placeLot(lot);
             }
-            pipeline.eventLoop().schedule(() -> loadAllLots(uids, r));
         });
     }
 
     private void loadAllVaultLots(IntListIterator uids, Runnable r) {
-        if (!uids.hasNext() || closing) {
-            r.run();
-            return;
-        }
-        remote.request(new C2SGetVaultLotRequest(uids.nextInt())).then(v -> {
+        parallel(uids, r, C2SGetVaultLotRequest::new, v -> {
             if (v != null) {
                 var lot = v.lot();
                 if (lot != null) placeVaultLot(lot);
             }
-            pipeline.eventLoop().schedule(() -> loadAllVaultLots(uids, r));
         });
+    }
+
+    private <T extends ChannelMessage> void parallel(
+            IntListIterator uids,
+            Runnable done,
+            IntFunction<ExpectsResponse<T>> maker,
+            Consumer<@Nullable T> then
+    ) {
+        worker.assertThread();
+        if (closing || !uids.hasNext()) {
+            done.run();
+            return;
+        }
+
+        AtomicReference<IntConsumer> request = new AtomicReference<>();
+        request.set(i -> {
+            worker.assertThread();
+            remote.request(maker.apply(i)).then(v -> {
+                then.accept(v);
+                worker.assertThread();
+                if (uids.hasNext()) {
+                    int next = uids.nextInt();
+                    pipeline.eventLoop().schedule(() -> request.get().accept(next));
+                } else {
+                    done.run();
+                }
+            });
+        });
+        int limit = 256;
+        while (limit-- > 0 && uids.hasNext()) {
+           request.get().accept(uids.nextInt());
+        }
     }
 
     private void placeLot(AucLot newLot) {

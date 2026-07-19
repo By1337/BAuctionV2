@@ -96,12 +96,6 @@ public class BAuction extends JavaPlugin {
         metrics.create("loop", MetricFormatter.nanos(), () -> auction.worker().busyNanosThenReset());
         metrics.create("loop-io", MetricFormatter.nanos(), () -> auction.ioWorker().busyNanosThenReset());
         metricsTick = getServer().getScheduler().runTaskTimerAsynchronously(this, metrics::tick, 20, 20);
-        //new BukkitRunnable() {
-        //    @Override
-        //    public void run() {
-        //        Metrics.METRICS.dump(getSLF4JLogger());
-        //    }
-        //}.runTaskTimerAsynchronously(this, 20, 20);
         ah = new CommandWrapper(CommandBooter.bootUserCommands(config, auction, lifecycle), this);
         ah.register();
         aha = new CommandWrapper(

@@ -6,6 +6,7 @@ import dev.by1337.sync.common.packet.ExpectsResponse;
 import dev.by1337.sync.common.packet.Packet;
 import io.netty.buffer.ByteBuf;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class C2SAddNewVaultRequest implements Packet, ExpectsResponse<A2AFlagResponse> {
@@ -39,5 +40,17 @@ public class C2SAddNewVaultRequest implements Packet, ExpectsResponse<A2AFlagRes
         buf.writeLong(storeDuration);
         buf.writeInt(count);
         buf.writeLong(price);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        C2SAddNewVaultRequest that = (C2SAddNewVaultRequest) o;
+        return itemId == that.itemId && storeDuration == that.storeDuration && count == that.count && price == that.price && Objects.equals(owner, that.owner);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(itemId, owner, storeDuration, count, price);
     }
 }

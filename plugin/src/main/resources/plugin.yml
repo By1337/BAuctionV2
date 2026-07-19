@@ -5,6 +5,8 @@ api-version: "1.21"
 depend:
   - BLib
   - BMenu
+  - Vault
+softdepend:
   - BSync
 permissions:
   aha.*:

@@ -41,4 +41,11 @@ public final class Metrics {
             logger.info("{}\n{}", entry.getKey(), entry.getValue().snapshot().toString());
         }
     }
+    public String dump() {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, WindowedMetric> entry : metrics.entrySet()) {
+            sb.append(entry.getKey()).append("\n").append(entry.getValue().snapshot()).append("\n");
+        }
+        return sb.toString();
+    }
 }

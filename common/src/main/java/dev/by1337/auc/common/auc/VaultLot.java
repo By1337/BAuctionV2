@@ -5,6 +5,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class VaultLot implements BaseLot{
@@ -90,5 +91,17 @@ public class VaultLot implements BaseLot{
         } finally {
             buf.release();
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        VaultLot vaultLot = (VaultLot) o;
+        return uid == vaultLot.uid && item == vaultLot.item && removalDate == vaultLot.removalDate && count == vaultLot.count && lprice == vaultLot.lprice && Objects.equals(owner, vaultLot.owner);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uid, item, owner, removalDate, count, lprice);
     }
 }

@@ -6,6 +6,9 @@ import dev.by1337.sync.common.packet.Packet;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.DecoderException;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 public record S2CActualVaultLotsUids(int[] uids) implements Packet, ExpectsResponse<A2AFlagResponse> {
 
     public S2CActualVaultLotsUids(ByteBuf buf, int protocolVersion) {
@@ -32,5 +35,17 @@ public record S2CActualVaultLotsUids(int[] uids) implements Packet, ExpectsRespo
             arr[i] = buf.readInt();
         }
         return arr;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        S2CActualVaultLotsUids that = (S2CActualVaultLotsUids) o;
+        return Objects.deepEquals(uids, that.uids);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(uids);
     }
 }

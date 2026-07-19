@@ -5,6 +5,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class AucLot implements BaseLot{
@@ -119,5 +120,17 @@ public class AucLot implements BaseLot{
         } finally {
             buf.release();
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        AucLot aucLot = (AucLot) o;
+        return uid == aucLot.uid && item == aucLot.item && createdDate == aucLot.createdDate && removalDate == aucLot.removalDate && count == aucLot.count && lprice == aucLot.lprice && lprice_for_one == aucLot.lprice_for_one && Objects.equals(owner, aucLot.owner);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uid, item, owner, createdDate, removalDate, count, lprice, lprice_for_one);
     }
 }

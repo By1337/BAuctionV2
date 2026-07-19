@@ -132,6 +132,13 @@
         </dependency>
         <dependency>
             <groupId>dev.by1337.sync</groupId>
+            <artifactId>bsync-bukkit</artifactId>
+            <version>1.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>dev.by1337.sync</groupId>
             <artifactId>bsync-k2v</artifactId>
             <version>1.0</version>
         </dependency>
