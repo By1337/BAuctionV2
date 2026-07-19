@@ -20,7 +20,6 @@ public class AucUser {
 
     public static AucUser read(ByteBuf buf, UUID key) {
         var user = new AucUser(key);
-       // if (true) return user; //todo remove it
         int longs = buf.readInt();
         for (int i = 0; i < longs; i++) {
             user.longs.put(ByteBufCodecs.readUtf8(buf), buf.readLong());

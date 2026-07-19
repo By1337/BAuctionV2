@@ -1,5 +1,7 @@
 package dev.by1337.auc.common.backend.item;
 
+import com.google.common.hash.HashCode;
+import com.google.common.hash.Hashing;
 import dev.by1337.auc.common.db.BatchedK2VCache;
 import dev.by1337.auc.common.handler.BAucRuntime;
 import dev.by1337.auc.common.handler.GetPostChannelHandler;
@@ -7,8 +9,6 @@ import dev.by1337.auc.common.network.c2s.C2SLoadItemRequest;
 import dev.by1337.auc.common.network.c2s.C2SPushItemRequest;
 import dev.by1337.auc.common.network.s2c.S2CItemIdResponsePacket;
 import dev.by1337.auc.common.network.s2c.S2CItemResponsePacket;
-import com.google.common.hash.HashCode;
-import com.google.common.hash.Hashing;
 import dev.by1337.sync.bd.repo.Int2MediumBLOBRepository;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import dev.by1337.sync.common.channel.pipeline.ChannelRuntime;
@@ -22,7 +22,6 @@ import java.time.Duration;
 public class ItemServiceBackend extends GetPostChannelHandler {
     private static final Logger log = LoggerFactory.getLogger(ItemServiceBackend.class);
     private BAucRuntime channel;
-    //private ItemRepository repository;
     private final Object2IntOpenHashMap<HashCode> sha2id = new Object2IntOpenHashMap<>();
     private BatchedK2VCache<Integer, byte[]> repo;
     private int lastId;
@@ -31,14 +30,13 @@ public class ItemServiceBackend extends GetPostChannelHandler {
         sha2id.defaultReturnValue(-1);
         registerGet(C2SPushItemRequest.class, this::pushItem);
         registerGet(C2SLoadItemRequest.class, this::loadItem);
-
     }
 
     @Override
     public void close() {
         try {
             repo.close();
-        }catch (SQLException e){
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }

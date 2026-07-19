@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -195,12 +194,12 @@ public class LotsRepository implements LocalChannelHandler {
             indexer.insertOrUpdateLot(v2);
         } else if (msg instanceof S2CLotUpdate(AucLot newLot)) {
             placeLot(newLot);
-        } else if (msg instanceof S2CRemoveVaultLotPacket(int uid)) {
+        } else if (msg instanceof S2COnVaultLotRemovePacket(int uid)) {
             var lot = vault.remove(uid);
             if (lot != null) {
                 indexer.removeVaultLot(lot);
             }
-        } else if (msg instanceof S2CRemoveLotPacket(int uid)) {
+        } else if (msg instanceof S2COnLotRemovePacket(int uid)) {
             var lot = lots.remove(uid);
             if (lot != null) {
                 indexer.removeLot(lot);

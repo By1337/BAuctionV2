@@ -145,7 +145,7 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         int newCount = lot.count() - r.count();
         if (newCount <= 0) {
             lots.remove(r.uid());
-            channel.broadcast(new S2CRemoveVaultLotPacket(r.uid())); //broadcast
+            channel.broadcast(new S2COnVaultLotRemovePacket(r.uid())); //broadcast
             return new ResponseFuture<>(new A2AFlagResponse(true));
         }
         AucLot newLot = new AucLot(
@@ -165,7 +165,7 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
     private ResponseFuture<A2AFlagResponse> removeVaultLot(C2SRemoveVaultLotRequest rm) {
         VaultLot removed = vault.remove(rm.uid());
         if (removed == null) return new ResponseFuture<>(new A2AFlagResponse(false));
-        channel.broadcast(new S2CRemoveVaultLotPacket(rm.uid())); //broadcast
+        channel.broadcast(new S2COnVaultLotRemovePacket(rm.uid())); //broadcast
         return new ResponseFuture<>(new A2AFlagResponse(true));
     }
 
@@ -195,7 +195,7 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
                 lot.count(),
                 lot.lprice()
         ));
-        channel.broadcast(new S2CRemoveLotPacket(lot.uid())); //broadcast
+        channel.broadcast(new S2COnLotRemovePacket(lot.uid())); //broadcast
         channel.broadcast(new S2CVaultLotUpdate(vaultLot)); //broadcast
         return new ResponseFuture<>(new A2AFlagResponse(true));
     }
@@ -204,7 +204,7 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
     private ResponseFuture<A2AFlagResponse> removeLot(C2SRemoveLotRequest remove) {
         var flag = lots.remove(remove.uid()) != null;
         if (flag) {
-            channel.broadcast(new S2CRemoveLotPacket(remove.uid())); //broadcast
+            channel.broadcast(new S2COnLotRemovePacket(remove.uid())); //broadcast
         }
         return new ResponseFuture<>(new A2AFlagResponse(flag));
     }
