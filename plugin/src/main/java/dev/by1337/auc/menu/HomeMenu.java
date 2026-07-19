@@ -19,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class HomeMenu extends LotsMenu {
     private static final PlaceholderResolver<HomeMenu> PLACEHOLDERS = Placeholders.<HomeMenu>create()
@@ -66,6 +67,8 @@ public class HomeMenu extends LotsMenu {
     private Category category;
     private final HomeMenuV2Config cfg;
     private String searchInput = "";
+    private UUID playerLots;
+    private boolean nop = false;
 
     public HomeMenu(HomeMenuV2Config config, Player viewer, @Nullable Menu previousMenu) {
         super(config, viewer, previousMenu);
@@ -80,9 +83,10 @@ public class HomeMenu extends LotsMenu {
 
     @Override
     protected LotsResult search() {
+        if (nop) return LotsResult.EMPTY;
         //  SearchFilter f = search != null ? search : category.filter();
         long nanos = System.nanoTime();
-        var v = auction.search(category.filter(), sorting);
+        var v = auction.search(playerLots, category.filter(), sorting);
         System.out.println((System.nanoTime() - nanos) / 1000D + "us " + category.id());
         return v;
     }
@@ -105,12 +109,20 @@ public class HomeMenu extends LotsMenu {
         }
     }
 
+    public void setPlayerLots(UUID playerLots) {
+        this.playerLots = playerLots;
+    }
+
     public String searchInput() {
         return searchInput;
     }
 
     public void setSearchInput(String searchInput) {
         this.searchInput = searchInput;
+    }
+
+    public void setNop(boolean nop) {
+        this.nop = nop;
     }
 
     static void bootCommands(Command<ExecuteContext> base) {

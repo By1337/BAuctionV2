@@ -9,6 +9,7 @@ import dev.by1337.auc.common.auc.log.AuctionLog;
 import dev.by1337.auc.common.auc.log.LogQuery;
 import dev.by1337.auc.common.auc.log.LogRecord;
 import dev.by1337.auc.handler.event.ActionResult;
+import dev.by1337.auc.handler.index.BitSetPool;
 import dev.by1337.auc.handler.index.LotsIndexer;
 import dev.by1337.auc.registry.AucRegistries;
 import dev.by1337.auc.search.PlayerVaultResult;
@@ -31,6 +32,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -105,7 +107,7 @@ public class Auction implements LocalChannelHandler {
         return index.search(filter, sorting);
     }
 
-    public SearchResult search(UUID owner, @Nullable SearchFilter filter, Sorting sorting) {
+    public SearchResult search(@Nullable UUID owner, @Nullable SearchFilter filter, Sorting sorting) {
         return index.search(owner, filter, sorting);
     }
 
@@ -123,6 +125,15 @@ public class Auction implements LocalChannelHandler {
 
     public PlayerVaultResult playerVaultLots(UUID player) {
         return index.playerVaultLots(player);
+    }
+
+    @Nullable
+    public UUID name2uuid(String normalName) {
+        return index.name2uuid(normalName);
+    }
+
+    public Iterator<String> normalPlayerNamesIterator() {
+        return index.normalPlayerNamesIterator();
     }
 
     public PlayerDataRepository<AucUser> users() {
@@ -147,6 +158,16 @@ public class Auction implements LocalChannelHandler {
 
     public ResponseFuture<ActionResult> subtractOrRemoveLot(ClientAucLot lot0, int count) {
         return repo.subtractOrRemoveLot(lot0, count);
+    }
+
+    @Nullable
+    public BitSetPool.PooledBitSet findLotsWithTags(int @Nullable [] and, int @Nullable [] not) {
+        return index.findLotsWithTags(and, not);
+    }
+
+    @Nullable
+    public BitSetPool.PooledBitSet findLotsWithTags(int @Nullable [] @Nullable [] ands, int @Nullable [] @Nullable [] nots) {
+        return index.findLotsWithTags(ands, nots);
     }
 
     @Override

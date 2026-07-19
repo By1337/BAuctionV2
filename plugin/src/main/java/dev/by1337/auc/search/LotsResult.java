@@ -4,6 +4,22 @@ import dev.by1337.auc.auc.LotData;
 import org.jetbrains.annotations.Nullable;
 
 public interface LotsResult {
+    static LotsResult EMPTY = new LotsResult() {
+        @Override
+        public int size() {
+            return 0;
+        }
+
+        @Override
+        public @Nullable LotData next() {
+            return null;
+        }
+
+        @Override
+        public void release() {
+
+        }
+    };
     int size();
 
     @Nullable LotData next();

@@ -1,7 +1,6 @@
 package dev.by1337.auc.command;
 
 import dev.by1337.auc.BAuction;
-import dev.by1337.auc.auc.GhostLot;
 import dev.by1337.auc.command.args.NumberArgument;
 import dev.by1337.auc.config.Config;
 import dev.by1337.auc.handler.SimpleAuction;
@@ -11,13 +10,11 @@ import dev.by1337.auc.search.filter.SearchFilter;
 import dev.by1337.auc.search.filter.SearchFilterParser;
 import dev.by1337.auc.transaction.AddLotTransaction;
 import dev.by1337.bmenu.BMenu;
-import dev.by1337.cmd.Command;
+import dev.by1337.cmd.*;
+import dev.by1337.cmd.argument.ArgumentString;
 import dev.by1337.cmd.argument.ArgumentStrings;
 import dev.by1337.core.command.bcmd.requires.RequiresPermission;
 import dev.by1337.sync.common.callback.ResponseFuture;
-import dev.by1337.sync.common.channel.ChannelMessage;
-import dev.by1337.sync.common.packet.ExpectsResponse;
-import it.unimi.dsi.fastutil.ints.IntListIterator;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.Material;
@@ -35,8 +32,6 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import java.util.function.IntConsumer;
-import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 public class CommandBooter {
@@ -52,11 +47,47 @@ public class CommandBooter {
         if (cfg.commands.contains("search")) {
             cmd.sub(new SearchCommand(cfg.rename("search"), config.tags.search));
         }
-        cmd.executor(s -> {
-            if (s instanceof Player pl) {
-                BMenu.menuLoader().create(cfg.ah_menu, pl, null).open();
-            }
-        });
+
+        cmd.executor(
+                new ArgumentString<>("name") {
+                    @Override
+                    public void suggest(CommandSender ctx, CommandReader reader, SuggestionsList suggestions, ArgumentMap args) throws CommandMsgError {
+                        var input = reader.readString().toLowerCase();
+                        if (input.isEmpty()) {
+                            suggestions.suggest("{player}");
+                            return;
+                        }
+                        var auc = BAuction.auction();
+                        if (auc == null) return;
+                        var playerList = BAuction.playerList();
+                        var iter = auc.normalPlayerNamesIterator();
+                        while (iter.hasNext() && suggestions.hasFree()) {
+                            var name = iter.next();
+                            if (name.startsWith(input)) {
+                                suggestions.suggest(playerList.tryFixName(name));
+                            }
+                        }
+                    }
+                },
+                (s, name) -> {
+                    var auc = BAuction.auction();
+                    if (auc == null) return;
+                    if (s instanceof Player pl) {
+                        var menu = BMenu.menuLoader().create(cfg.ah_menu, pl, null);
+                        if (menu instanceof HomeMenu h) {
+                            if (name != null) {
+                                h.setSearchInput(BAuction.playerList().tryFixName(name));
+                                var uuid = auc.name2uuid(name.toLowerCase());
+                                if (uuid != null) {
+                                    h.setPlayerLots(uuid);
+                                } else {
+                                    h.setNop(true);
+                                }
+                            }
+                        }
+                        menu.open();
+                    }
+                });
         return cmd;
     }
 
@@ -91,7 +122,8 @@ public class CommandBooter {
                             );
                         });
                     }
-                }));        cmd.sub(new Command<CommandSender>("push_rand").executor(
+                }));
+        cmd.sub(new Command<CommandSender>("push_rand").executor(
                 new NumberArgument<>("price"),
                 new NumberArgument<>("count"),
                 (s, price, count) -> {
@@ -110,13 +142,14 @@ public class CommandBooter {
                                     s.sendMessage("done in " + (System.nanoTime() - nanos) / 1_000_000D);
                                 },
                                 () -> {
-                                    ItemStack item = new ItemStack(materials.get(random.nextInt(materials.size()-1)));
+                                    ItemStack item = new ItemStack(materials.get(random.nextInt(materials.size() - 1)));
                                     return auction.auction().apply(new AddLotTransaction(item.asOne(), new UUID(1337, random.nextLong()), price.doubleValue() + random.nextInt(0, 250), 1));
                                 },
                                 ignored -> {}
                         );
                     });
-                }));        cmd.sub(new Command<CommandSender>("tags").executor(s -> {
+                }));
+        cmd.sub(new Command<CommandSender>("tags").executor(s -> {
             if (s instanceof Player pl) {
                 var item = pl.getInventory().getItemInMainHand();
                 if (item.isEmpty()) {
@@ -130,7 +163,8 @@ public class CommandBooter {
                 }
                 pl.sendMessage(c);
             }
-        }));        cmd.sub(new Command<CommandSender>("tagsa").executor(s -> {
+        }));
+        cmd.sub(new Command<CommandSender>("tagsa").executor(s -> {
             if (s instanceof Player pl) {
                 for (ItemStack itemStack : pl.getInventory()) {
                     if (itemStack == null || itemStack.isEmpty()) continue;
@@ -145,21 +179,23 @@ public class CommandBooter {
                     log.info(sb.toString());
                 }
             }
-        }));        cmd.sub(new Command<CommandSender>("filter").executor(
+        }));
+        cmd.sub(new Command<CommandSender>("filter").executor(
                 new ArgumentStrings<>("f"),
                 (s, f) -> {
                     SearchFilter filter = SearchFilterParser.parse(f);
                     log.info(filter.toString());
                     s.sendMessage(filter.toString());
-                    if (s instanceof Player player){
+                    if (s instanceof Player player) {
                         var menu = BMenu.menuLoader().create(cfg.ah_menu, player, null);
-                        if (menu instanceof HomeMenu h){
+                        if (menu instanceof HomeMenu h) {
                             h.setSearchInput(f);
                             h.setSearch(filter);
                         }
                         menu.open();
                     }
-                }));        cmd.sub(new Command<CommandSender>("metrics").executor((s) -> {
+                }));
+        cmd.sub(new Command<CommandSender>("metrics").executor((s) -> {
             BAuction.plugin().metrics().dump(log);
             s.sendMessage(BAuction.plugin().metrics().dump());
         }));

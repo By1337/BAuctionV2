@@ -4,6 +4,7 @@ import dev.by1337.auc.auc.ClientAucLot;
 import dev.by1337.auc.auc.ClientVaultLot;
 import dev.by1337.auc.auc.sort.Sorting;
 import dev.by1337.auc.handler.SimpleAuction;
+import dev.by1337.auc.handler.name.PlayerNameService;
 import dev.by1337.auc.pipeline.LocalChannelContext;
 import dev.by1337.auc.pipeline.LocalChannelHandler;
 import dev.by1337.auc.pipeline.LocalPipeline;
@@ -21,9 +22,7 @@ import org.roaringbitmap.RoaringBitmap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.TimeUnit;
 
@@ -39,8 +38,10 @@ public class LotsIndexer implements LocalChannelHandler {
     private EventLoopWorker eventLoop;
     private final Object2IntOpenHashMap<String> sorting2id = new Object2IntOpenHashMap<>();
     private ConcurrentSkipListMap<ClientAucLot, Boolean>[] sorted;
+    private ConcurrentSkipListMap<String, UUID> normalName2UUID = new ConcurrentSkipListMap<>();
     private final Object2ObjectOpenHashMap<UUID, ConcurrentSkipListMap<ClientVaultLot, Boolean>> owner2vaultLots = new Object2ObjectOpenHashMap<>();
     private final Object2ObjectOpenHashMap<UUID, RoaringBitmap> owner2ownedLots = new Object2ObjectOpenHashMap<>();
+    private PlayerNameService playerNames;
 
     public LotsIndexer() {
         sorting2id.defaultReturnValue(0);
@@ -49,12 +50,11 @@ public class LotsIndexer implements LocalChannelHandler {
     @Override
     public void handle(LocalChannelContext ctx, ChannelMessage msg) throws Exception {
         ctx.fire(msg);
-       // RoaringBitmap m = new RoaringBitmap();
-       // m.remove();
     }
 
     @Override
     public void init(LocalPipeline pipeline, Remote remote, SimpleAuction auction) {
+        playerNames = pipeline.get(PlayerNameService.class);
         eventLoop = pipeline.eventLoop();
         int x = 0;
         sorted = new ConcurrentSkipListMap[auction.registries().sorting.size()];
@@ -65,7 +65,8 @@ public class LotsIndexer implements LocalChannelHandler {
     }
 
 
-    public SearchResult search(UUID owner, @Nullable SearchFilter filter, Sorting sorting) {
+    public SearchResult search(@Nullable UUID owner, @Nullable SearchFilter filter, Sorting sorting) {
+        if (owner == null) return search(filter, sorting);
         var ownerMask = owner2ownedLots.get(owner);
         if (ownerMask == null) return SearchResult.EMPTY;
         @Nullable BitSetPool.PooledBitSet mask = filter != null ? filter.search(this) : null;
@@ -222,6 +223,14 @@ public class LotsIndexer implements LocalChannelHandler {
         return new PlayerVaultResult(map.navigableKeySet().iterator(), map.size());
     }
 
+    public @Nullable UUID name2uuid(String normalName){
+        return normalName2UUID.get(normalName.toLowerCase(Locale.ROOT));
+    }
+
+    public Iterator<String> normalPlayerNamesIterator(){
+        return normalName2UUID.navigableKeySet().iterator();
+    }
+
     public void removeVaultLot(ClientVaultLot lot) {
         eventLoop.assertThread();
         var set = owner2vaultLots.get(lot.owner());
@@ -238,7 +247,14 @@ public class LotsIndexer implements LocalChannelHandler {
         }
         var set = owner2ownedLots.get(lot.owner());
         //if (set != null) set.clear(localId);
-        if (set != null) set.remove(localId);
+        if (set != null) {
+            set.remove(localId);
+            if (set.isEmpty()) owner2ownedLots.remove(lot.owner());
+            playerNames.loadName(lot.owner()).ifPresent(name -> {
+                if (!owner2ownedLots.containsKey(lot.owner()))
+                    normalName2UUID.remove(name.name().toLowerCase(Locale.ROOT), lot.owner());
+            });
+        }
     }
 
     private void reindex(ClientAucLot lot, int localId) {
@@ -248,6 +264,10 @@ public class LotsIndexer implements LocalChannelHandler {
             index(tag, localId, true);
         }
         var set = owner2ownedLots.computeIfAbsent(lot.owner(), k -> new RoaringBitmap());
+        playerNames.loadName(lot.owner()).ifPresent(name -> {
+            if (owner2ownedLots.containsKey(lot.owner()))
+                normalName2UUID.put(name.name().toLowerCase(Locale.ROOT), lot.owner());
+        });
        // set.set(localId, true);
         set.add(localId);
     }
