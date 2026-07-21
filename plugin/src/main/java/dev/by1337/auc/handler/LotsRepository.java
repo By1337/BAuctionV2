@@ -1,6 +1,7 @@
 package dev.by1337.auc.handler;
 
 import dev.by1337.auc.auc.ClientAucLot;
+import dev.by1337.auc.auc.ClientItemStack;
 import dev.by1337.auc.auc.ClientVaultLot;
 import dev.by1337.auc.auc.GhostLot;
 import dev.by1337.auc.common.auc.AucLot;
@@ -150,6 +151,24 @@ public class LotsRepository implements LocalChannelHandler {
                         }))
                 ;
     }
+
+    public ResponseFuture<@Nullable GhostLot> addLot(ClientItemStack itemStack, UUID owner, long sellingDuration, int count, long price) {
+        return pipeline.submit(() -> addLot0(itemStack, owner, sellingDuration, count, price));
+    }
+    private ResponseFuture<@Nullable GhostLot> addLot0(ClientItemStack itemStack, UUID owner, long sellingDuration, int count, long price) {
+        return zip(
+                itemService.loadItem(itemStack.id()),
+                players.loadName(owner),
+                (item, name) -> new GhostLot(
+                        item,
+                        owner,
+                        name,
+                        price,
+                        count
+                )
+        );
+    }
+
     public ResponseFuture<@Nullable GhostLot> makeGhostLot(ItemStack itemStack,UUID owner, int count, long lprice){
         return itemService.pushItem(itemStack).flatMap(id -> zip(
                 itemService.loadItem(id),

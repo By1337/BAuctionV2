@@ -6,6 +6,7 @@ import dev.by1337.auc.auc.ClientVaultLot;
 import dev.by1337.auc.command.args.NumberArgument;
 import dev.by1337.auc.search.filter.SearchFilterAndNotPair;
 import dev.by1337.auc.transaction.BuyLotTransaction;
+import dev.by1337.auc.transaction.ResellTransaction;
 import dev.by1337.auc.transaction.TakeLotTransaction;
 import dev.by1337.auc.transaction.TakeVaultLotTransaction;
 import dev.by1337.bmenu.BMenu;
@@ -105,7 +106,20 @@ class Commands {
                         } else {
                             log.error("{} is not a auction lot failed to find_analogs", menu.lastClickedItemPayload());
                         }
-                    }));
+                    }))
+            .sub(new Command<ExecuteContext>("[resell]").executor(
+                    (ctx) -> {
+                        var menu = ctx.menu;
+                        Player viewer = menu.viewer();
+                        var auction = BAuction.auction();
+                        if (auction == null) {
+                            BAuction.sendMessage("auction_is_disabled", viewer);
+                            return;
+                        }
+                        auction.apply(new ResellTransaction(menu.viewer().getUniqueId()));
+
+                    }))
+            ;
 
     public static Command<ExecuteContext> create() {
         return MENU_COMMANDS.copy();

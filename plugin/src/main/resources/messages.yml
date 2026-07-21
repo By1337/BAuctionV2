@@ -41,6 +41,16 @@ buy_success: 'Вы успешно купили {item_name} <white>за {price}'
 
 on_sell_lot: 'Игрок {buyer} купил у Вас {item_name} <white>за {price}'
 
+has_no_items_resell:
+  - '<#FF6600>[☃]<#FFFFE6> В хранилище отсутствуют предметы для перевыставления.'
+  - sound: block.note_block.basedrum
+resell_failed:
+  - '<#FF6600>[☃]<#FFFFE6> Вы можете переставлять предметы раз в минуту!'
+  - sound: block.note_block.basedrum
+resell_success:
+  - '<#00FF00>[✔] Предметы успешно перевыставлены'
+  - sound: entity.enderman.teleport
+
 ah_help: |
   <#FF6600>[☃]<#FFFFE6> Помощь по Аукционам:
   <#FF6600>/ah <#FFFFE6>- Открыть меню Аукциона

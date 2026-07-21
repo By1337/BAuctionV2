@@ -9,6 +9,7 @@ import dev.by1337.auc.menu.HomeMenu;
 import dev.by1337.auc.search.filter.SearchFilter;
 import dev.by1337.auc.search.filter.SearchFilterParser;
 import dev.by1337.auc.transaction.AddLotTransaction;
+import dev.by1337.auc.transaction.ResellTransaction;
 import dev.by1337.bmenu.BMenu;
 import dev.by1337.cmd.*;
 import dev.by1337.cmd.argument.ArgumentString;
@@ -51,9 +52,16 @@ public class CommandBooter {
             cmd.sub(new SearchCommand(cfg.rename("search"), config.tags.search, config));
         }
         if (!cfg.disabled_commands.contains("help")) {
-            cmd.sub(new Command<CommandSender>("help").executor(s -> {
+            cmd.sub(new Command<CommandSender>(cfg.rename("help")).executor(s -> {
                 if (s instanceof Player player){
                     BAuction.sendMessage("ah_help", player);
+                }
+            }));
+        }
+        if (!cfg.disabled_commands.contains("resell")) {
+            cmd.sub(new Command<CommandSender>(cfg.rename("resell")).executor(s -> {
+                if (s instanceof Player player){
+                    BAuction.auction().apply(new ResellTransaction(player.getUniqueId()));
                 }
             }));
         }

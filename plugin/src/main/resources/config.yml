@@ -19,6 +19,7 @@ commands:
     search: search
 
 ah_search_max_price_perm: 'bauc.search.knyaz' # с какой привилегии будет доступен 'ah search Предмет <макс цена>'
+resell_cooldown: '1m'
 
 slots:
   # по пермишену выбираем максимальное количество лотов

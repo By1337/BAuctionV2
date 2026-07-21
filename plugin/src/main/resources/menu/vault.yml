@@ -28,7 +28,8 @@ items:
       - "<#FFFFE6>по тем же ценам"
     material: clock
     on_click:
-      - '+resell'
+      - resell: ''
+      - delay: 1 [research]
   research:
     slot: 49
     name: "<#FF0000>[⟲]<#FF6600> Обновить"

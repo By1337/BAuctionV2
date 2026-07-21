@@ -110,6 +110,10 @@ public class Auction implements LocalChannelHandler {
         return repo.addLot(itemStack, owner, sellingDuration, count, price);
     }
 
+    public ResponseFuture<@Nullable GhostLot> addLot(ClientItemStack itemStack, UUID owner, long sellingDuration, int count, long price) {
+        return repo.addLot(itemStack, owner, sellingDuration, count, price);
+    }
+
     public SearchResult search(@Nullable SearchFilter filter, Sorting sorting) {
         return index.search(filter, sorting);
     }

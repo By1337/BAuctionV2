@@ -1,6 +1,6 @@
 package dev.by1337.auc.util;
 
-public class TimeUtil {
+public class DurationFormatter {
 
     public static String getFormat(long time) {
         return getFormat(time, false);

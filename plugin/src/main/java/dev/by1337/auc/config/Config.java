@@ -5,6 +5,7 @@ import dev.by1337.auc.handler.SimpleAuction;
 import dev.by1337.auc.lifecycle.AucLifecycle;
 import dev.by1337.auc.tag.TagsConfig;
 import dev.by1337.auc.tag.TagsExtractor;
+import dev.by1337.auc.util.number.DurationParser;
 import dev.by1337.bmenu.BMenu;
 import dev.by1337.bmenu.slot.SlotFactory;
 import dev.by1337.cmd.Command;
@@ -35,7 +36,8 @@ public class Config {
             readFile("database.yml").and(DbConfig.DECODER).fieldOf(),
             CommandsConf.DECODER.fieldOf("commands"),
             SlotsConf.DECODER.fieldOf("slots"),
-            YamlDecoder.STRING.fieldOf("ah_search_max_price_perm")
+            YamlDecoder.STRING.fieldOf("ah_search_max_price_perm"),
+            DurationParser.DECODER.fieldOf("resell_cooldown")
     );
     private static final Logger log = LoggerFactory.getLogger(Config.class);
     public final MessageManager eventCtx;
@@ -48,8 +50,9 @@ public class Config {
     public final CommandsConf commands;
     public final SlotsConf slots;
     public final String ah_search_max_price_perm;
+    public final long resell_cooldown;
 
-    public Config(AucLifecycle lifecycle, MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual, Categories categories, List<String> sorting, DbConfig dbConfig, CommandsConf commands, SlotsConf slots, String ahSearchMaxPricePerm) {
+    public Config(AucLifecycle lifecycle, MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual, Categories categories, List<String> sorting, DbConfig dbConfig, CommandsConf commands, SlotsConf slots, String ahSearchMaxPricePerm, long resellCooldown) {
         this.eventCtx = eventCtx;
         this.tags = tags;
         tagsExtractor = new TagsExtractor(tags);
@@ -60,6 +63,7 @@ public class Config {
         this.commands = commands;
         this.slots = slots;
         ah_search_max_price_perm = ahSearchMaxPricePerm;
+        resell_cooldown = resellCooldown;
         var cmd = lifecycle.bootMessagesCommand(eventCtx.commands());
         cmd.sub(new Command<EventContext>("[visual]").executor(
                 new ArgumentStrings<>("visual"),

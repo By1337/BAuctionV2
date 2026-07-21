@@ -11,6 +11,7 @@ public class AucRegistry<T> implements Iterable<T> {
     private final Map<String, T> id2value = new LinkedHashMap<>();
     private final Map<T, String> value2id = new IdentityHashMap<>();
     private boolean writeLock;
+    private T first;
 
     public void register(String key, T value) {
         if (writeLock) throw new IllegalStateException("write locked!");
@@ -28,6 +29,11 @@ public class AucRegistry<T> implements Iterable<T> {
 
     public void writeLock() {
         writeLock = true;
+    }
+
+    public T first() {
+        if (first == null) return first = iterator().next();
+        return first;
     }
 
     private List<T> list;

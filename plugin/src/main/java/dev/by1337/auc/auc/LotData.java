@@ -1,6 +1,6 @@
 package dev.by1337.auc.auc;
 
-import dev.by1337.auc.util.TimeUtil;
+import dev.by1337.auc.util.DurationFormatter;
 import dev.by1337.auc.util.number.NumberFormatter;
 import dev.by1337.plc.PlaceholderResolver;
 import dev.by1337.plc.Placeholders;
@@ -12,7 +12,7 @@ public interface LotData {
             .withContext("price", v -> NumberFormatter.format(v.dprice()))
             .withContext("seller_uuid", v -> v.owner().toString())
             .withContext("seller_name", LotData::ownerName)
-            .withContext("expires", v -> TimeUtil.getFormat(v.removalDate()))
+            .withContext("expires", v -> DurationFormatter.getFormat(v.removalDate()))
             .withContext("price_for_one", v -> NumberFormatter.format(v.dprice_for_one()))
             .withContext("material", v -> v.itemStack().material().getKey().getKey())
             .withContext("count", LotData::count)
