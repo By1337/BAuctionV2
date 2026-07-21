@@ -2,6 +2,7 @@ package dev.by1337.auc.transaction;
 
 import dev.by1337.auc.BAuction;
 import dev.by1337.auc.auc.ClientVaultLot;
+import dev.by1337.auc.common.auc.log.impl.TakeVaultLog;
 import dev.by1337.auc.handler.Auction;
 import dev.by1337.auc.handler.event.ActionResult;
 import dev.by1337.auc.util.mc.InvUtil;
@@ -44,6 +45,13 @@ public class TakeVaultLotTransaction implements Transaction<ActionResult> {
                 BAuction.sendMessage("outdated_lot", who);
                 return;
             }
+            auction.publishLog(new TakeVaultLog(
+                    System.currentTimeMillis(),
+                    who,
+                    lot.lprice(),
+                    lot.itemStack.id(),
+                    lot.count()
+            ));
             MCUtil.ensureMain(() -> {
                 Player player = BAuction.playerList().getPlayer(who);
                 if (player == null) {

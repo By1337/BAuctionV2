@@ -1,5 +1,6 @@
-package dev.by1337.auc.common.auc.log;
+package dev.by1337.auc.common.auc.log.impl;
 
+import dev.by1337.auc.common.auc.log.AuctionLog;
 import dev.by1337.sync.common.packet.ByteBufCodecs;
 import io.netty.buffer.ByteBuf;
 import org.jetbrains.annotations.Nullable;

@@ -3,6 +3,9 @@ package dev.by1337.auc.common.backend.lot;
 import dev.by1337.auc.common.auc.AucLot;
 import dev.by1337.auc.common.auc.BaseLot;
 import dev.by1337.auc.common.auc.VaultLot;
+import dev.by1337.auc.common.auc.log.impl.LotExpirationLog;
+import dev.by1337.auc.common.auc.log.impl.VaultLotExpirationLog;
+import dev.by1337.auc.common.backend.log.LogRepositoryBackend;
 import dev.by1337.auc.common.db.DataBatcher;
 import dev.by1337.auc.common.handler.BAucRuntime;
 import dev.by1337.auc.common.handler.GetPostChannelHandler;
@@ -40,6 +43,7 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
     private AucLotRepo<AucLot> lots;
     private AucLotRepo<VaultLot> vault;
     private volatile boolean closing;
+    private LogRepositoryBackend logs;
 
     public LotsRepositoryBackend() {
         registerGet(C2SSubtractLotRequest.class, this::onSubtractLot);
@@ -61,12 +65,14 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         while (limit-- > 0 && !lots.set.isEmpty()) {
             var v = lots.set.getFirst();
             if (v.removalDate() > now) break;
+            logs.publishLog(new LotExpirationLog(now, v.owner(), v.lprice(), v.item(), v.count()));
             move2vault(new C2SMove2VaultRequest(v.uid(), v.owner(), now + ONE_DAY_MS));
         }
         limit = 1000;
         while (limit-- > 0 && !vault.set.isEmpty()) {
             var v = vault.set.getFirst();
             if (v.removalDate() > now) break;
+            logs.publishLog(new VaultLotExpirationLog(now, v.owner(), v.lprice(), v.item(), v.count()));
             removeVaultLot(new C2SRemoveVaultLotRequest(v.uid()));
         }
         worker.schedule(this::removalTick, 100);
@@ -108,6 +114,7 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         if (!(runtime instanceof BAucRuntime server)) throw new IllegalArgumentException("Invalid runtime type");
         channel = server;
         pipeline = server.pipeline();
+        logs = pipeline.get(LogRepositoryBackend.class);
         worker = runtime.eventLoop();
         lots = new AucLotRepo<>(
                 AucLot::read,

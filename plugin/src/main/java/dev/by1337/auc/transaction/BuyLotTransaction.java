@@ -2,7 +2,7 @@ package dev.by1337.auc.transaction;
 
 import dev.by1337.auc.BAuction;
 import dev.by1337.auc.auc.ClientAucLot;
-import dev.by1337.auc.common.auc.log.BuyAuctionLog;
+import dev.by1337.auc.common.auc.log.impl.BuyAuctionLog;
 import dev.by1337.auc.handler.Auction;
 import dev.by1337.auc.handler.event.ActionResult;
 import dev.by1337.auc.user.UserMails;
@@ -10,7 +10,6 @@ import dev.by1337.auc.util.mc.MCUtil;
 import dev.by1337.auc.util.number.NumberFormatter;
 import dev.by1337.edsl.context.EventContext;
 import dev.by1337.sync.common.callback.ResponseFuture;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

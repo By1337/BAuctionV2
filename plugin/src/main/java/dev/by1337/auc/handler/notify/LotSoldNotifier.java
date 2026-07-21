@@ -2,7 +2,7 @@ package dev.by1337.auc.handler.notify;
 
 import dev.by1337.auc.BAuction;
 import dev.by1337.auc.auc.GhostLot;
-import dev.by1337.auc.common.auc.log.BuyAuctionLog;
+import dev.by1337.auc.common.auc.log.impl.BuyAuctionLog;
 import dev.by1337.auc.handler.SimpleAuction;
 import dev.by1337.auc.handler.event.UserMailEvent;
 import dev.by1337.auc.handler.log.LogRepository;

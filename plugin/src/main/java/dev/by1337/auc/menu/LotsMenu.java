@@ -123,7 +123,6 @@ public abstract class LotsMenu extends AbstractMenu {
 
     @Override
     protected void generate() {
-        long nanos = System.nanoTime();
         if (searchResult == null) {
             research();
         }
@@ -164,7 +163,6 @@ public abstract class LotsMenu extends AbstractMenu {
         var next = searchResult.next();
         if (next != null) lots.add(next);
         hasNextPage = lots.size() > (currentPage + 1) * slots.length;
-        System.out.println((System.nanoTime() - nanos) / 1000D + "us generate menu");
     }
 
     private void setLot(int slot, LotData lot, boolean outdated) {

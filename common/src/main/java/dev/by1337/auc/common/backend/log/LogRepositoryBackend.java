@@ -1,6 +1,8 @@
 package dev.by1337.auc.common.backend.log;
 
+import dev.by1337.auc.common.auc.log.AuctionLog;
 import dev.by1337.auc.common.auc.log.LogRecord;
+import dev.by1337.auc.common.auc.log.impl.TakeLotLog;
 import dev.by1337.auc.common.db.DataBatcher;
 import dev.by1337.auc.common.handler.BAucRuntime;
 import dev.by1337.auc.common.handler.GetPostChannelHandler;
@@ -16,6 +18,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import dev.by1337.sync.common.channel.pipeline.ChannelRuntime;
 import dev.by1337.sync.common.util.BSUtils;
+import dev.by1337.sync.common.work.EventLoopWorker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +32,7 @@ public class LogRepositoryBackend extends GetPostChannelHandler {
     private AuctionLogRepository repository;
     private DataBatcher<LogRecord> addBatcher;
     private long lastId;
+    private EventLoopWorker worker;
 
     public LogRepositoryBackend() {
         registerGet(C2SGetLogRecordRequest.class, this::getLog);
@@ -45,6 +49,7 @@ public class LogRepositoryBackend extends GetPostChannelHandler {
     public void init(ChannelRuntime runtime) {
         if (!(runtime instanceof BAucRuntime server)) throw new IllegalArgumentException("Invalid runtime type");
         channel = server;
+        worker = runtime.eventLoop();
         repository = new AuctionLogRepository(server.database().dataSource(), server.name() + "_logs_repository");
         try {
             lastId = repository.getMaxId();
@@ -73,6 +78,10 @@ public class LogRepositoryBackend extends GetPostChannelHandler {
             LogRepositoryBackend.log.error("Failed to findByFilter logs", e);
             return new ResponseFuture<>(null);
         }
+    }
+
+    public void publishLog(AuctionLog log){
+        worker.execute(() -> publishLog(new C2SPublishLog(log)));
     }
 
     private ResponseFuture<A2ALongResponse> publishLog(C2SPublishLog log) {

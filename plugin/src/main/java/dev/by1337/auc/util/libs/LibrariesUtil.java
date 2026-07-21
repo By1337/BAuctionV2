@@ -47,7 +47,6 @@ public class LibrariesUtil {
     private static boolean hasClass(String className) {
         try {
             Class.forName(className);
-            System.out.println("has class " + className);
             return true;
         } catch (ClassNotFoundException e) {
             return false;

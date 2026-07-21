@@ -2,11 +2,11 @@ package dev.by1337.auc.transaction;
 
 import dev.by1337.auc.BAuction;
 import dev.by1337.auc.auc.ClientAucLot;
+import dev.by1337.auc.common.auc.log.impl.TakeLotLog;
 import dev.by1337.auc.handler.Auction;
 import dev.by1337.auc.handler.event.ActionResult;
 import dev.by1337.auc.util.mc.MCUtil;
 import dev.by1337.sync.common.callback.ResponseFuture;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,10 +31,17 @@ public class TakeLotTransaction implements Transaction<ActionResult> {
             return DENY;
         }
         return auction.removeLot(lot).then(v -> {
-            if (v == null || !v.success){
+            if (v == null || !v.success) {
                 BAuction.sendMessage("outdated_lot", who);
                 return;
             }
+            auction.publishLog(new TakeLotLog(
+                    System.currentTimeMillis(),
+                    who,
+                    lot.lprice(),
+                    lot.itemStack.id(),
+                    lot.count()
+            ));
             MCUtil.ensureMain(() -> {
                 Player player = BAuction.playerList().getPlayer(who);
                 if (player != null) {

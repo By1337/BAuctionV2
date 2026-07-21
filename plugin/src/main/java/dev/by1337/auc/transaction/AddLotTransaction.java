@@ -2,6 +2,7 @@ package dev.by1337.auc.transaction;
 
 import dev.by1337.auc.BAuction;
 import dev.by1337.auc.auc.GhostLot;
+import dev.by1337.auc.common.auc.log.impl.AddLotLog;
 import dev.by1337.auc.handler.Auction;
 import dev.by1337.plc.PlaceholderResolver;
 import dev.by1337.sync.common.callback.ResponseFuture;
@@ -48,13 +49,24 @@ public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
                 return EMPTY;
             }
         }
+        long now = System.currentTimeMillis();
         return auction.addLot(
                 itemStack,
                 who,
                 TimeUnit.DAYS.toMillis(1), //todo config?
                 count,
                 lprice
-        );
+        ).then(l -> {
+            if (l != null) {
+                auction.publishLog(new AddLotLog(
+                        now,
+                        who,
+                        lprice,
+                        l.itemStack().id(),
+                        count
+                ));
+            }
+        });
     }
 
     public AddLotTransaction skipSlotsCheck() {

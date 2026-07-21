@@ -3,6 +3,7 @@ package dev.by1337.auc.common.network;
 import dev.by1337.auc.common.auc.AucLot;
 import dev.by1337.auc.common.auc.VaultLot;
 import dev.by1337.auc.common.auc.log.*;
+import dev.by1337.auc.common.auc.log.impl.BuyAuctionLog;
 import dev.by1337.auc.common.network.a2a.A2AFlagResponse;
 import dev.by1337.auc.common.network.a2a.A2ALongResponse;
 import dev.by1337.auc.common.network.a2a.A2ASetPlayerNamePacket;
