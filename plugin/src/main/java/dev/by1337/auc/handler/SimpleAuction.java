@@ -95,7 +95,7 @@ public class SimpleAuction {
                 .addLast("indexer", indexer = new LotsIndexer())
                 .addLast("name_service", nameService = new PlayerNameService(plugin))
                 .addLast("lot", logRepo = new LogRepository())
-                .addLast("auction", auction = new Auction())
+                .addLast("auction", auction = new Auction(lifecycle))
                 .addLast("eco_giver", new EcoGiver())
                 .addLast("lot_sold_notifier", new LotSoldNotifier())
         ;

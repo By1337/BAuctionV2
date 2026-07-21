@@ -36,6 +36,7 @@ public abstract class LotsMenu extends AbstractMenu {
             .withContext("has_next_page", v -> v.hasNextPage);
     public static final Command<ExecuteContext> LOTS_COMMANDS = MenuCommands.getCommands()
             .sub(new Command<ExecuteContext>("[research]").executor(ctx -> {
+                if (!ctx.menu.isOpened()) return;
                 if (ctx.menu instanceof LotsMenu h) {
                     h.research();
                     h.refresh();
@@ -113,9 +114,10 @@ public abstract class LotsMenu extends AbstractMenu {
 
     protected abstract LotData getByUid(int uid, LotData old);
 
-    static void bootCommands(Command<ExecuteContext> base){
+    static void bootCommands(Command<ExecuteContext> base) {
         COMMANDS = base.and(LOTS_COMMANDS);
     }
+
     @Override
     public Command<ExecuteContext> getCommands() {
         return COMMANDS;
@@ -169,7 +171,10 @@ public abstract class LotsMenu extends AbstractMenu {
         Material itemType = lot.itemStack().material();
         SlotFactory maker;
         ItemModel base = null;
-        if (lot.getClass() == ClientVaultLot.class) {
+        if (this instanceof VaultMenu && cfg.always_show_vault_lot) {
+            maker = cfg.vault_lot;
+            base = lot.itemStack().itemModel().withAmount(lot.count());
+        } else if (lot.getClass() == ClientVaultLot.class) {
             maker = cfg.vault_lot;
             base = lot.itemStack().itemModel().withAmount(lot.count());
         } else if (outdated) {
@@ -211,7 +216,9 @@ public abstract class LotsMenu extends AbstractMenu {
                 .field(SlotFactory.CODEC, "many", v -> v.many, (m, v) -> m.many = v)
                 .field(SlotFactory.CODEC, "taken", v -> v.taken, (m, v) -> m.taken = v)
                 .field(SlotFactory.CODEC, "purchased", v -> v.purchased, (m, v) -> m.purchased = v)
-                .field(SlotFactory.CODEC, "vault_lot", v -> v.vault_lot, (m, v) -> m.vault_lot = v);
+                .field(SlotFactory.CODEC, "vault_lot", v -> v.vault_lot, (m, v) -> m.vault_lot = v)
+                .bool("always_show_vault_lot", v -> v.always_show_vault_lot, (m,v) -> m.always_show_vault_lot = v)
+                ;
 
         public int[] slots;
         public SlotFactory sold;
@@ -222,6 +229,7 @@ public abstract class LotsMenu extends AbstractMenu {
         public SlotFactory taken;
         public SlotFactory purchased;
         public SlotFactory vault_lot;
+        public boolean always_show_vault_lot;
 
     }
 }

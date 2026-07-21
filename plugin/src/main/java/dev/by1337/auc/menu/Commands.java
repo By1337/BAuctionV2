@@ -8,6 +8,7 @@ import dev.by1337.auc.search.filter.SearchFilterAndNotPair;
 import dev.by1337.auc.transaction.BuyLotTransaction;
 import dev.by1337.auc.transaction.TakeLotTransaction;
 import dev.by1337.auc.transaction.TakeVaultLotTransaction;
+import dev.by1337.bmenu.BMenu;
 import dev.by1337.bmenu.command.ExecuteContext;
 import dev.by1337.cmd.Command;
 import org.bukkit.entity.Player;
@@ -92,6 +93,14 @@ class Commands {
                         if (menu.lastClickedItemPayload() instanceof ClientAucLot lot) {
                             if (menu instanceof HomeMenu h) {
                                 h.setSearch(new SearchFilterAndNotPair(lot.itemStack.tags(), null, new String[0]));
+                                h.setSearchInput("<lang:bauctionv2.ah.search.analogs>");
+                            } else {
+                                var m = BMenu.menuLoader().create(BAuction.plugin().config().commands.ah_menu, menu.viewer(), menu);
+                                if (m instanceof HomeMenu h){
+                                    h.setSearch(new SearchFilterAndNotPair(lot.itemStack.tags(), null, new String[0]));
+                                    h.setSearchInput("<lang:bauctionv2.ah.search.analogs>");
+                                }
+                                m.open();
                             }
                         } else {
                             log.error("{} is not a auction lot failed to find_analogs", menu.lastClickedItemPayload());

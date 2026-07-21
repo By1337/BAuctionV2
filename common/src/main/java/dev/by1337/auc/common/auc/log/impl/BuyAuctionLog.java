@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 import java.util.UUID;
 
-public class BuyAuctionLog implements AuctionLog {
+public class BuyAuctionLog implements AuctionLog, WithItemStackLog, WithLPriceLog {
     public static final String ID = "native:buy";
     public final long timestamp;
     public final UUID buyer;
@@ -78,5 +78,20 @@ public class BuyAuctionLog implements AuctionLog {
     @Override
     public int hashCode() {
         return Objects.hash(timestamp, buyer, lotOwner, lprice, item, count);
+    }
+
+    @Override
+    public int item() {
+        return item;
+    }
+
+    @Override
+    public int count() {
+        return count;
+    }
+
+    @Override
+    public long lprice() {
+        return lprice;
     }
 }

@@ -22,9 +22,11 @@ import java.util.UUID;
 public class SellCommand extends Command<CommandSender> {
 
     private static final Logger log = LoggerFactory.getLogger(SellCommand.class);
+    private final boolean dsell;
 
-    public SellCommand(String name) {
+    public SellCommand(String name, boolean dsell) {
         super(name);
+        this.dsell = dsell;
         requires(s -> s instanceof Player);
         executor(
                 new NumberArgument<>("price"),
@@ -52,10 +54,10 @@ public class SellCommand extends Command<CommandSender> {
                 () -> inv.getItem(EquipmentSlot.HAND),
                 i -> inv.setItem(EquipmentSlot.HAND, i),
                 () -> BAuction.playerList().isOnline(player.getUniqueId())
-        ), price0.doubleValue(), count, one, playerItem.getAmount());
+        ), price0.doubleValue(), count, one, playerItem.getAmount(), dsell);
     }
 
-    public static ResponseFuture<@Nullable GhostLot> doSell(CommandSender sender, ItemStackRef ref, double price, int count, ItemStack one, int totalCount) {
+    public static ResponseFuture<@Nullable GhostLot> doSell(CommandSender sender, ItemStackRef ref, double price, int count, ItemStack one, int totalCount, boolean dsell) {
         if (!(sender instanceof Player player)) return new ResponseFuture<>(null);
         MCUtil.assertMain();
         var auction = BAuction.plugin().auction();
@@ -70,7 +72,7 @@ public class SellCommand extends Command<CommandSender> {
         if (!ref.isValid()) return new ResponseFuture<>(null);
         UUID who = player.getUniqueId();
         ref.remove();
-        AddLotTransaction transaction = new AddLotTransaction(one, who, price, count);
+        AddLotTransaction transaction = new AddLotTransaction(one, who, price, count).dsell(dsell);
         return auction.apply(transaction).then(v -> {
             int result;
             if (v == null) {

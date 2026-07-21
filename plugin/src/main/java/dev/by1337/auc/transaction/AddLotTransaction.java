@@ -4,7 +4,7 @@ import dev.by1337.auc.BAuction;
 import dev.by1337.auc.auc.GhostLot;
 import dev.by1337.auc.common.auc.log.impl.AddLotLog;
 import dev.by1337.auc.handler.Auction;
-import dev.by1337.plc.PlaceholderResolver;
+import dev.by1337.edsl.context.EventContext;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +19,7 @@ public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
     private final double price;
     private final int count;
     private boolean skipSlotsCheck;
+    private long sellingDuration = TimeUnit.DAYS.toMillis(1);
 
     public AddLotTransaction(ItemStack itemStack, UUID who, double price, int count) {
         this.itemStack = itemStack.getAmount() != 1 ? itemStack.asOne() : itemStack;
@@ -29,10 +30,6 @@ public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
 
     @Override
     public ResponseFuture<@Nullable GhostLot> apply(Auction auction) {
-        if (price / count < 0.01D) {
-            BAuction.sendMessage("minimum_price", who, PlaceholderResolver.of("min", 0.01D * count));
-            return EMPTY;
-        }
         //todo checks
         if (itemStack.isEmpty()) {
             BAuction.sendMessage("illegal_item", who);
@@ -49,28 +46,64 @@ public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
                 return EMPTY;
             }
         }
-        long now = System.currentTimeMillis();
-        return auction.addLot(
-                itemStack,
-                who,
-                TimeUnit.DAYS.toMillis(1), //todo config?
-                count,
-                lprice
-        ).then(l -> {
-            if (l != null) {
-                auction.publishLog(new AddLotLog(
-                        now,
+        return auction.makeGhostLot(itemStack, who, count, lprice)
+                .ifEmpty(() -> BAuction.sendMessage("auction_is_disabled", who))
+                .map(ghostLot -> {
+                    if (price / count < 0.01D) {
+                        BAuction.sendMessage("minimum_price", who, ghostLot.<EventContext>placeholders()
+                                .append("min", 0.01D * count));
+                        return null;
+                    }
+                    return ghostLot;
+                }).flatMap(ignored -> auction.addLot(
+                        itemStack,
                         who,
-                        lprice,
-                        l.itemStack().id(),
-                        count
-                ));
-            }
-        });
+                        sellingDuration,
+                        count,
+                        lprice
+                ).then(l -> {
+                    if (l != null) {
+                        auction.publishLog(new AddLotLog(
+                                System.currentTimeMillis(),
+                                who,
+                                lprice,
+                                l.itemStack().id(),
+                                count
+                        ));
+                    }
+                }));
+    }
+
+    public AddLotTransaction setSellingDuration(long sellingDuration) {
+        this.sellingDuration = sellingDuration;
+        return this;
+    }
+
+    public AddLotTransaction dsell(boolean flag) {
+        if (flag){
+            sellingDuration = 0;
+        }
+        return this;
     }
 
     public AddLotTransaction skipSlotsCheck() {
         this.skipSlotsCheck = true;
         return this;
+    }
+
+    public ItemStack itemStack() {
+        return itemStack;
+    }
+
+    public UUID who() {
+        return who;
+    }
+
+    public double price() {
+        return price;
+    }
+
+    public int count() {
+        return count;
     }
 }

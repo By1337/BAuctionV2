@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-public class VaultLotExpirationLog implements AuctionLog {
+public class VaultLotExpirationLog implements AuctionLog, WithItemStackLog, WithLPriceLog {
     public static final String ID = "native:expiration_vault_lot";
     public final long timestamp;
     public final UUID owner;
@@ -59,5 +59,20 @@ public class VaultLotExpirationLog implements AuctionLog {
         buf.writeLong(lprice);
         buf.writeInt(item);
         buf.writeInt(count);
+    }
+
+    @Override
+    public int item() {
+        return item;
+    }
+
+    @Override
+    public int count() {
+        return count;
+    }
+
+    @Override
+    public long lprice() {
+        return lprice;
     }
 }

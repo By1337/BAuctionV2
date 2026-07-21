@@ -149,7 +149,19 @@ public class LotsRepository implements LocalChannelHandler {
                             );
                         }))
                 ;
-
+    }
+    public ResponseFuture<@Nullable GhostLot> makeGhostLot(ItemStack itemStack,UUID owner, int count, long lprice){
+        return itemService.pushItem(itemStack).flatMap(id -> zip(
+                itemService.loadItem(id),
+                players.loadName(owner),
+                (item, name) -> new GhostLot(
+                        item,
+                        owner,
+                        name,
+                        lprice,
+                        count
+                )
+        ));
     }
 
     private static <T1, T2, R> ResponseFuture<R> zip(ResponseFuture<T1> t, ResponseFuture<T2> t2, BiFunction<T1, T2, R> m) {

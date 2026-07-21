@@ -32,7 +32,6 @@ slots:
     - 3 bauc.add3
     - 4 bauc.add4
 
-
 $barrier: &auto_removal
   material: red_dye
   tick_speed: 25

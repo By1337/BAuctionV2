@@ -11,6 +11,7 @@ import dev.by1337.auc.common.auc.log.LogRecord;
 import dev.by1337.auc.handler.event.ActionResult;
 import dev.by1337.auc.handler.index.BitSetPool;
 import dev.by1337.auc.handler.index.LotsIndexer;
+import dev.by1337.auc.lifecycle.AucLifecycle;
 import dev.by1337.auc.registry.AucRegistries;
 import dev.by1337.auc.search.PlayerVaultResult;
 import dev.by1337.auc.search.SearchResult;
@@ -46,6 +47,11 @@ public class Auction implements LocalChannelHandler {
     private LogRepository log;
     private ItemStackRepository itemService;
     private SimpleAuction auction;
+    private final AucLifecycle lifecycle;
+
+    public Auction(AucLifecycle lifecycle) {
+        this.lifecycle = lifecycle;
+    }
 
     @Override
     public void init(LocalPipeline pipeline, Remote remote, SimpleAuction auction) {
@@ -60,6 +66,7 @@ public class Auction implements LocalChannelHandler {
     }
 
     public <T> ResponseFuture<T> apply(Transaction<T> t) {
+        if (lifecycle.doSkipTransaction(t)) return new ResponseFuture<>(null);
         return t.apply(this);
     }
 
@@ -168,6 +175,10 @@ public class Auction implements LocalChannelHandler {
     @Nullable
     public BitSetPool.PooledBitSet findLotsWithTags(int @Nullable [] @Nullable [] ands, int @Nullable [] @Nullable [] nots) {
         return index.findLotsWithTags(ands, nots);
+    }
+
+    public ResponseFuture<@Nullable GhostLot> makeGhostLot(ItemStack itemStack, UUID owner, int count, long lprice) {
+        return repo.makeGhostLot(itemStack, owner, count, lprice);
     }
 
     public int getPlayerOwnedLotsCount(UUID key) {

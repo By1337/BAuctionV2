@@ -7,6 +7,7 @@ title: "<#FF0000>☃ <#FF6600>Хранилище<off_title><b><gray>[<gold>{curr
 
 slots: 0-44
 vault_type: 'vault_and_active' # vault_and_active, only_active, only_vault
+always_show_vault_lot: true # всегда показываем vault_lot из lots_items.yml (тогда шалкер не получится осмотреть)
 
 items:
   back:

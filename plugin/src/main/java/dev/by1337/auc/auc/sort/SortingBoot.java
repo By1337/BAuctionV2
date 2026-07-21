@@ -31,8 +31,10 @@ public class SortingBoot {
 
     private static Sorting make(String key, Comparator<ClientAucLot> comparator) {
         var s = new Sorting(key, (v, v1) -> {
+            int byUid = Integer.compare(v.lot.uid(), v1.lot.uid());
+            if (byUid == 0) return 0;
             var x = comparator.compare(v, v1);
-            if (x == 0) return Integer.compare(v.lot.uid(), v1.lot.uid());
+            if (x == 0) return byUid;
             return x;
         });
         map.put(key, s);

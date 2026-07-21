@@ -125,22 +125,26 @@ public class HomeMenu extends LotsMenu {
         COMMANDS = base
                 .and(LotsMenu.LOTS_COMMANDS)
                 .sub(new Command<ExecuteContext>("[next_sorting]").executor(ctx -> {
+                    if (!ctx.menu.isOpened()) return;
                     if (ctx.menu instanceof HomeMenu h) {
                         h.sorting = h.sortingIterator.next();
                         h.research();
                     }
                 })).sub(new Command<ExecuteContext>("[previous_sorting]").executor(ctx -> {
+                    if (!ctx.menu.isOpened()) return;
                     if (ctx.menu instanceof HomeMenu h) {
                         h.sorting = h.sortingIterator.previous();
                         h.research();
                     }
                 }))
                 .sub(new Command<ExecuteContext>("[next_category]").executor(ctx -> {
+                    if (!ctx.menu.isOpened()) return;
                     if (ctx.menu instanceof HomeMenu h) {
                         h.category = h.categoryIterator.next();
                         h.research();
                     }
                 })).sub(new Command<ExecuteContext>("[previous_category]").executor(ctx -> {
+                    if (!ctx.menu.isOpened()) return;
                     if (ctx.menu instanceof HomeMenu h) {
                         h.category = h.categoryIterator.previous();
                         h.research();

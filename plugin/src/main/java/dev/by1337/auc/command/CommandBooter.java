@@ -42,7 +42,10 @@ public class CommandBooter {
         var cfg = config.commands;
         var cmd = lifecycle.bootUserCommands(new Command<CommandSender>(cfg.rename("ah")));
         if (!cfg.disabled_commands.contains("sell")) {
-            cmd.sub(new SellCommand(cfg.rename("sell")));
+            cmd.sub(new SellCommand(cfg.rename("sell"), false));
+        }
+        if (!cfg.disabled_commands.contains("dsell")) {
+            cmd.sub(new SellCommand(cfg.rename("dsell"), true));
         }
         if (!cfg.disabled_commands.contains("search")) {
             cmd.sub(new SearchCommand(cfg.rename("search"), config.tags.search));

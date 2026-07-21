@@ -68,6 +68,7 @@ ru_RU:
   sorting.cheaper.name: 'Сначала дешевые'
   sorting.expensive.name: 'Сначала дорогие'
 
-  lot.status.lot: '<#FFFF00> [Продается]'
-  lot.status.vault: '<#FF6600> [На складе]'
+  lot.status.lot: '<#FFFF00>[Продается]'
+  lot.status.vault: '<#FF6600>[На складе]'
+  ah.search.analogs: 'Аналогов'
 

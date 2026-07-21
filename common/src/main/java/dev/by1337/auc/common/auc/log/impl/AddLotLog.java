@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-public class AddLotLog implements AuctionLog {
+public class AddLotLog implements AuctionLog, WithItemStackLog, WithLPriceLog {
     public static final String ID = "native:add_lot";
     public final long timestamp;
     public final UUID who;
@@ -59,5 +59,20 @@ public class AddLotLog implements AuctionLog {
         buf.writeLong(lprice);
         buf.writeInt(item);
         buf.writeInt(count);
+    }
+
+    @Override
+    public int item() {
+        return item;
+    }
+
+    @Override
+    public int count() {
+        return count;
+    }
+
+    @Override
+    public long lprice() {
+        return lprice;
     }
 }
