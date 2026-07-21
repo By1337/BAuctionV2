@@ -83,7 +83,7 @@ public class ClientAucLot implements LotData {
     //        registerPlaceholder("{item_name_no_colors}", this::getItem_name_no_colors);
     //        registerPlaceholder("{seller_is_online}", () -> Bukkit.getPlayer(sellerUuid) != null);
     //        registerPlaceholder("{seller_is_online_format}", () ->
-    //                (Bukkit.getPlayer(sellerUuid) != null) ?
+    //                (BAuction.playerList().getPlayer(sellerUuid) != null) ?
     //                        Lang.getMessage("online-seller") : Lang.getMessage("offline-seller")
     //        );
 

@@ -145,9 +145,6 @@ tag_appender:
     - flint_and_steel
     - redstone
 
-
-
-
 # паттерны только на материал
 search:
   ru_RU:
@@ -443,67 +440,3 @@ search:
       "яйцо нюхача": "sniffer_spawn_egg"
       "спавнер курицы": "spawner&chicken"
       "яйцо курицы": "chicken_spawn_egg"
-
-#    "enchantment.minecraft.aqua_affinity": "Подводник",
-#    "enchantment.minecraft.bane_of_arthropods": "Бич членистоногих",
-#    "enchantment.minecraft.binding_curse": "Проклятие несъёмности",
-#    "enchantment.minecraft.blast_protection": "Взрывоустойчивость",
-#    "enchantment.minecraft.channeling": "Громовержец",
-#    "enchantment.minecraft.depth_strider": "Подводная ходьба",
-#    "enchantment.minecraft.efficiency": "Эффективность",
-#    "enchantment.minecraft.feather_falling": "Невесомость",
-#    "enchantment.minecraft.fire_aspect": "Заговор огня",
-#    "enchantment.minecraft.fire_protection": "Огнеупорность",
-#    "enchantment.minecraft.flame": "Воспламенение",
-#    "enchantment.minecraft.fortune": "Удача",
-#    "enchantment.minecraft.frost_walker": "Ледоход",
-#    "enchantment.minecraft.impaling": "Пронзатель",
-#    "enchantment.minecraft.infinity": "Бесконечность",
-#    "enchantment.minecraft.knockback": "Отдача",
-#    "enchantment.minecraft.looting": "Добыча",
-#    "enchantment.minecraft.loyalty": "Верность",
-#    "enchantment.minecraft.luck_of_the_sea": "Везучий рыбак",
-#    "enchantment.minecraft.lure": "Приманка",
-#    "enchantment.minecraft.mending": "Починка",
-#    "enchantment.minecraft.multishot": "Тройной выстрел",
-#    "enchantment.minecraft.piercing": "Пронзающая стрела",
-#    "enchantment.minecraft.power": "Сила",
-#    "enchantment.minecraft.projectile_protection": "Защита от снарядов",
-#    "enchantment.minecraft.protection": "Защита",
-#    "enchantment.minecraft.punch": "Откидывание",
-#    "enchantment.minecraft.quick_charge": "Быстрая перезарядка",
-#    "enchantment.minecraft.respiration": "Подводное дыхание",
-#    "enchantment.minecraft.riptide": "Тягун",
-#    "enchantment.minecraft.sharpness": "Острота",
-#    "enchantment.minecraft.silk_touch": "Шёлковое касание",
-#    "enchantment.minecraft.smite": "Небесная кара",
-#    "enchantment.minecraft.soul_speed": "Скорость души",
-#    "enchantment.minecraft.sweeping": "Разящий клинок",
-#    "enchantment.minecraft.thorns": "Шипы",
-#    "enchantment.minecraft.unbreaking": "Прочность",
-#    "enchantment.minecraft.vanishing_curse": "Проклятие утраты",
-
-
-
-# {
-#  "PublicBukkitValues": {
-#    "btnt:custom_tnt_block": "tnt#tier#4"
-#  },
-#  "HideFlags": 1,
-#  "Enchantments": [
-#    {
-#      "lvl": 0,
-#      "uid": "minecraft:vanishing_curse"
-#    }
-#  ],
-#  "display": {
-#    "Lore": [
-#      "{\"italic\":false,\"text\":\" \"}",
-#      "{\"italic\":false,\"extra\":[{\"color\":\"white\",\"text\":\"Особенности:\"}],\"text\":\" \"}",
-#      "{\"italic\":false,\"extra\":[{\"color\":\"white\",\"text\":\"Сила взрыва x5\"}],\"text\":\" \"}",
-#      "{\"italic\":false,\"extra\":[{\"color\":\"white\",\"text\":\"Взрывает обсидиан\"}],\"text\":\" \"}",
-#      "{\"italic\":false,\"text\":\" \"}"
-#    ],
-#    "Name": "{\"italic\":false,\"extra\":[{\"extra\":[{\"color\":\"#00ffe0\",\"text\":\"Д\"},{\"color\":\"#14eae3\",\"text\":\"и\"},{\"color\":\"#27d5e5\",\"text\":\"н\"},{\"color\":\"#3bbfe8\",\"text\":\"а\"},{\"color\":\"#4eaaea\",\"text\":\"м\"},{\"color\":\"#6295ed\",\"text\":\"и\"},{\"color\":\"#7680f0\",\"text\":\"т\"},{\"color\":\"#896af2\",\"text\":\" \"},{\"color\":\"#9d55f5\",\"text\":\"т\"},{\"color\":\"#b040f7\",\"text\":\"и\"},{\"color\":\"#c42bfa\",\"text\":\"р\"},{\"color\":\"#d715fc\",\"text\":\" \"},{\"color\":\"#eb00ff\",\"text\":\"4\"}],\"text\":\"\"}],\"text\":\"\"}"
-#  }
-#}

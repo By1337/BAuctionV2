@@ -199,6 +199,10 @@ public class CommandBooter {
             BAuction.plugin().metrics().dump(log);
             s.sendMessage(BAuction.plugin().metrics().dump());
         }));
+        cmd.sub(new Command<CommandSender>("user").executor((s) -> {
+            if (s instanceof Player pl)
+                s.sendMessage(String.valueOf(BAuction.plugin().aucManager().users().getUser(pl.getUniqueId())));
+        }));
         return cmd;
     }
 

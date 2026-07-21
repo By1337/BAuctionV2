@@ -1,7 +1,10 @@
 package dev.by1337.auc.lifecycle;
 
+import dev.by1337.auc.BAuction;
 import dev.by1337.auc.common.auc.log.AuctionLog;
 import dev.by1337.auc.common.registry.NetworkRegistry;
+import dev.by1337.auc.handler.SimpleAuction;
+import dev.by1337.auc.metrics.Metrics;
 import dev.by1337.auc.pipeline.LocalPipeline;
 import dev.by1337.auc.registry.AucRegistries;
 import dev.by1337.bmenu.command.ExecuteContext;
@@ -11,6 +14,26 @@ import dev.by1337.edsl.context.EventContext;
 import org.bukkit.command.CommandSender;
 
 public class AucLifecycle {
+    public void onLoad(BAuction auction){
+
+    }
+    public void onPreEnable(BAuction auction){
+
+    }
+    public void onPostEnabled(BAuction auction){
+
+    }
+    public void onDisable(BAuction auction){
+
+    }
+
+    public void metricsBoot(Metrics metrics){
+
+    }
+
+    public void auctionBooted(SimpleAuction auction){
+
+    }
 
     public Command<ExecuteContext> bootMenuCommand(Command<ExecuteContext> base) {
         return base;

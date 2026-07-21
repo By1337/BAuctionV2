@@ -1,5 +1,6 @@
 package dev.by1337.auc.handler.name;
 
+import dev.by1337.auc.BAuction;
 import dev.by1337.auc.common.network.a2a.A2ASetPlayerNamePacket;
 import dev.by1337.auc.common.network.c2s.C2SPlayerNameRequest;
 import dev.by1337.auc.handler.SimpleAuction;
@@ -22,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-public class PlayerNameService implements LocalChannelHandler, Listener {
+public class PlayerNameService implements LocalChannelHandler {
     private LocalPipeline pipeline;
     private Remote remote;
     private final Plugin plugin;
@@ -37,7 +38,7 @@ public class PlayerNameService implements LocalChannelHandler, Listener {
     public void init(LocalPipeline pipeline, Remote remote, SimpleAuction auction) {
         this.pipeline = pipeline;
         this.remote = remote;
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        BAuction.plugin().eventListener().registerListener(PlayerJoinEvent.class, this::onJoin);
     }
 
     public ResponseFuture<@NotNull PlayerName> loadName(UUID uuid) {
@@ -47,7 +48,7 @@ public class PlayerNameService implements LocalChannelHandler, Listener {
     private ResponseFuture<@NotNull PlayerName> loadName0(UUID uuid) {
         var name = uuid2name.get(uuid);
         if (name != null) return new ResponseFuture<>(name);
-        Player player = Bukkit.getPlayer(uuid);
+        Player player = BAuction.playerList().getPlayer(uuid);
         if (player != null) {
             var res = new PlayerName(player.getName());
             uuid2name.put(uuid, res);
@@ -78,7 +79,6 @@ public class PlayerNameService implements LocalChannelHandler, Listener {
         });
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
     public void onJoin(PlayerJoinEvent event) {
         String name = event.getPlayer().getName();
         UUID uuid = event.getPlayer().getUniqueId();
@@ -87,6 +87,5 @@ public class PlayerNameService implements LocalChannelHandler, Listener {
 
     @Override
     public void close() {
-        HandlerList.unregisterAll(this);
     }
 }

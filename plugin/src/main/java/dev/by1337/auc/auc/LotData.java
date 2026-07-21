@@ -18,7 +18,9 @@ public interface LotData {
             .withContext("count", LotData::count)
             .withContext("uid", LotData::uid)
             .withContext("item_name", v -> v.itemStack().itemName())
-            .withContext("item_name_no_colors", v -> v.itemStack().itemNameNoColors());
+            .withContext("item_name_no_colors", v -> v.itemStack().itemNameNoColors())
+            .withContext("lot_status", v -> v instanceof ClientVaultLot ? "<lang:bauctionv2.lot.status.vault>" : "<lang:bauctionv2.lot.status.lot>")
+            ;
 
     ClientItemStack itemStack();
 

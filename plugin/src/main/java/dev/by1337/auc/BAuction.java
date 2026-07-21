@@ -9,11 +9,13 @@ import dev.by1337.auc.config.Config;
 import dev.by1337.auc.eco.VaultHook;
 import dev.by1337.auc.handler.Auction;
 import dev.by1337.auc.handler.SimpleAuction;
+import dev.by1337.auc.handler.remote.AuctionBackendBooter;
 import dev.by1337.auc.lifecycle.AucLifecycle;
 import dev.by1337.auc.listener.BukkitEventListener;
 import dev.by1337.auc.menu.MenuBooter;
 import dev.by1337.auc.metrics.MetricFormatter;
 import dev.by1337.auc.metrics.Metrics;
+import dev.by1337.auc.util.LibrariesUtil;
 import dev.by1337.auc.util.mc.PlayerList;
 import dev.by1337.bmenu.BMenu;
 import dev.by1337.bmenu.loader.MenuSubLoader;
@@ -56,11 +58,20 @@ public class BAuction extends JavaPlugin {
     private AucLifecycle lifecycle;
     private Metrics metrics;
     private BukkitTask metricsTick;
+    private AuctionBackendBooter.Backend backend;
+    private boolean disabled = true;
+
+    public BAuction() {
+        plugin = this;
+        LibrariesUtil.boot();
+    }
 
     @Override
     public void onLoad() {
+        disabled = false;
         lifecycle = new AucLifecycle();
         AuctionLogBoot.boot();
+        lifecycle.onLoad(this);
         lifecycle.logRegister(AuctionLog.REGISTRY);
 
         plugin = this;
@@ -88,40 +99,87 @@ public class BAuction extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        if (backend != null){
+            throw new IllegalStateException("has old backend");
+        }
+        lifecycle.onPreEnable(this);
+        metrics = new Metrics();
+        metrics.create("loop", MetricFormatter.nanos(), () -> auction.worker().busyNanosThenReset());
+        metrics.create("loop-io", MetricFormatter.nanos(), () -> auction.ioWorker().busyNanosThenReset());
+        lifecycle.metricsBoot(metrics);
+
         playerList = new PlayerList(this);
         eventListener = new BukkitEventListener(this);
         economy = new VaultHook();
         auction = new SimpleAuction(config, this, lifecycle);
-        metrics = new Metrics();
-        metrics.create("loop", MetricFormatter.nanos(), () -> auction.worker().busyNanosThenReset());
-        metrics.create("loop-io", MetricFormatter.nanos(), () -> auction.ioWorker().busyNanosThenReset());
-        metricsTick = getServer().getScheduler().runTaskTimerAsynchronously(this, metrics::tick, 20, 20);
-        ah = new CommandWrapper(CommandBooter.bootUserCommands(config, auction, lifecycle), this);
-        ah.register();
-        aha = new CommandWrapper(
-                CommandBooter.bootAdminCommands(config, auction, lifecycle)
-                        .sub(new Command<CommandSender>("reload").executor(s -> {
-                            long nanos = System.nanoTime();
-                            onDisable();
-                            onLoad();
-                            onEnable();
-                            BMenu.menuLoader().reload();
-                            s.sendMessage("done in " + (System.nanoTime() - nanos) / 1_000_000D);
-                        }))
-                , this);
-        aha.setPermission("aha.use");
-        aha.register();
+        backend = auction.boot(lifecycle, this, config, () -> {
+            if (disabled) {
+                if (!isEnabled()) return;
+                if (backend != null){
+                    BSUtils.safe(() -> backend.close());
+                    backend = null;
+                }
+                getSLF4JLogger().info("Connected to backend server rebooting...");
+                enable();
+                return;
+            }
+            lifecycle.auctionBooted(auction);
+            metricsTick = getServer().getScheduler().runTaskTimerAsynchronously(this, metrics::tick, 20, 20);
+            ah = new CommandWrapper(CommandBooter.bootUserCommands(config, auction, lifecycle), this);
+            ah.register();
+            aha = new CommandWrapper(
+                    CommandBooter.bootAdminCommands(config, auction, lifecycle)
+                            .sub(new Command<CommandSender>("reload").executor(s -> {
+                                long nanos = System.nanoTime();
+                                disable();
+                                BSUtils.safe(() -> backend.close());
+                                backend = null;
+                                enable();
+                                BMenu.menuLoader().reload();
+                                s.sendMessage("done in " + (System.nanoTime() - nanos) / 1_000_000D);
+                            }))
+                    , this);
+            aha.setPermission("aha.use");
+            aha.register();
+            lifecycle.onPostEnabled(this);
+        }, () -> {
+            System.out.println("on backend disconnected");
+            if (!isEnabled()) return;
+            getSLF4JLogger().warn("backend connection lost! disable plugin");
+            disable();
+        });
+
+    }
+
+    public void disable() {
+        onDisable();
+    }
+
+    public void enable() {
+        onLoad();
+        onEnable();
     }
 
     @Override
     public void onDisable() {
+        disabled = true;
+        BSUtils.safe(() -> lifecycle.onDisable(this));
         BSUtils.safe(() -> metricsTick.cancel());
+        metricsTick = null;
         BSUtils.safe(() -> eventListener.close());
+        eventListener = null;
         BSUtils.safe(() -> playerList.close());
+        playerList = null;
         BSUtils.safe(() -> BMenu.menuLoader().unregisterSubLoader(this));
         BSUtils.safe(() -> ah.close());
         BSUtils.safe(() -> aha.close());
         BSUtils.safe(() -> auction.close());
+        if (!isEnabled()) {
+            System.out.println("disable backend");
+            BSUtils.safe(() -> backend.close());
+            backend = null;
+        }
+        auction = null;
 
         for (HandlerList handlerList : HandlerList.getHandlerLists()) {
             for (RegisteredListener listener : handlerList.getRegisteredListeners()) {

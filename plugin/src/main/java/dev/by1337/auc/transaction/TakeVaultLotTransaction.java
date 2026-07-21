@@ -32,7 +32,7 @@ public class TakeVaultLotTransaction implements Transaction<ActionResult> {
             BAuction.sendMessage("not_owner_lot", who);
             return DENY;
         }
-        Player pl = Bukkit.getPlayer(who);
+        Player pl = BAuction.playerList().getPlayer(who);
         if (pl == null) return DENY;
         ItemStack itemStack = lot.itemStack().asQuantity(lot.count());
         if (!InvUtil.tryAddFully(itemStack, pl.getInventory(), true)) {
@@ -45,7 +45,7 @@ public class TakeVaultLotTransaction implements Transaction<ActionResult> {
                 return;
             }
             MCUtil.ensureMain(() -> {
-                Player player = Bukkit.getPlayer(who);
+                Player player = BAuction.playerList().getPlayer(who);
                 if (player == null) {
                     auction.readdVaultLot(lot).then(v -> {
                         if (v == null || !v.success) {

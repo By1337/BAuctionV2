@@ -4,8 +4,8 @@ import dev.by1337.auc.common.backend.BackendPipelineFactory;
 import dev.by1337.auc.common.handler.BAucRuntime;
 import dev.by1337.auc.config.Config;
 import dev.by1337.auc.handler.SimpleAuction;
-import dev.by1337.auc.pipeline.LocalPipeline;
 import dev.by1337.auc.pipeline.Remote;
+import dev.by1337.auc.util.LibrariesUtil;
 import dev.by1337.sync.bd.DatabaseSource;
 import dev.by1337.sync.client.channel.status.ChannelActiveMessage;
 import dev.by1337.sync.client.channel.status.ChannelInactiveMessage;
@@ -26,8 +26,7 @@ public class AuctionBackendBooter {
 
     private static final Logger log = LoggerFactory.getLogger(AuctionBackendBooter.class);
 
-    public static Backend bootRemote(LocalPipeline localPipeline, Config config, Runnable onReady) {
-        //todo
+    public static Backend bootRemote(Connection connection, Runnable onReady, Runnable onDisabled) {
         var conn = dev.by1337.sync.bukkit.BSync.getConnection("bauc");
         var channel = conn.addChannel("bauctionV2", "bauctionV2", c -> {
             c.pipeline().addLast("bauc-ref", new ChannelHandler() {
@@ -37,13 +36,12 @@ public class AuctionBackendBooter {
 
                 @Override
                 public void handle(ChannelContext ctx, ChannelMessage msg) throws Exception {
-                    localPipeline.eventLoop().assertThread();
                     if (msg instanceof ChannelActiveMessage) {
                         onReady.run();
-                    } else if (msg instanceof ChannelInactiveMessage m) {
-
+                    } else if (msg instanceof ChannelInactiveMessage) {
+                        onDisabled.run();
                     } else {
-                        localPipeline.execute(msg);
+                        connection.write(msg);
                     }
                 }
 
@@ -55,6 +53,7 @@ public class AuctionBackendBooter {
         return new Backend() {
             @Override
             public void close() {
+                conn.removeChannel("bauctionV2");
             }
 
             @Override
@@ -69,7 +68,13 @@ public class AuctionBackendBooter {
         };
     }
 
-    public static Backend bootLocal(LocalPipeline localPipeline, Config config) {
+    public static Backend bootIntegrated(Connection connection, Config config) {
+        var type = config.dbConfig.database.type;
+        if (type.contains("h2")) {
+            LibrariesUtil.bootH2Driver();
+        } else if (type.contains("mariadb")) {
+            LibrariesUtil.bootMariaDbDriver();
+        }
         Pipeline backend = new Pipeline(SimpleAuction.WORKER);
         BackendPipelineFactory.make(backend);
         var databaseSource = new DatabaseSource(config.dbConfig.database, "./bsync");
@@ -87,7 +92,7 @@ public class AuctionBackendBooter {
 
             @Override
             public void forEachConnections(Consumer<Connection> c) {
-                c.accept(localPipeline.asConnection());
+                c.accept(connection);
             }
 
             @Override
@@ -124,7 +129,7 @@ public class AuctionBackendBooter {
 
             @Override
             public void write(Packet packet) {
-                backend.execute(packet, localPipeline.asConnection());
+                backend.execute(packet, connection);
             }
         };
     }

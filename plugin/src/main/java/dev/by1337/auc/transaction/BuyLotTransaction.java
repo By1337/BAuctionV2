@@ -68,7 +68,7 @@ public class BuyLotTransaction implements Transaction<ActionResult> {
             )).ifPresent(id -> auction.users().pushMail(lotSeller, UserMails.makeLotSold(id)));
             auction.users().pushMail(lotSeller, UserMails.makeDepositCents(priceCents));
             MCUtil.ensureMain(() -> {
-                Player player = Bukkit.getPlayer(who);
+                Player player = BAuction.playerList().getPlayer(who);
                 if (player != null) {
                     var item = lot.itemStack().asQuantity(count);
                     var items = player.getInventory().addItem(item).values();

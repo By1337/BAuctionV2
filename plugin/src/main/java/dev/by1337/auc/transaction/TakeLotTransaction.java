@@ -36,7 +36,7 @@ public class TakeLotTransaction implements Transaction<ActionResult> {
                 return;
             }
             MCUtil.ensureMain(() -> {
-                Player player = Bukkit.getPlayer(who);
+                Player player = BAuction.playerList().getPlayer(who);
                 if (player != null) {
                     var item = lot.itemStack.asQuantity(lot.lot.count());
                     var items = player.getInventory().addItem(item).values();

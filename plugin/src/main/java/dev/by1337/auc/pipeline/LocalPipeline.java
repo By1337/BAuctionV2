@@ -39,7 +39,7 @@ public class LocalPipeline {
         this.eventLoop = eventLoop;
     }
 
-    public Connection asConnection(){
+    public Connection asConnection() {
         return connection;
     }
 
@@ -126,14 +126,23 @@ public class LocalPipeline {
 
     public CompletableFuture<Void> closeAll() {
         CompletableFuture<Void> future = new CompletableFuture<>();
+        boolean fromEventLoop = eventLoop.isWorkerThread();
         eventLoop.execute(() -> {
             try {
                 for (Entry handler : handlers) {
-                    handler.handler.close();
+                    try {
+                        handler.handler.close();
+                    } catch (Exception e) {
+                        log.error("Failed to close {}", handler.name, e);
+                    }
                 }
             } finally {
-                //сами handler'ы могут ложить новые таски в eventLoop, отпустим future после тех тасков
-                eventLoop.execute(() -> future.complete(null));
+                if (fromEventLoop) {
+                    future.complete(null);
+                } else {
+                    //сами handler'ы могут ложить новые таски в eventLoop, отпустим future после тех тасков
+                    eventLoop.schedule(() -> future.complete(null));
+                }
             }
         });
         return future;

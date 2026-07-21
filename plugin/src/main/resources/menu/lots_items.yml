@@ -12,23 +12,23 @@
 #пкм купить количество
 
 item_info_lore: &info
-  - '&#30a700&n                        '
-  - '&r '
-  - ' &x&2&F&F&B&2&C$ &fЦена: &x&2&F&F&B&2&C${price}'
-  - ' &x&F&B&B&2&2&C⚡ &fПродавец: &x&F&8&F&2&2&8{seller_name}'
-  - ' &#E9DC00⌚ &fИстекает: &#E9DC00{expires}'
-  - '&#30a700&n                        '
-
+  - ""
+  - "<#FF6600> ➥ Нажмите<#FFFFE6>, чтобы <#00FF00>купить"
+  - "<st><#FF0000>                         "
+  - "<#00FF00>$<#FFFFE6> Ценa:<#00FF00> ${price}"
+  - "<#FFFF00>⭐<#FFFFE6> Продавец:<#FFFF00> {seller_name}"
+  - "<#FF0066>⟲<#FFFFE6> Истeкaeт:<#FF0066> {expires}"
+  - "<st><#FF0000>                         "
 
 vault_lot:
   lore:
-    - ' &x&F&F&A&1&0&E➥ &x&F&F&9&C&1&0Н&x&F&F&9&7&1&1а&x&F&F&9&2&1&3ж&x&F&F&8&D&1&4м&x&F&F&8&8&1&6и&f, чтобы &#FFEE50забрать'
-    - '&#30a700&n                        '
+    - '<#FF6600> ➥ Нажмите<#FFFFE6>, чтобы <#FFFF00>забрать'
+    - "<st><#FF0000>                         "
     - '&r '
-    - ' &x&2&F&F&B&2&C$ &fЦена: &x&2&F&F&B&2&C${price}'
-    - ' &x&F&B&B&2&2&C⚡ &fПродавец: &x&F&8&F&2&2&8{seller_name}'
-    - ' &#E9DC00⌚ &fУдаление: &#E9DC00{expires}'
-    - '&#30a700&n                        '
+    - '<#00FF00>$<#FFFFE6> Цена:<#00FF00>${price}'
+    - "<#FF6600>●<#FFFFE6> Статус:{lot_status}"
+    - '<#FF0066>⟲<#FFFFE6> Удаление: <#FF0066>{expires}'
+    - "<st><#FF0000>                         "
     - '&r '
   on_click: # забрать предмет
     - take_lot: ''
@@ -72,7 +72,7 @@ taken:
 # Когда игрок owner предмета
 owned:
   lore:
-    - ' &x&F&F&A&1&0&E➥ &x&F&F&9&C&1&0Н&x&F&F&9&7&1&1а&x&F&F&9&2&1&3ж&x&F&F&8&D&1&4м&x&F&F&8&8&1&6и&f, чтобы &#FFEE50забрать'
+    - '<#FF6600> ➥ Нажмите<#FFFFE6>, чтобы <#FFFF00>забрать'
     - *info
     - '&r '
   on_click: # забрать предмет
@@ -80,45 +80,45 @@ owned:
 
 one:
   lore:
-    - ' &x&F&F&A&1&0&E➥ &x&F&F&9&C&1&0Н&x&F&F&9&7&1&1а&x&F&F&9&2&1&3ж&x&F&F&8&D&1&4м&x&F&F&8&8&1&6и&f, чтобы &#50FF50купить'
+    - '<#FF6600> ➥ Нажмите<#FFFFE6>, чтобы <#00FF00>купить'
     - *info
     - '&r '
-  on_left_click:
+  on_left_click: # купить +конфирм
     - open:
         menu: 'bauc:confirm'
         on_accept_command: '[buy_lot]'
-  on_shift_left_click:
+  on_shift_left_click: # купить -конфирм
     - buy_lot: ''
 
 container:
   lore:
-    - ' &x&F&F&A&1&0&E➥ &x&F&F&9&C&1&0Н&x&F&F&9&7&1&1а&x&F&F&9&2&1&3ж&x&F&F&8&D&1&4м&x&F&F&8&8&1&6и&f, чтобы &#50FF50купить'
+    - '<#FF6600> ➥ Нажмите<#FFFFE6>, чтобы <#00FF00>купить'
     - *info
     - '&r '
     - '&#E99100↪ &fНажмите &#E99100Пкм'
     - '&#E99100 &fчтобы осмотреть содержимое.'
     - ''
-  on_left_click:
+  on_left_click: # купить +конфирм
     - open:
         menu: 'bauc:confirm'
         on_accept_command: '[buy_lot]'
-  on_shift_left_click:
+  on_shift_left_click: # купить -конфирм
     - buy_lot: ''
-  on_right_click:
+  on_right_click: # открыть шалкер
     - open: 'bauc:container_view'
 
 many:
   lore:
-    - ' &x&F&F&A&1&0&E➥ &x&F&F&9&C&1&0Н&x&F&F&9&7&1&1а&x&F&F&9&2&1&3ж&x&F&F&8&D&1&4м&x&F&F&8&8&1&6и&f, чтобы &#50FF50купить'
+    - '<#FF6600> ➥ Нажмите<#FFFFE6>, чтобы <#00FF00>купить'
     - *info
     - '&r '
-  on_left_click:
+  on_left_click: # купить +конфирм
     - open:
         menu: 'bauc:confirm'
         on_accept_command: '[buy_lot]'
-  on_shift_left_click:
+  on_shift_left_click: # купить -конфирм
     - buy_lot: ''
-  on_right_click:
+  on_right_click: # купить количество
     - open:
         menu: 'bauc:select_count'
         on_accept_command: '[buy_lot] {result_count}'

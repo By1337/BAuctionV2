@@ -1,5 +1,6 @@
 package dev.by1337.auc.handler;
 
+import dev.by1337.auc.BAuction;
 import dev.by1337.auc.config.Config;
 import dev.by1337.auc.handler.eco.EcoGiver;
 import dev.by1337.auc.handler.event.UserMailEvent;
@@ -15,10 +16,13 @@ import dev.by1337.auc.pipeline.LocalPipeline;
 import dev.by1337.auc.pipeline.request.LocalRequestsHandler;
 import dev.by1337.auc.registry.AucRegistries;
 import dev.by1337.auc.user.AucUser;
+import dev.by1337.auc.util.mc.MCUtil;
 import dev.by1337.sync.DataManager;
 import dev.by1337.sync.PlayerDataRepository;
 import dev.by1337.sync.common.util.BSUtils;
 import dev.by1337.sync.common.work.EventLoopWorker;
+import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,18 +37,18 @@ public class SimpleAuction {
     public static final EventLoopWorker IO_WORKER = new EventLoopWorker("bauc-io");
     private static final Logger log = LoggerFactory.getLogger(SimpleAuction.class);
 
-    private final LocalPipeline pipeline;
+    private LocalPipeline pipeline;
 
     private final Config config;
-    private final LotsRepository lotsRepository;
-    private final LotsIndexer indexer;
-    private final Tag2IdService tag2id = Tag2IdService.INSTANCE;
-    private final PlayerNameService nameService;
-    private final Auction auction;
-    private final PlayerDataRepository<AucUser> users;
-    private final LogRepository logRepo;
+    private LotsRepository lotsRepository;
+    private LotsIndexer indexer;
+    private Tag2IdService tag2id = Tag2IdService.INSTANCE;
+    private PlayerNameService nameService;
+    private Auction auction;
+    private PlayerDataRepository<AucUser> users;
+    private LogRepository logRepo;
     private final AucRegistries registries;
-    private final AuctionBackendBooter.Backend backend;
+    private AuctionBackendBooter.Backend backend;
 
 
     public SimpleAuction(Config config, Plugin plugin, AucLifecycle lifecycle) {
@@ -53,13 +57,14 @@ public class SimpleAuction {
         this.config.boot(this);
         lifecycle.bootAucRegistries(registries);
         registries.writeLock();
-
         if (registries.sorting.size() == 0) throw new IllegalStateException("The sort list cannot be empty!");
         if (registries.category.size() == 0) throw new IllegalStateException("The category list cannot be empty!");
+        // backend = AuctionBackendBooter.bootRemote(pipeline, config, this::onReady);
+    }
 
-
+    public AuctionBackendBooter.Backend boot(AucLifecycle lifecycle, Plugin plugin, Config config, Runnable post_boot, Runnable onRemoteDisconnect) {
         users = PlayerDataRepository.create(
-                "main",
+                config.dbConfig.users_repo,
                 plugin,
                 new DataManager<>() {
                     @Override
@@ -95,18 +100,35 @@ public class SimpleAuction {
                 .addLast("lot_sold_notifier", new LotSoldNotifier())
         ;
         lifecycle.bootAucPipeline(pipeline);
-
-        backend = AuctionBackendBooter.bootLocal(pipeline, config);
-        onReady();
-       // backend = AuctionBackendBooter.bootRemote(pipeline, config, this::onReady);
+        var server_type = config.dbConfig.server_type;
+        if (server_type.equals("integrated")) {
+            backend = AuctionBackendBooter.bootIntegrated(pipeline.asConnection(), config);
+            onReady();
+            post_boot.run();
+            return backend;
+        } else if (server_type.equals("bsync")) {
+           return backend = AuctionBackendBooter.bootRemote(pipeline.asConnection(),
+                    () -> {
+                        onReady();
+                        post_boot.run();
+                    },
+                    onRemoteDisconnect
+            );
+        } else {
+            throw new IllegalStateException("Unknown server type " + server_type);
+        }
     }
-    private void onReady(){
+
+    public void onReady() {
         pipeline.initAll(backend, this);
+    }
+
+    public AuctionBackendBooter.Backend backend() {
+        return backend;
     }
 
     public void close() {
         BSUtils.safe(() -> pipeline.closeAll().get(15, TimeUnit.SECONDS));
-        BSUtils.safe(backend::close);
         BSUtils.safe(users::close);
     }
 
