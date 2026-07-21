@@ -69,6 +69,7 @@ public class ClientItemStack {
     public ItemModel itemModel() {
         return itemModel;
     }
+
     public ItemModel itemModel(int count) {
         return itemModel.withAmount(count);
     }

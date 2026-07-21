@@ -11,6 +11,7 @@ import dev.by1337.auc.pipeline.LocalPipeline;
 import dev.by1337.auc.pipeline.Remote;
 import dev.by1337.auc.search.PlayerVaultResult;
 import dev.by1337.auc.search.SearchResult;
+import dev.by1337.auc.search.filter.PriceLimiterSearchFilter;
 import dev.by1337.auc.search.filter.SearchFilter;
 import dev.by1337.sync.common.channel.ChannelMessage;
 import dev.by1337.sync.common.work.EventLoopWorker;
@@ -76,13 +77,13 @@ public class LotsIndexer implements LocalChannelHandler {
             mask.and(ownerMask);
         }
         var set = sorted[sorting2id.getInt(sorting.id())];
-        return new SearchResult(mask.cardinality(), mask, set.navigableKeySet().iterator());
+        return new SearchResult(mask.cardinality(), mask, set.navigableKeySet().iterator(), filter instanceof PriceLimiterSearchFilter p ? p.maxPrice : -1L);
     }
 
     public SearchResult search(@Nullable SearchFilter filter, Sorting sorting) {
         @Nullable BitSetPool.PooledBitSet mask = filter != null ? filter.search(this) : null;
         var set = sorted[sorting2id.getInt(sorting.id())];
-        return new SearchResult(mask != null ? mask.cardinality() : set.size(), mask, set.navigableKeySet().iterator());
+        return new SearchResult(mask != null ? mask.cardinality() : set.size(), mask, set.navigableKeySet().iterator(), filter instanceof PriceLimiterSearchFilter p ? p.maxPrice : -1L);
     }
 
     public @Nullable BitSetPool.PooledBitSet findLotsWithTags(int @Nullable [] and, int @Nullable [] not) {

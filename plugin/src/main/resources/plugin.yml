@@ -11,3 +11,5 @@ softdepend:
 permissions:
   aha.*:
     default: op
+  bauc.*:
+    default: op

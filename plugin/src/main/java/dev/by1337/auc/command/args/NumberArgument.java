@@ -15,9 +15,13 @@ public class NumberArgument<C> extends Argument<C, Number> {
     public void parse(C ctx, CommandReader reader, ArgumentMap out) throws CommandMsgError {
         String str = reader.readString();
         if (str.isEmpty()) return;
-        str = str.replace(",", "").replace(".", "");
+        str = str
+                .replace(",", "")
+                .replace(".", "")
+                .replace("к", "k")
+        ;
         try {
-            out.put(name, (Number) FastExpressionParser.parse(str));
+            out.put(name, FastExpressionParser.parse(str));
         } catch (FastExpressionParser.MathFormatException ignored) {
         }
     }
@@ -29,9 +33,12 @@ public class NumberArgument<C> extends Argument<C, Number> {
             suggestions.suggest("10");
             return;
         }
-        str = str.replace(",", "").replace(".", "");
+        str = str
+                .replace(",", "")
+                .replace(".", "")
+                .replace("к", "k")
+        ;
         if (str.endsWith("*")) {
-
             if (ctx instanceof Player pl) {
                 var item = pl.getInventory().getItemInMainHand();
                 int x = item.getAmount();

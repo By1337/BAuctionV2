@@ -164,6 +164,7 @@ public abstract class LotsMenu extends AbstractMenu {
         }
         var next = searchResult.next();
         if (next != null) lots.add(next);
+        else maxPage = currentPage;
         hasNextPage = lots.size() > (currentPage + 1) * slots.length;
     }
 

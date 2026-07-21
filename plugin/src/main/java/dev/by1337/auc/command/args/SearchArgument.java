@@ -1,6 +1,8 @@
 package dev.by1337.auc.command.args;
 
+import dev.by1337.auc.config.Config;
 import dev.by1337.auc.search.SearchManager;
+import dev.by1337.auc.search.filter.PriceLimiterSearchFilter;
 import dev.by1337.auc.search.filter.SearchFilter;
 import dev.by1337.auc.search.filter.SearchFilterAndList;
 import dev.by1337.auc.util.ByLocaleSelector;
@@ -17,10 +19,13 @@ import java.util.Locale;
 public class SearchArgument<C extends CommandSender> extends Argument<C, Pair<String, SearchFilter>> {
     private static final Logger log = LoggerFactory.getLogger(SearchArgument.class);
     private final ByLocaleSelector<SearchManager> search;
+    private final NumberArgument<C> numberArgument = new NumberArgument<>("$number");
+    private final Config config;
 
-    public SearchArgument(String name, ByLocaleSelector<SearchManager> search) {
+    public SearchArgument(String name, ByLocaleSelector<SearchManager> search, Config config) {
         super(name);
         this.search = search;
+        this.config = config;
     }
 
     @Override
@@ -31,22 +36,35 @@ public class SearchArgument<C extends CommandSender> extends Argument<C, Pair<St
             log.error("has no SearchManager for locale {}", player.locale());
             return;
         }
-        String str = readAll(reader);
-        var list = manager.trie().parse(str);
+        String input = readAll(reader);
+        String[] in = input.split(" ");
+        long maxPrice = -1;
+        if (config.ah_search_max_price_perm != null && player.hasPermission(config.ah_search_max_price_perm)) {
+            if (in.length > 1 && Character.isDigit(in[in.length - 1].charAt(0))) {
+                numberArgument.parse(c, new CommandReader(in[in.length - 1]), out);
+                Number number = (Number) out.get(numberArgument.name());
+                if (number != null) {
+                    maxPrice = (long) (number.doubleValue() * 100D);
+                }
+                input = input.substring(0, input.lastIndexOf(' '));
+            }
+        }
+
+        var list = manager.trie().parse(input);
         if (list.isEmpty()) {
             return;
         }
-/*        for (SearchFilter f : list) {
-            if (f instanceof SearchFilterAndNotPair p){
-                for (String s : p.from()) {
-                    System.out.println(s + " " + BAuction.plugin().aucManager().tag2id().getId(s));
-                }
-            }
-        }*/
+        SearchFilter result;
         if (list.size() == 1) {
-            out.put(name, Pair.of(str, list.getFirst()));
+            result = list.getFirst();
         } else {
-            out.put(name, Pair.of(str, new SearchFilterAndList(list)));
+            result = new SearchFilterAndList(list);
+        }
+        if (maxPrice != -1) {
+            //
+            out.put(name, Pair.of(input, new PriceLimiterSearchFilter(result, maxPrice)));
+        } else {
+            out.put(name, Pair.of(input, result));
         }
     }
 
@@ -70,6 +88,15 @@ public class SearchArgument<C extends CommandSender> extends Argument<C, Pair<St
         if ((lastSpace = input.lastIndexOf(' ')) != -1) {
             suggestions.setStart(suggestions.start() + lastSpace + 1);
         }
+        String[] in = input.split(" ");
+        if (config.ah_search_max_price_perm != null && player.hasPermission(config.ah_search_max_price_perm)) {
+            if (in.length > 1 && Character.isDigit(in[in.length - 1].charAt(0))) {
+                suggestions.suggest(in[in.length - 1] + "0");
+                numberArgument.suggest(c, new CommandReader(in[in.length - 1]), suggestions, ignored);
+                return;
+            }
+        }
+
         var s = manager.trie().getSuggestions(input, 100);
         s.sort(Comparator.comparingInt(String::length));
         for (String suggestion : s) {

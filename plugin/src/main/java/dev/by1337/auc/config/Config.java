@@ -34,7 +34,8 @@ public class Config {
             YamlDecoder.STRING.listOf().fieldOf("sorting"),
             readFile("database.yml").and(DbConfig.DECODER).fieldOf(),
             CommandsConf.DECODER.fieldOf("commands"),
-            SlotsConf.DECODER.fieldOf("slots")
+            SlotsConf.DECODER.fieldOf("slots"),
+            YamlDecoder.STRING.fieldOf("ah_search_max_price_perm")
     );
     private static final Logger log = LoggerFactory.getLogger(Config.class);
     public final MessageManager eventCtx;
@@ -46,8 +47,9 @@ public class Config {
     public final DbConfig dbConfig;
     public final CommandsConf commands;
     public final SlotsConf slots;
+    public final String ah_search_max_price_perm;
 
-    public Config(AucLifecycle lifecycle, MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual, Categories categories, List<String> sorting, DbConfig dbConfig, CommandsConf commands, SlotsConf slots) {
+    public Config(AucLifecycle lifecycle, MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual, Categories categories, List<String> sorting, DbConfig dbConfig, CommandsConf commands, SlotsConf slots, String ahSearchMaxPricePerm) {
         this.eventCtx = eventCtx;
         this.tags = tags;
         tagsExtractor = new TagsExtractor(tags);
@@ -57,6 +59,7 @@ public class Config {
         this.dbConfig = dbConfig;
         this.commands = commands;
         this.slots = slots;
+        ah_search_max_price_perm = ahSearchMaxPricePerm;
         var cmd = lifecycle.bootMessagesCommand(eventCtx.commands());
         cmd.sub(new Command<EventContext>("[visual]").executor(
                 new ArgumentStrings<>("visual"),

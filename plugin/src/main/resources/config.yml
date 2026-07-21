@@ -18,6 +18,8 @@ commands:
     sell: sell
     search: search
 
+ah_search_max_price_perm: 'bauc.search.knyaz' # с какой привилегии будет доступен 'ah search Предмет <макс цена>'
+
 slots:
   # по пермишену выбираем максимальное количество лотов
   # если у игрока есть bauc.default и bauc.vip то слотов у него будет 5 так как bauc.vip даёт 5 слотов против 3 у bauc.default

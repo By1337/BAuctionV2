@@ -1,6 +1,7 @@
 package dev.by1337.auc.command;
 
 import dev.by1337.auc.command.args.SearchArgument;
+import dev.by1337.auc.config.Config;
 import dev.by1337.auc.menu.HomeMenu;
 import dev.by1337.auc.search.SearchManager;
 import dev.by1337.auc.search.filter.SearchFilter;
@@ -15,13 +16,13 @@ import java.util.Map;
 
 public class SearchCommand extends Command<CommandSender> {
 
-    public SearchCommand(String name, Map<String, SearchManager> search) {
+    public SearchCommand(String name, Map<String, SearchManager> search, Config config) {
         super(name);
         requires(s -> s instanceof Player);
         ByLocaleSelector<SearchManager> selector = new ByLocaleSelector<>("ru_RU");
         search.values().forEach(v -> selector.add(v.locale(), v));
         executor(
-                new SearchArgument<>("filter", selector),
+                new SearchArgument<>("filter", selector, config),
                 this::run
         );
     }

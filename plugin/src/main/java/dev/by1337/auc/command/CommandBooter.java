@@ -48,7 +48,14 @@ public class CommandBooter {
             cmd.sub(new SellCommand(cfg.rename("dsell"), true));
         }
         if (!cfg.disabled_commands.contains("search")) {
-            cmd.sub(new SearchCommand(cfg.rename("search"), config.tags.search));
+            cmd.sub(new SearchCommand(cfg.rename("search"), config.tags.search, config));
+        }
+        if (!cfg.disabled_commands.contains("help")) {
+            cmd.sub(new Command<CommandSender>("help").executor(s -> {
+                if (s instanceof Player player){
+                    BAuction.sendMessage("ah_help", player);
+                }
+            }));
         }
 
         cmd.executor(
