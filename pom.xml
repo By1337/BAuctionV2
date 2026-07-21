@@ -2,10 +2,10 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>dev.by1337.auc</groupId>
-  <artifactId>BAuctionV2</artifactId>
+  <artifactId>bauc-root</artifactId>
   <version>1.0</version>
   <packaging>pom</packaging>
-  <name>BAuctionV2</name>
+  <name>bauc-root</name>
     <modules>
         <module>plugin</module>
       <module>common</module>

@@ -3,14 +3,21 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>dev.by1337.auc</groupId>
-        <artifactId>BAuctionV2</artifactId>
+        <artifactId>bauc-root</artifactId>
         <version>1.0</version>
     </parent>
-    <artifactId>plugin</artifactId>
+    <artifactId>BAuctionV2</artifactId>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>by1337-repo</id>
+            <url>https://repo.by1337.space/repository/maven-releases/</url>
+        </pluginRepository>
+    </pluginRepositories>
 
     <build>
         <defaultGoal>clean install</defaultGoal>
@@ -36,6 +43,12 @@
                         </goals>
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>org.mariadb.jdbc:*</exclude>
+                                    <exclude>com.h2database:*</exclude>
+                                </excludes>
+                            </artifactSet>
                             <relocations>
                                 <relocation>
                                     <pattern>dev.by1337.edsl</pattern>
@@ -57,6 +70,32 @@
                         </manifestEntries>
                     </archive>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>dev.by1337.plugin.plugins</groupId>
+                <artifactId>all-in-one-plugin</artifactId>
+                <version>1.4</version>
+                <configuration>
+                    <output>${artifactId}-${version}-all-in-one.jar</output>
+                    <artefacts>
+                        <artefact>org.mariadb.jdbc:mariadb-java-client:*</artefact>
+                        <artefact>com.h2database:h2:*</artefact>
+                        <artefact>com.zaxxer:HikariCP:*</artefact>
+                        <artefact>com.github.ben-manes.caffeine:caffeine:*</artefact>
+                        <artefact>org.roaringbitmap:RoaringBitmap:*</artefact>
+                        <artefact>dev.by1337.sync:bsync-common:*</artefact>
+                        <artefact>dev.by1337.sync:bsync-client:*</artefact>
+                    </artefacts>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>create-all-in-one</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
         <resources>
@@ -100,6 +139,49 @@
     </repositories>
 
     <dependencies>
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>3.5.2</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.4.240</version>
+            <scope>runtime</scope>
+        </dependency>
+        <!--<dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>7.0.2</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>3.2.3</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.roaringbitmap</groupId>
+            <artifactId>RoaringBitmap</artifactId>
+            <version>1.6.14</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>dev.by1337.sync</groupId>
+            <artifactId>bsync-common</artifactId>
+            <version>1.0</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>dev.by1337.sync</groupId>
+            <artifactId>bsync-client</artifactId>
+            <version>1.0</version>
+            <scope>runtime</scope>
+        </dependency>-->
+
         <dependency>
             <groupId>org.roaringbitmap</groupId>
             <artifactId>RoaringBitmap</artifactId>

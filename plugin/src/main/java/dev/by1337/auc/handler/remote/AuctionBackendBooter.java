@@ -5,7 +5,7 @@ import dev.by1337.auc.common.handler.BAucRuntime;
 import dev.by1337.auc.config.Config;
 import dev.by1337.auc.handler.SimpleAuction;
 import dev.by1337.auc.pipeline.Remote;
-import dev.by1337.auc.util.LibrariesUtil;
+import dev.by1337.auc.util.libs.LibrariesUtil;
 import dev.by1337.sync.bd.DatabaseSource;
 import dev.by1337.sync.client.channel.status.ChannelActiveMessage;
 import dev.by1337.sync.client.channel.status.ChannelInactiveMessage;

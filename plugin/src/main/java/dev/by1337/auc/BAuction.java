@@ -15,7 +15,7 @@ import dev.by1337.auc.listener.BukkitEventListener;
 import dev.by1337.auc.menu.MenuBooter;
 import dev.by1337.auc.metrics.MetricFormatter;
 import dev.by1337.auc.metrics.Metrics;
-import dev.by1337.auc.util.LibrariesUtil;
+import dev.by1337.auc.util.libs.LibrariesUtil;
 import dev.by1337.auc.util.mc.PlayerList;
 import dev.by1337.bmenu.BMenu;
 import dev.by1337.bmenu.loader.MenuSubLoader;
