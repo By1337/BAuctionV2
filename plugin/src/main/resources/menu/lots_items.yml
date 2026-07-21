@@ -10,10 +10,10 @@
 #
 #если больше 1 (шалкер и мешочек максимум 1)
 #пкм купить количество
+#
+# любой предмет f - найти аналоги
 
 item_info_lore: &info
-  - ""
-  - "<#FF6600> ➥ Нажмите<#FFFFE6>, чтобы <#00FF00>купить"
   - "<st><#FF0000>                         "
   - "<#00FF00>$<#FFFFE6> Ценa:<#00FF00> ${price}"
   - "<#FFFF00>⭐<#FFFFE6> Продавец:<#FFFF00> {seller_name}"
@@ -39,7 +39,10 @@ sold:
   lore:
     - ""
     - *info
-    - '&r '
+    - '<gray>f чтобы найти аналоги'
+  on_swap_offhand_click:
+    - find_analogs: ''
+    - delay: '1 [research]' # у майна какие-то баги из-за чего предмет по которому кликнули через f остаётся...
   all_flags: true
   on_click:
     - '<#FF0000>[✘] Ошибка!<#FFFFE6> Этот товар не актуален!'
@@ -51,7 +54,10 @@ purchased:
   lore:
     - ""
     - *info
-    - '&r '
+    - '<gray>f чтобы найти аналоги'
+  on_swap_offhand_click:
+    - find_analogs: ''
+    - delay: '1 [research]'
   all_flags: true
   on_click:
     - '<#FF0000>[✘] Ошибка!<#FFFFE6> Вы уже купили этот товар!'
@@ -63,7 +69,10 @@ taken:
   lore:
     - ""
     - *info
-    - '&r '
+    - '<gray>f чтобы найти аналоги'
+  on_swap_offhand_click:
+    - find_analogs: ''
+    - delay: '1 [research]'
   all_flags: true
   on_click:
     - '<#FF0000>[✘] Ошибка!<#FFFFE6> Вы уже забрали этот товар!'
@@ -74,7 +83,10 @@ owned:
   lore:
     - '<#FF6600> ➥ Нажмите<#FFFFE6>, чтобы <#FFFF00>забрать'
     - *info
-    - '&r '
+    - '<gray>f чтобы найти аналоги'
+  on_swap_offhand_click:
+    - find_analogs: ''
+    - delay: '1 [research]'
   on_click: # забрать предмет
     - take_lot: ''
 
@@ -82,7 +94,10 @@ one:
   lore:
     - '<#FF6600> ➥ Нажмите<#FFFFE6>, чтобы <#00FF00>купить'
     - *info
-    - '&r '
+    - '<gray>f чтобы найти аналоги'
+  on_swap_offhand_click:
+    - find_analogs: ''
+    - delay: '1 [research]'
   on_left_click: # купить +конфирм
     - open:
         menu: 'bauc:confirm'
@@ -95,9 +110,12 @@ container:
     - '<#FF6600> ➥ Нажмите<#FFFFE6>, чтобы <#00FF00>купить'
     - *info
     - '&r '
-    - '&#E99100↪ &fНажмите &#E99100Пкм'
-    - '&#E99100 &fчтобы осмотреть содержимое.'
-    - ''
+    - '<#E99100>↪ <white>Нажмите <#E99100>Пкм'
+    - '<#E99100> <white>чтобы осмотреть содержимое.'
+    - '<gray>f чтобы найти аналоги'
+  on_swap_offhand_click:
+    - find_analogs: ''
+    - delay: '1 [research]'
   on_left_click: # купить +конфирм
     - open:
         menu: 'bauc:confirm'
@@ -112,6 +130,12 @@ many:
     - '<#FF6600> ➥ Нажмите<#FFFFE6>, чтобы <#00FF00>купить'
     - *info
     - '&r '
+    - '<#E99100>↪ <white>Нажмите <#E99100>Пкм'
+    - '<#E99100> <white>чтобы купить количество'
+    - '<gray>f чтобы найти аналоги'
+  on_swap_offhand_click:
+    - find_analogs: ''
+    - delay: '1 [research]'
   on_left_click: # купить +конфирм
     - open:
         menu: 'bauc:confirm'

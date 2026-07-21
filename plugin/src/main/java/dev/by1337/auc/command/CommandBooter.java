@@ -221,20 +221,16 @@ public class CommandBooter {
 
         AtomicReference<Runnable> request = new AtomicReference<>();
         request.set(() -> {
-            if (remaining.decrementAndGet() < 0) {
+            var x = remaining.decrementAndGet();
+            if (x == 0){
+                done.run();
                 return;
             }
-
+            if (x < 0) return;
             maker.get().then(v -> {
-                then.accept(v);
-
                 SimpleAuction.WORKER.assertThread();
-
-                if (remaining.get() > 0) {
-                    SimpleAuction.WORKER.schedule(request.get());
-                } else {
-                    done.run();
-                }
+                then.accept(v);
+                SimpleAuction.WORKER.schedule(request.get());
             });
         });
 

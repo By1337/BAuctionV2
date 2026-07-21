@@ -4,6 +4,7 @@ import dev.by1337.auc.BAuction;
 import dev.by1337.auc.auc.ClientAucLot;
 import dev.by1337.auc.auc.ClientVaultLot;
 import dev.by1337.auc.command.args.NumberArgument;
+import dev.by1337.auc.search.filter.SearchFilterAndNotPair;
 import dev.by1337.auc.transaction.BuyLotTransaction;
 import dev.by1337.auc.transaction.TakeLotTransaction;
 import dev.by1337.auc.transaction.TakeVaultLotTransaction;
@@ -54,32 +55,48 @@ class Commands {
             .sub(new Command<ExecuteContext>("[buy_lot]").executor(
                     new NumberArgument<>("count"),
                     (ctx, count0) -> {
-                var menu = ctx.menu;
-                Player viewer = menu.viewer();
-                var auction = BAuction.auction();
-                if (auction == null) {
-                    BAuction.sendMessage("auction_is_disabled", viewer);
-                    return;
-                }
-                if (menu.lastClickedItemPayload() instanceof ClientAucLot lot) {
-                    int count = count0 != null ? Math.min(lot.count(), count0.intValue()) : lot.count();
-                    auction.apply(new BuyLotTransaction(viewer.getUniqueId(), lot, count))
-                            .then(v -> {
-                                if (v == null || !v.success) return;
-                                if (count != lot.count()) return;
-                                if (menu.isOpened()) {
-                                    if (menu instanceof LotsMenu lotsMenu) {
-                                        lotsMenu.rewriteLotDisplay(lot, lotsMenu.cfg().purchased.build(lot.itemStack.itemModel(), lot.placeholders()));
-                                    }
-                                    menu.refresh();
-                                }
-                            });
+                        var menu = ctx.menu;
+                        Player viewer = menu.viewer();
+                        var auction = BAuction.auction();
+                        if (auction == null) {
+                            BAuction.sendMessage("auction_is_disabled", viewer);
+                            return;
+                        }
+                        if (menu.lastClickedItemPayload() instanceof ClientAucLot lot) {
+                            int count = count0 != null ? Math.min(lot.count(), count0.intValue()) : lot.count();
+                            auction.apply(new BuyLotTransaction(viewer.getUniqueId(), lot, count))
+                                    .then(v -> {
+                                        if (v == null || !v.success) return;
+                                        if (count != lot.count()) return;
+                                        if (menu.isOpened()) {
+                                            if (menu instanceof LotsMenu lotsMenu) {
+                                                lotsMenu.rewriteLotDisplay(lot, lotsMenu.cfg().purchased.build(lot.itemStack.itemModel(), lot.placeholders()));
+                                            }
+                                            menu.refresh();
+                                        }
+                                    });
 
-                } else {
-                    log.error("{} is not a auction lot failed to buy_lot", menu.lastClickedItemPayload());
-                }
-            }))
-            ;
+                        } else {
+                            log.error("{} is not a auction lot failed to buy_lot", menu.lastClickedItemPayload());
+                        }
+                    }))
+            .sub(new Command<ExecuteContext>("[find_analogs]").executor(
+                    (ctx) -> {
+                        var menu = ctx.menu;
+                        Player viewer = menu.viewer();
+                        var auction = BAuction.auction();
+                        if (auction == null) {
+                            BAuction.sendMessage("auction_is_disabled", viewer);
+                            return;
+                        }
+                        if (menu.lastClickedItemPayload() instanceof ClientAucLot lot) {
+                            if (menu instanceof HomeMenu h) {
+                                h.setSearch(new SearchFilterAndNotPair(lot.itemStack.tags(), null, new String[0]));
+                            }
+                        } else {
+                            log.error("{} is not a auction lot failed to find_analogs", menu.lastClickedItemPayload());
+                        }
+                    }));
 
     public static Command<ExecuteContext> create() {
         return MENU_COMMANDS.copy();

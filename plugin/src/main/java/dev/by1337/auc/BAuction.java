@@ -89,6 +89,7 @@ public class BAuction extends JavaPlugin {
         BMenu.menuLoader().registerSubLoader(this, subLoader);
 
         File bmHome = BMenu.menuLoader().homeDir();
+        ResourceUtil.saveIfNotExist("menu.txt", this);
         ResourceUtil.saveIfNotExist("menu/vault.yml", this, new File(bmHome, "bauc/vault.yml"));
         ResourceUtil.saveIfNotExist("menu/lots_items.yml", this, new File(bmHome, "bauc/lots_items.yml"));
         ResourceUtil.saveIfNotExist("menu/home.yml", this, new File(bmHome, "bauc/home.yml"));
