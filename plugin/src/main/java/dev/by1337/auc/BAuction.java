@@ -76,6 +76,7 @@ public class BAuction extends JavaPlugin {
     public BAuction() {
         plugin = this;
         LibrariesUtil.boot();
+        AucPackets.boot();
     }
 
     @Override
@@ -287,11 +288,6 @@ public class BAuction extends JavaPlugin {
 
     public static void sendMessage(String key, Player player) {
         plugin().config.eventCtx.call(key, player);
-    }
-
-    static {
-        //static?
-        AucPackets.boot();
     }
 
     public static class ResourceUtil {
