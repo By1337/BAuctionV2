@@ -15,7 +15,9 @@ import dev.by1337.auc.listener.BukkitEventListener;
 import dev.by1337.auc.menu.MenuBooter;
 import dev.by1337.auc.metrics.MetricFormatter;
 import dev.by1337.auc.metrics.Metrics;
+import dev.by1337.auc.papi.PlaceholderHook;
 import dev.by1337.auc.util.libs.LibrariesUtil;
+import dev.by1337.auc.util.luckperms.LuckPermsUtil;
 import dev.by1337.auc.util.mc.PlayerList;
 import dev.by1337.bmenu.BMenu;
 import dev.by1337.bmenu.loader.MenuSubLoader;
@@ -60,6 +62,8 @@ public class BAuction extends JavaPlugin {
     private BukkitTask metricsTick;
     private AuctionBackendBooter.Backend backend;
     private boolean disabled = true;
+    private LuckPermsUtil luckPermsUtil;
+    private PlaceholderHook papiHook;
 
     public BAuction() {
         plugin = this;
@@ -89,23 +93,30 @@ public class BAuction extends JavaPlugin {
         BMenu.menuLoader().registerSubLoader(this, subLoader);
 
         File bmHome = BMenu.menuLoader().homeDir();
-        ResourceUtil.saveIfNotExist("menu.txt", this);
-        ResourceUtil.saveIfNotExist("menu/vault.yml", this, new File(bmHome, "bauc/vault.yml"));
-        ResourceUtil.saveIfNotExist("menu/lots_items.yml", this, new File(bmHome, "bauc/lots_items.yml"));
-        ResourceUtil.saveIfNotExist("menu/home.yml", this, new File(bmHome, "bauc/home.yml"));
-        ResourceUtil.saveIfNotExist("menu/confirm.yml", this, new File(bmHome, "bauc/confirm.yml"));
-        ResourceUtil.saveIfNotExist("menu/select_count.yml", this, new File(bmHome, "bauc/select_count.yml"));
-        ResourceUtil.saveIfNotExist("menu/container_view.yml", this, new File(bmHome, "bauc/container_view.yml"));
-        //ResourceUtil.saveIfNotExist("menu/rent/confirm_eco.yml", this, new File(bmHome, "rent/confirm_eco.yml"));
-        //ResourceUtil.saveIfNotExist("menu/rent/rent.yml", this, new File(bmHome, "rent/rent.yml"));
-        //ResourceUtil.saveIfNotExist("menu/rent/select-currency.yml", this, new File(bmHome, "rent/select-currency.yml"));
+        if (!new File(bmHome, "bauc").exists()) {
+            ResourceUtil.saveIfNotExist("menu.txt", this);
+            ResourceUtil.saveIfNotExist("menu/vault.yml", this, new File(bmHome, "bauc/vault.yml"));
+            ResourceUtil.saveIfNotExist("menu/lots_items.yml", this, new File(bmHome, "bauc/lots_items.yml"));
+            ResourceUtil.saveIfNotExist("menu/home.yml", this, new File(bmHome, "bauc/home.yml"));
+            ResourceUtil.saveIfNotExist("menu/confirm.yml", this, new File(bmHome, "bauc/confirm.yml"));
+            ResourceUtil.saveIfNotExist("menu/select_count.yml", this, new File(bmHome, "bauc/select_count.yml"));
+            ResourceUtil.saveIfNotExist("menu/container_view.yml", this, new File(bmHome, "bauc/container_view.yml"));
+            ResourceUtil.saveIfNotExist("menu/rent/confirm_eco.yml", this, new File(bmHome, "rent/confirm_eco.yml"));
+            ResourceUtil.saveIfNotExist("menu/rent/rent.yml", this, new File(bmHome, "rent/rent.yml"));
+            ResourceUtil.saveIfNotExist("menu/rent/select-currency.yml", this, new File(bmHome, "rent/select-currency.yml"));
+        }
     }
 
     @Override
     public void onEnable() {
-        if (backend != null){
+        if (backend != null) {
             throw new IllegalStateException("has old backend");
         }
+        if (Bukkit.getPluginManager().isPluginEnabled("LuckPerms")) {
+            luckPermsUtil = new LuckPermsUtil();
+        }
+        papiHook = new PlaceholderHook();
+        papiHook.register();
         lifecycle.onPreEnable(this);
         metrics = new Metrics();
         metrics.create("loop", MetricFormatter.nanos(), () -> auction.worker().busyNanosThenReset());
@@ -119,7 +130,7 @@ public class BAuction extends JavaPlugin {
         backend = auction.boot(lifecycle, this, config, () -> {
             if (disabled) {
                 if (!isEnabled()) return;
-                if (backend != null){
+                if (backend != null) {
                     BSUtils.safe(() -> backend.close());
                     backend = null;
                 }
@@ -167,6 +178,7 @@ public class BAuction extends JavaPlugin {
     @Override
     public void onDisable() {
         disabled = true;
+        BSUtils.safe(() -> papiHook.unregister());
         BSUtils.safe(() -> lifecycle.onDisable(this));
         BSUtils.safe(() -> metricsTick.cancel());
         metricsTick = null;
@@ -197,6 +209,10 @@ public class BAuction extends JavaPlugin {
                 log.error("bukkit task {}", task);
             }
         }
+    }
+
+    public LuckPermsUtil luckPermsUtil() {
+        return luckPermsUtil;
     }
 
     public BukkitEventListener eventListener() {

@@ -151,37 +151,6 @@
             <version>2.4.240</version>
             <scope>runtime</scope>
         </dependency>
-        <!--<dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <version>7.0.2</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.ben-manes.caffeine</groupId>
-            <artifactId>caffeine</artifactId>
-            <version>3.2.3</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.roaringbitmap</groupId>
-            <artifactId>RoaringBitmap</artifactId>
-            <version>1.6.14</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>dev.by1337.sync</groupId>
-            <artifactId>bsync-common</artifactId>
-            <version>1.0</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>dev.by1337.sync</groupId>
-            <artifactId>bsync-client</artifactId>
-            <version>1.0</version>
-            <scope>runtime</scope>
-        </dependency>-->
-
         <dependency>
             <groupId>org.roaringbitmap</groupId>
             <artifactId>RoaringBitmap</artifactId>
@@ -199,7 +168,6 @@
             <artifactId>common</artifactId>
             <version>1.0</version>
         </dependency>
-
         <dependency>
             <groupId>dev.by1337.sync</groupId>
             <artifactId>bsync-common</artifactId>
@@ -218,17 +186,21 @@
             <version>1.0</version>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>dev.by1337.sync</groupId>
             <artifactId>bsync-k2v</artifactId>
             <version>1.0</version>
         </dependency>
-
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
             <version>1.21.8-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.luckperms</groupId>
+            <artifactId>api</artifactId>
+            <version>5.4</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

@@ -1,6 +1,5 @@
 package dev.by1337.auc.handler;
 
-import dev.by1337.auc.BAuction;
 import dev.by1337.auc.config.Config;
 import dev.by1337.auc.handler.eco.EcoGiver;
 import dev.by1337.auc.handler.event.UserMailEvent;
@@ -16,13 +15,10 @@ import dev.by1337.auc.pipeline.LocalPipeline;
 import dev.by1337.auc.pipeline.request.LocalRequestsHandler;
 import dev.by1337.auc.registry.AucRegistries;
 import dev.by1337.auc.user.AucUser;
-import dev.by1337.auc.util.mc.MCUtil;
 import dev.by1337.sync.DataManager;
 import dev.by1337.sync.PlayerDataRepository;
 import dev.by1337.sync.common.util.BSUtils;
 import dev.by1337.sync.common.work.EventLoopWorker;
-import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -107,7 +103,9 @@ public class SimpleAuction {
             post_boot.run();
             return backend;
         } else if (server_type.equals("bsync")) {
-           return backend = AuctionBackendBooter.bootRemote(pipeline.asConnection(),
+            return backend = AuctionBackendBooter.bootRemote(
+                    config.dbConfig.bsync_channel,
+                    pipeline.asConnection(),
                     () -> {
                         onReady();
                         post_boot.run();

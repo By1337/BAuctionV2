@@ -8,6 +8,7 @@ depend:
   - Vault
 softdepend:
   - BSync
+  - LuckPerms
 permissions:
   aha.*:
     default: op

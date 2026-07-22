@@ -92,7 +92,7 @@ items:
     material: crafting_table
     on_click:
       - '[sound] ui.button.click 1 1'
-      - '[chat] /ah rent'
+      - open: 'auc_rent:home'
 
   # фулл скрыть next_page если нет некст страницы не получится из-за особеностей вычисления {has_next_page}
   next_page:

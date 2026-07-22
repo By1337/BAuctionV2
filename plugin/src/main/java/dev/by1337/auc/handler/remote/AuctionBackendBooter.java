@@ -26,9 +26,9 @@ public class AuctionBackendBooter {
 
     private static final Logger log = LoggerFactory.getLogger(AuctionBackendBooter.class);
 
-    public static Backend bootRemote(Connection connection, Runnable onReady, Runnable onDisabled) {
+    public static Backend bootRemote(String channelId,Connection connection, Runnable onReady, Runnable onDisabled) {
         var conn = dev.by1337.sync.bukkit.BSync.getConnection("bauc");
-        var channel = conn.addChannel("bauctionV2", "bauctionV2", c -> {
+        var channel = conn.addChannel(channelId, "bauctionv2", c -> {
             c.pipeline().addLast("bauc-ref", new ChannelHandler() {
                 @Override
                 public void init(ChannelRuntime runtime) {
@@ -53,7 +53,7 @@ public class AuctionBackendBooter {
         return new Backend() {
             @Override
             public void close() {
-                conn.removeChannel("bauctionV2");
+                conn.removeChannel(channelId);
             }
 
             @Override

@@ -1,0 +1,68 @@
+id: auc_rent:confirm
+provider: default
+type: chest
+size: 45
+title: "<b><#009900>＄<#4D4D4D> Подтверждение покупки"
+args:
+  slot_count: 1
+  hours_count: 1
+  lore: 'todo'
+  perm: 'auc.boost.rent1'
+  balance_perm: 'vault_eco_balance'
+  #take_balance_command: 'eco take _By1337_ {price}'
+  price: 999
+  ttl: '0'
+  is_pp: false
+menu-events:
+  on_open: &open
+    - set_param: ttl %bauctionv2_lp_ttl_{perm}%
+  on_reopen: *open
+items:
+  b:
+    slot: 22
+    name: "<#FF6600>[☃]<#FFFFE6> Аренда:<#FFFF00> {slot_count} слот<#8C8C8C>/<#FF6600>{hours_count} час"
+    amount: '{slot_count}'
+    lore: '{lore}'
+    material: golden_carrot
+    tick_speed: 20
+    on_tick: '[update]'
+    on_click: &do_click
+      - if: '%{balance_perm}% >= {price}'
+        do:
+          - '<#00FF00>[✔] Успешная покупка!'
+          - sound: entity.item.pickup 1 1
+          - console: '{take_balance_command}'
+          - console: 'lp user %player_name% permission unsettemp {perm}'
+          - console: 'lp user %player_name% permission settemp {perm} true {math:ceil((%bauctionv2_lp_ttl_{perm}% + 3600000)/1000)}s'
+          - back: ''
+        else:
+          if: '{is_pp}'
+          do:
+            - |
+              <red>[✘] Ошибка!<white> У Вас не хватает <green>Токенов<white>!
+              <white> Не беда, их можно купить на <yellow>YourServer
+            - sound: entity.villager.no 1 0.7
+            - sound: ui.button.click 1 1
+          else:
+            - '<#FF0000>[✘] Ошибка!<#FFFFE6> Недостаточно средств:<#FFFF00> Монеты<#FFFFE6>!'
+            - sound: entity.creeper.hurt 1 1
+            - sound: ui.button.click 1 1
+  a:
+    slot: 2,10,11,12,18,19,20,21,28,29,30,38
+   #name: "[Купить]"
+    name: "<#00FF00>[Купить]"
+    material: lime_stained_glass_pane
+    on_click: *do_click
+
+  c:
+    slot: 6,14,15,16,23,24,25,26,32,33,34,42
+    name: "<#FF0000>[Отменить]"
+    material: red_stained_glass_pane
+    on_click:
+      - back: ''
+  d:
+    slot: 0,1,3,4,5,7,8,9,13,17,27,31,35,36,37,39,40,41,43,44
+   #name: "YourServer"
+    name: "<gradient:#393939:#7B7B7B>YourS</gradient><#7B7B7B>e<gradient:#6B6B6B:#393939>rver</gradient>"
+    material: black_stained_glass_pane
+

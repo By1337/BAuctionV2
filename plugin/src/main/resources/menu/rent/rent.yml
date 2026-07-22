@@ -1,0 +1,230 @@
+id: auc_rent:home
+provider: default
+type: chest
+size: 45
+title: "<#FF0000>☃ Аренда слотов"
+
+default:
+  slot: &slot
+    args:
+      eco_price: '350000'
+      eco_price_commas: '350,000'
+      pp_price_commas: '490'
+      pp_price: 490
+      eco_limit: 6
+      pp_limit: 12
+      perm: 'auc.boost.rent{slot_count}'
+      squid_only: false
+      expiri_ceil_hours: '{math:ceil(%bauctionv2_lp_ttl_{perm}% / 3600000)}'
+    material: golden_carrot
+    amount: '{slot_count}'
+    name: "<#FF6600>[☃]<#FFFFE6> Аренда:<#FFFF00> {slot_count} слот<#8C8C8C>/<#FF6600>1 час"
+    tick_speed: 20
+    on_tick: '[update]'
+    base_lore: &base_lore
+      - "<#FF6600> ➥ Нажмите<#FFFFE6>, чтобы выбрать валюту"
+      - "<#FF0000><st>                                            "
+      - "<#00FF00> $<#FFFFE6> Цена: <#00FF00>{pp_price_commas} ТК<#FFFFE6> | <#FFFF00>${eco_price_commas}"
+      - "<#009900> ⛁<#FFFFE6> Баланс: <#009900>%playerpoints_points% ТК<#FFFFE6> | <#FF6600>$%vault_eco_balance_commas%"
+      - "<#FF0000><st>                                            "
+    oneOf:
+      - on_view:
+          - '{squid_only}'
+          - '!has auc.boost.squid'
+        lore:
+          - *base_lore
+          - " "
+          - " <#FFFF00>⚠<#FFFFE6> Доступно от:<#FFFF00> Сквид"
+      - on_view: '{expiri_ceil_hours} > 0'
+        enchanted: true
+        lore:
+          - *base_lore
+          - ''
+          - "<#FFFF00>⚠<#FFFFE6> Аренда уже<#00FF00> Активна<#FFFFE6>!"
+          - "<#FF6600>⌛<#FFFFE6> Истечет через:<#FFFF00> %bauctionv2_ms_format_%bauctionv2_lp_ttl_{perm}%%"
+      - lore: *base_lore
+
+items:
+  d:
+    args: &args
+      eco_price: '350000'
+      eco_price_commas: '350,000'
+      pp_price_commas: '490'
+      pp_price: 490
+      eco_limit: 6
+      pp_limit: 12
+      slot_count: 1
+      squid_only: false
+    <<+: *slot
+    on_click:
+      - open:
+          menu: auc_rent:select_currency
+          <<+: *args
+  e:
+    args: &args
+      eco_price: '1000000'
+      eco_price_commas: '1,000,000'
+      pp_price_commas: '490'
+      pp_price: 490
+      eco_limit: 6
+      pp_limit: 12
+      slot_count: 3
+      squid_only: false
+    <<+: *slot
+    on_click:
+      - open:
+          menu: auc_rent:select_currency
+          <<+: *args
+  f:
+    args: &args
+      eco_price: '1500000'
+      eco_price_commas: '1,500,000'
+      pp_price_commas: '970'
+      pp_price: 970
+      eco_limit: 6
+      pp_limit: 12
+      slot_count: 5
+      squid_only: false
+    <<+: *slot
+    on_click:
+      - open:
+          menu: auc_rent:select_currency
+          <<+: *args
+  g:
+    args: &args
+      eco_price: '2500000'
+      eco_price_commas: '2,500,000'
+      pp_price_commas: '1,490'
+      pp_price: 1490
+      eco_limit: 6
+      pp_limit: 12
+      slot_count: 10
+      squid_only: true
+    <<+: *slot
+    on_click:
+      - open:
+          menu: auc_rent:select_currency
+          <<+: *args
+  h:
+    name: "<#FF6600>[☃]<#FFFFE6> Аренда:<#FFFF00> 20 слотов<#8C8C8C>/<#FF6600>1 час"
+    base_lore: &base_lore
+      - "<#FF0000><st>                         "
+      - "<#00FF00> $<#FFFFE6> Цена: <#00FF00>2,490 ТК"
+      - "<#009900> ⛁<#FFFFE6> Баланс: <#009900>%playerpoints_points% ТК"
+      - "<#FF0000><st>                         "
+    amount: 20
+    material: golden_carrot
+    tick_speed: 20
+    on_tick: '[update]'
+    args:
+      expiri_ceil_hours: '{math:ceil(%bauctionv2_lp_ttl_auc.boost.rent20% / 3600000)}'
+    oneOf:
+      - on_view: '{expiri_ceil_hours} == 12'
+        enchanted: true
+        lore:
+          - *base_lore
+          - ""
+          - "<#FFFF00>⚠<#FFFFE6> Аренда уже<#00FF00> Активна<#FFFFE6>!"
+          - "<#FF6600>⌛<#FFFFE6> Истечет через:<#FFFF00> %bauctionv2_ms_format_%bauctionv2_lp_ttl_auc.boost.rent20%%"
+        on_click:
+          - '<#FFFF00>[⚠] Упс!<#FFFFE6> Достигнут лимит аренды:<#FFFF00> 12<#8C8C8C>/<#FF6600>12 час.'
+          - sound: block.glass.place 1 1
+      - on_view: '{expiri_ceil_hours} > 0'
+        enchanted: true
+        lore: &lore
+          - *base_lore
+          - ""
+          - "<#FFFF00>⚠<#FFFFE6> Аренда уже<#00FF00> Активна<#FFFFE6>!"
+          - "<#FF6600>⌛<#FFFFE6> Истечет через:<#FFFF00> %bauctionv2_ms_format_%bauctionv2_lp_ttl_auc.boost.rent20%%"
+          - ""
+          - "<#FF6600>$<#FFFFE6> После покупки аренда"
+          - "<#FF6600>||<#FFFFE6> продлится на<#FFFF00> 1 час"
+          - "<#FF6600>||<#FFFFE6> Лимит:<#FFFF00> {expiri_ceil_hours}<#8C8C8C>/<#FF6600>12 час."
+        on_click:
+          - open:
+              menu: auc_rent:confirm
+              slot_count: '20'
+              lore: *lore
+              perm: 'auc.boost.rent20'
+              balance_perm: 'playerpoints_points'
+              take_balance_command: 'p take %player_name% 2490'
+              price: '2490'
+              is_pp: true
+
+      - lore: &lore
+        - *base_lore
+        on_click:
+          - open:
+              menu: auc_rent:confirm
+              slot_count: '20'
+              lore: *lore
+              perm: 'auc.boost.rent20'
+              balance_perm: 'playerpoints_points'
+              take_balance_command: 'p take %player_name% 2490'
+              price: '2490'
+              is_pp: true
+
+  i:
+    name: "<#FF0000>[⟲]<#FF6600> Вернуться.."
+    all_flags: true
+    material: spectral_arrow
+    on_click:
+      - '[chat] /ah'
+  b:
+    #name: "YourServer"
+    name: "<gradient:#FF0000:#FF5000>YourS</gradient><#FF5000>e<gradient:#FF3C00:#FF0000>rver</gradient>"
+    material: red_stained_glass_pane
+  c:
+    #name: "YourServer"
+    name: "<gradient:#FF6600:#FF1500>YourS</gradient><#FF1500>e<gradient:#FF2900:#FF6600>rver</gradient>"
+    material: orange_stained_glass_pane
+
+animation:
+  - tick: 0
+    opcodes:
+      - set: b 0,1,2,3,5,6,7,8,9,17,18,26,27,35,36,37,38,39,40,41,42,43,44
+      - sound: block.glass.place 1 1
+  - tick: 1
+    opcodes:
+      - set: c 28,29,30,31,32,33,34
+      - sound: block.glass.place 1 1
+  - tick: 2
+    opcodes:
+      - set: c 19,20,21,22,23,24,25
+      - sound: block.glass.place 1 1
+  - tick: 3
+    opcodes:
+      - set: c 10,11,12,13,14,15,16
+      - sound: block.glass.place 1 1
+  - tick: 4
+    opcodes:
+      - set: c 4
+      - sound: block.glass.place 1 1
+  - tick: 5
+    opcodes:
+      - remove: 28,29,30,31,32,33,34
+      - sound: block.glass.place 1 1
+  - tick: 6
+    opcodes:
+      - remove: 19,20,21,22,23,24,25
+      - sound: block.glass.place 1 1
+  - tick: 7
+    opcodes:
+      - remove: 10,11,12,13,14,15,16
+      - sound: block.glass.place 1 1
+  - tick: 8
+    opcodes:
+      - remove: 4
+      - sound: block.glass.place 1 1
+  - tick: 9
+    opcodes:
+      - set: d 20
+      - set: e 21
+      - set: f 22
+      - set: g 23
+      - set: h 24
+      - sound: block.glass.place 1 1
+  - tick: 10
+    opcodes:
+      - set: i 4
+      - sound: block.glass.place 1 1

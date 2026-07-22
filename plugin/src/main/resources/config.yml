@@ -29,12 +29,17 @@ slots:
     - 3 bauc.default
     - 5 bauc.vip
     - 7 bauc.donate
+    - 10 auc.boost.squid # в меню /ah rent также по пермишену auc.boost.squid проверяется что игрок может купить буст для сквида
   # добавляемые слоты, у игрока будет (select_max) + все слоты на которые есть пермишен
   add_slots:
     - 1 bauc.add1
     - 2 bauc.add2
     - 3 bauc.add3
     - 4 bauc.add4
+    - 3 auc.boost.rent3
+    - 5 auc.boost.rent5
+    - 10 auc.boost.rent10
+    - 20 auc.boost.rent20
 
 $barrier: &auto_removal
   material: red_dye

@@ -65,6 +65,13 @@ public class CommandBooter {
                 }
             }));
         }
+        if (!cfg.disabled_commands.contains("rent")) {
+            cmd.sub(new Command<CommandSender>(cfg.rename("rent")).executor(s -> {
+                if (s instanceof Player player) {
+                    BMenu.menuLoader().create("auc_rent:home", player, null).open();
+                }
+            }));
+        }
 
         cmd.executor(
                 new ArgumentString<>("name") {
