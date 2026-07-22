@@ -1,6 +1,8 @@
 package dev.by1337.auc.tag;
 
+import dev.by1337.core.BCore;
 import dev.by1337.core.bridge.registry.LegacyRegistryBridge;
+import dev.by1337.core.util.nbt.BinaryNbt;
 import dev.by1337.core.util.reflect.LambdaMetafactoryUtil;
 import org.bukkit.Material;
 import org.bukkit.Tag;
@@ -31,7 +33,7 @@ public class TagsExtractor {
         result.add(material.getKey().getKey());
 
         var tags = TAGS[material.ordinal()];
-        if (tags != null){
+        if (tags != null) {
             result.addAll(tags);
         }
         if (material.isFlammable()) result.add("flammable");
@@ -62,7 +64,7 @@ public class TagsExtractor {
         }
         if (im instanceof PotionMeta pm) {
             var base = pm.getBasePotionType();
-            if (base != null){
+            if (base != null) {
                 result.add(base.getKey().value());
                 for (PotionEffect potionEffect : base.getPotionEffects()) {
                     result.add(potionEffect.getType().getKey().value());
@@ -94,8 +96,8 @@ public class TagsExtractor {
                 }
             }
         }
-        if (im instanceof BundleMeta bm){
-            if (bm.hasItems()){
+        if (im instanceof BundleMeta bm) {
+            if (bm.hasItems()) {
                 result.add("empty_bundle");
             }
         }
@@ -106,11 +108,21 @@ public class TagsExtractor {
             });
         }
 
-        var map = getPdc(im.getPersistentDataContainer());
-        map.forEach((key, value) -> {
+        var pdc = getPdc(im.getPersistentDataContainer());
+        pdc.forEach((key, value) -> {
             result.add(key);
             result.add(key + ":" + value);
         });
+        var nbt = BCore.getNbtBridge().of(item, null);
+        if (nbt.get("components") instanceof BinaryNbt.CompoundTag components) {
+            if (components.get("minecraft:custom_data") instanceof BinaryNbt.CompoundTag custom_data) {
+                for (String s : custom_data.tags().keySet()) {
+                    if (s.equalsIgnoreCase("publicbukkitvalues")) continue;
+                    var value = custom_data.get(s).toString();
+                    result.add(s + ":" + value);
+                }
+            }
+        }
 
         return config.apply(result);
     }
@@ -119,6 +131,7 @@ public class TagsExtractor {
     private static Function<PersistentDataContainer, Map<String, Object>> GET_RAW;
 
     private Map<String, Object> getPdc(PersistentDataContainer pdc) {
+
         if (GET_RAW != null) {
             return GET_RAW.apply(pdc);
         } else {
@@ -154,7 +167,7 @@ public class TagsExtractor {
         TAGS = new Set[materials.length];
         for (Material material : materials) {
             for (Tag<Material> tag : tags) {
-                if (tag.isTagged(material)){
+                if (tag.isTagged(material)) {
                     var set = TAGS[material.ordinal()];
                     if (set == null)
                         TAGS[material.ordinal()] = set = new HashSet<>();
