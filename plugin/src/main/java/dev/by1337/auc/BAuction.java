@@ -2,6 +2,7 @@ package dev.by1337.auc;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.gson.JsonParser;
+import dev.by1337.auc.addon.AddonLoader;
 import dev.by1337.auc.assets.McLangDownloader;
 import dev.by1337.auc.command.CommandBooter;
 import dev.by1337.auc.common.auc.log.AuctionLog;
@@ -13,6 +14,7 @@ import dev.by1337.auc.handler.Auction;
 import dev.by1337.auc.handler.SimpleAuction;
 import dev.by1337.auc.handler.remote.AuctionBackendBooter;
 import dev.by1337.auc.lifecycle.AucLifecycle;
+import dev.by1337.auc.lifecycle.AucLifecycleImpl;
 import dev.by1337.auc.listener.BukkitEventListener;
 import dev.by1337.auc.menu.MenuBooter;
 import dev.by1337.auc.metrics.MetricFormatter;
@@ -62,13 +64,14 @@ public class BAuction extends JavaPlugin {
     private CommandWrapper aha;
     private PlayerList playerList;
     private BukkitEventListener eventListener;
-    private AucLifecycle lifecycle;
+    private AucLifecycleImpl lifecycle;
     private Metrics metrics;
     private BukkitTask metricsTick;
     private AuctionBackendBooter.Backend backend;
     private boolean disabled = true;
     private LuckPermsUtil luckPermsUtil;
     private PlaceholderHook papiHook;
+    private AddonLoader addonLoader;
 
     public BAuction() {
         plugin = this;
@@ -78,7 +81,10 @@ public class BAuction extends JavaPlugin {
     @Override
     public void onLoad() {
         disabled = false;
-        lifecycle = new AucLifecycle();
+        lifecycle = new AucLifecycleImpl();
+        addonLoader = new AddonLoader(new File(getDataFolder(), "addons"), this);
+        addonLoader.findAddons();
+        lifecycle.addListeners(addonLoader.addons());
         AuctionLogBoot.boot();
         lifecycle.onLoad(this);
         lifecycle.logRegister(AuctionLog.REGISTRY);
@@ -121,6 +127,7 @@ public class BAuction extends JavaPlugin {
         if (Bukkit.getPluginManager().isPluginEnabled("LuckPerms")) {
             luckPermsUtil = new LuckPermsUtil();
         }
+        addonLoader.enableAll();
         papiHook = new PlaceholderHook();
         papiHook.register();
         lifecycle.onPreEnable(this);
@@ -191,6 +198,7 @@ public class BAuction extends JavaPlugin {
     @Override
     public void onDisable() {
         disabled = true;
+        BSUtils.safe(() -> addonLoader.disableAll());
         BSUtils.safe(() -> papiHook.unregister());
         BSUtils.safe(() -> lifecycle.onDisable(this));
         BSUtils.safe(() -> metricsTick.cancel());

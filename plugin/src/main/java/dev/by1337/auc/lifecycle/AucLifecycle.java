@@ -14,7 +14,7 @@ import dev.by1337.cmd.Command;
 import dev.by1337.edsl.context.EventContext;
 import org.bukkit.command.CommandSender;
 
-public class AucLifecycle {
+public abstract class AucLifecycle {
 
     public <T> boolean doSkipTransaction(Transaction<T> transaction) {
         return false;
