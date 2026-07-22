@@ -1,6 +1,8 @@
 package dev.by1337.auc;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.gson.JsonParser;
+import dev.by1337.auc.assets.McLangDownloader;
 import dev.by1337.auc.command.CommandBooter;
 import dev.by1337.auc.common.auc.log.AuctionLog;
 import dev.by1337.auc.common.auc.log.AuctionLogBoot;
@@ -31,6 +33,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredListener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -44,10 +47,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Objects;
 import java.util.UUID;
 
 public class BAuction extends JavaPlugin {
     private static final Logger log = LoggerFactory.getLogger(BAuction.class);
+    private static String latestVersion;
     private Config config;
     private SimpleAuction auction;
     private static BAuction plugin;
@@ -126,6 +131,7 @@ public class BAuction extends JavaPlugin {
 
         playerList = new PlayerList(this);
         eventListener = new BukkitEventListener(this);
+        eventListener.registerListener(PlayerJoinEvent.class, this::onJoin);
         economy = new VaultHook();
         auction = new SimpleAuction(config, this, lifecycle);
         backend = auction.boot(lifecycle, this, config, () -> {
@@ -165,6 +171,12 @@ public class BAuction extends JavaPlugin {
             disable();
         });
 
+    }
+    private void onJoin(PlayerJoinEvent e){
+        if (latestVersion == null) return;
+        if (!e.getPlayer().hasPermission("aha.notify")) return;
+        if (Objects.equals(latestVersion, getPluginMeta().getVersion())) return;
+        BAuction.sendMessage("outdated_plugin", e.getPlayer(), PlaceholderResolver.of("latest", latestVersion));
     }
 
     public void disable() {
@@ -314,6 +326,24 @@ public class BAuction extends JavaPlugin {
         public static YamlMap load(@NotNull String path, @NotNull Plugin plugin) {
             return YamlMap.load(saveIfNotExist(path, plugin));
         }
+    }
+
+
+    static {
+        Thread.startVirtualThread(() -> {
+           try {
+               var json = McLangDownloader.parsePage("https://apiv1.bdev.space/version?id=bauctionv2");
+               //{"status":"ok","version":"1.0"}
+               var v = JsonParser.parseString(json);
+               if (v.isJsonObject()){
+                   var obj = v.getAsJsonObject();
+                   if (obj.has("version")){
+                       latestVersion = obj.get("version").getAsString();
+                   }
+               }
+           } catch (Exception ignored){
+           }
+        });
     }
 
 }

@@ -11,6 +11,7 @@
 # <#FF6600>[☃]<#FFFFE6> После входа на режим необходимо немного подождать перед использованием аукциона. Подождите <#FFFF00>9 сек.
 $lang: ru_RU
 
+outdated_plugin: '<green>[BAuctionV2] Доступна новая версия {latest}'
 sell_success: '<#FF6600>[☃]<#FFFFE6> Предмет <#FF6600>{item_name} x{count} <#FFFFE6>выставлен на продажу за <#FFFF00>${price}<#FFFFE6>!'
 sell_req_item: '<#FF6600>[☃]<#FFFFE6> Вы не можете продать<#FFFF00> Воздух<#FFFFE6>!'
 sell_req_price: '<#FF6600>[☃]<#FFFFE6> Укажите цену продажи!'

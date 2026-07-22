@@ -33,7 +33,7 @@ public class McLangDownloader {
         return saveTo;
     }
 
-    private static String parsePage(String url) {
+    public static String parsePage(String url) {
         HttpURLConnection connection = null;
         try {
             URL url0 = new URL(url);
