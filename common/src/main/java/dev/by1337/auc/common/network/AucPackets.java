@@ -48,6 +48,8 @@ public class AucPackets {
                 .add(C2SGetAllVaultLotsRequest.class, C2SGetAllVaultLotsRequest::new)
                 .add(S2CActualVaultLotsUids.class, S2CActualVaultLotsUids::new)
                 .add(C2SGetVaultLotRequest.class, C2SGetVaultLotRequest::new)
+                .add(C2SPlayerUUIDRequest.class, C2SPlayerUUIDRequest::new)
+                .add(S2CPlayerNameUUIDResponse.class, S2CPlayerNameUUIDResponse::new)
         );
     }
 }

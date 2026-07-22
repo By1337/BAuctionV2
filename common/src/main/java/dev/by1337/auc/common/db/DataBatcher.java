@@ -28,8 +28,9 @@ public class DataBatcher<T> {
     }
 
     private void ioTick() {
-        if (closed || size.get() == 0) return;
-        flush(Integer.MAX_VALUE);
+        if (closed) return;
+        if (size.get() != 0)
+            flush(Integer.MAX_VALUE);
         worker.schedule(this::ioTick, 100);
     }
 

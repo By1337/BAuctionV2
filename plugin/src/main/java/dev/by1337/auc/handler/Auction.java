@@ -26,6 +26,7 @@ import dev.by1337.auc.pipeline.Remote;
 import dev.by1337.auc.search.filter.SearchFilter;
 import dev.by1337.auc.transaction.Transaction;
 import dev.by1337.auc.user.AucUser;
+import dev.by1337.core.util.misc.Pair;
 import dev.by1337.sync.PlayerDataRepository;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import dev.by1337.sync.common.channel.ChannelMessage;
@@ -169,6 +170,10 @@ public class Auction implements LocalChannelHandler {
 
     public ResponseFuture<ActionResult> subtractOrRemoveLot(ClientAucLot lot0, int count) {
         return repo.subtractOrRemoveLot(lot0, count);
+    }
+
+    public ResponseFuture<@Nullable Pair<UUID, String>> findUUID(String name) {
+        return players.findUUID(name);
     }
 
     @Nullable

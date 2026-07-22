@@ -37,7 +37,8 @@ public class Config {
             CommandsConf.DECODER.fieldOf("commands"),
             SlotsConf.DECODER.fieldOf("slots"),
             YamlDecoder.STRING.fieldOf("ah_search_max_price_perm"),
-            DurationParser.DECODER.fieldOf("resell_cooldown")
+            DurationParser.DECODER.fieldOf("resell_cooldown"),
+            DurationParser.DECODER.fieldOf("selling_duration")
     );
     private static final Logger log = LoggerFactory.getLogger(Config.class);
     public final MessageManager eventCtx;
@@ -51,8 +52,9 @@ public class Config {
     public final SlotsConf slots;
     public final String ah_search_max_price_perm;
     public final long resell_cooldown;
+    public final long selling_duration;
 
-    public Config(AucLifecycle lifecycle, MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual, Categories categories, List<String> sorting, DbConfig dbConfig, CommandsConf commands, SlotsConf slots, String ahSearchMaxPricePerm, long resellCooldown) {
+    public Config(AucLifecycle lifecycle, MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual, Categories categories, List<String> sorting, DbConfig dbConfig, CommandsConf commands, SlotsConf slots, String ahSearchMaxPricePerm, long resellCooldown, long sellingDuration) {
         this.eventCtx = eventCtx;
         this.tags = tags;
         tagsExtractor = new TagsExtractor(tags);
@@ -64,6 +66,7 @@ public class Config {
         this.slots = slots;
         ah_search_max_price_perm = ahSearchMaxPricePerm;
         resell_cooldown = resellCooldown;
+        selling_duration = sellingDuration;
         var cmd = lifecycle.bootMessagesCommand(eventCtx.commands());
         cmd.sub(new Command<EventContext>("[visual]").executor(
                 new ArgumentStrings<>("visual"),

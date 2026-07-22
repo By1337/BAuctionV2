@@ -52,7 +52,7 @@ public class ResellTransaction implements Transaction<Boolean> {
                 final ClientVaultLot lot = l;
                 auction.removeVaultLot(lot).then(r -> {
                     if (r == null || !r.success) return;
-                    auction.addLot(lot.itemStack, lot.owner(), TimeUnit.DAYS.toMillis(1), lot.count(), lot.lprice()).then(s -> {
+                    auction.addLot(lot.itemStack, lot.owner(), BAuction.plugin().config().selling_duration, lot.count(), lot.lprice()).then(s -> {
                         if (s == null) {
                             returnItem(lot.itemStack.asQuantity(lot.count()), loc);
                         }
@@ -66,7 +66,7 @@ public class ResellTransaction implements Transaction<Boolean> {
                 final ClientAucLot lot = l;
                 auction.removeLot(lot).then(r -> {
                     if (r == null || !r.success) return;
-                    auction.addLot(lot.itemStack, lot.owner(), TimeUnit.DAYS.toMillis(1), lot.count(), lot.lprice()).then(s -> {
+                    auction.addLot(lot.itemStack, lot.owner(), BAuction.plugin().config().selling_duration, lot.count(), lot.lprice()).then(s -> {
                         if (s == null) {
                             returnItem(lot.itemStack.asQuantity(lot.count()), loc);
                         }

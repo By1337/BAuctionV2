@@ -3,23 +3,22 @@ package dev.by1337.auc.handler.name;
 import dev.by1337.auc.BAuction;
 import dev.by1337.auc.common.network.a2a.A2ASetPlayerNamePacket;
 import dev.by1337.auc.common.network.c2s.C2SPlayerNameRequest;
+import dev.by1337.auc.common.network.c2s.C2SPlayerUUIDRequest;
 import dev.by1337.auc.handler.SimpleAuction;
+import dev.by1337.auc.handler.event.PlayerChangeNameEvent;
 import dev.by1337.auc.pipeline.LocalChannelContext;
 import dev.by1337.auc.pipeline.LocalChannelHandler;
 import dev.by1337.auc.pipeline.LocalPipeline;
 import dev.by1337.auc.pipeline.Remote;
+import dev.by1337.core.util.misc.Pair;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import dev.by1337.sync.common.channel.ChannelMessage;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -39,6 +38,10 @@ public class PlayerNameService implements LocalChannelHandler {
         this.pipeline = pipeline;
         this.remote = remote;
         BAuction.plugin().eventListener().registerListener(PlayerJoinEvent.class, this::onJoin);
+    }
+
+    public ResponseFuture<@Nullable Pair<UUID, String>> findUUID(String name) {
+        return remote.request(new C2SPlayerUUIDRequest(name)).map(v -> Pair.of(v.uuid(), v.name()));
     }
 
     public ResponseFuture<@NotNull PlayerName> loadName(UUID uuid) {
@@ -66,20 +69,30 @@ public class PlayerNameService implements LocalChannelHandler {
     @Override
     public void handle(LocalChannelContext ctx, ChannelMessage msg) throws Exception {
         if (msg instanceof A2ASetPlayerNamePacket(UUID uuid, String name)) {
-            uuid2name.computeIfAbsent(uuid, k -> new PlayerName("$empty")).setName(name);
+            var n = uuid2name.computeIfAbsent(uuid, k -> new PlayerName("$empty"));
+            var old = n.name();
+            if (n.setName(name) && !old.equals("$empty")) {
+                pipeline.execute(new PlayerChangeNameEvent(uuid, name, old));
+            }
         } else {
             ctx.fire(msg);
         }
     }
-    public void setName(UUID uuid, String name){
+
+    public void setName(UUID uuid, String name) {
         pipeline.eventLoop().execute(() -> {
-            if (uuid2name.computeIfAbsent(uuid, k -> new PlayerName("$empty")).setName(name)) {
+            var n = uuid2name.computeIfAbsent(uuid, k -> new PlayerName("$empty"));
+            var old = n.name();
+            if (n.setName(name)) {
                 remote.write(new A2ASetPlayerNamePacket(uuid, name));
+                if (!old.equals("$empty")) {
+                    pipeline.execute(new PlayerChangeNameEvent(uuid, name, old));
+                }
             }
         });
     }
 
-    public void onJoin(PlayerJoinEvent event) {
+    private void onJoin(PlayerJoinEvent event) {
         String name = event.getPlayer().getName();
         UUID uuid = event.getPlayer().getUniqueId();
         setName(uuid, name);

@@ -19,13 +19,14 @@ public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
     private final double price;
     private final int count;
     private boolean skipSlotsCheck;
-    private long sellingDuration = TimeUnit.DAYS.toMillis(1);
+    private long sellingDuration;
 
     public AddLotTransaction(ItemStack itemStack, UUID who, double price, int count) {
         this.itemStack = itemStack.getAmount() != 1 ? itemStack.asOne() : itemStack;
         this.who = who;
         this.count = count;
         this.price = price;
+        sellingDuration = BAuction.plugin().config().selling_duration;
     }
 
     @Override

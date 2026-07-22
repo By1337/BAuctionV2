@@ -53,14 +53,14 @@ public class CommandBooter {
         }
         if (!cfg.disabled_commands.contains("help")) {
             cmd.sub(new Command<CommandSender>(cfg.rename("help")).executor(s -> {
-                if (s instanceof Player player){
+                if (s instanceof Player player) {
                     BAuction.sendMessage("ah_help", player);
                 }
             }));
         }
         if (!cfg.disabled_commands.contains("resell")) {
             cmd.sub(new Command<CommandSender>(cfg.rename("resell")).executor(s -> {
-                if (s instanceof Player player){
+                if (s instanceof Player player) {
                     BAuction.auction().apply(new ResellTransaction(player.getUniqueId()));
                 }
             }));
@@ -221,6 +221,21 @@ public class CommandBooter {
             if (s instanceof Player pl)
                 s.sendMessage(String.valueOf(BAuction.plugin().aucManager().users().getUser(pl.getUniqueId())));
         }));
+        cmd.sub(new Command<CommandSender>("get_uuid").executor(
+                new ArgumentStrings<>("name"),
+                (s, name) -> {
+                    if (name == null){
+                        s.sendMessage("use /aha get_uuid <name>");
+                        return;
+                    }
+                    BAuction.auction().findUUID(name).then(p -> {
+                        if (p == null) {
+                            s.sendMessage("null");
+                        } else {
+                            s.sendMessage(p.getKey() + " " + p.getRight());
+                        }
+                    });
+                }));
         return cmd;
     }
 
@@ -240,7 +255,7 @@ public class CommandBooter {
         AtomicReference<Runnable> request = new AtomicReference<>();
         request.set(() -> {
             var x = remaining.decrementAndGet();
-            if (x == 0){
+            if (x == 0) {
                 done.run();
                 return;
             }

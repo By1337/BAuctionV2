@@ -4,6 +4,7 @@ import dev.by1337.auc.auc.ClientAucLot;
 import dev.by1337.auc.auc.ClientVaultLot;
 import dev.by1337.auc.auc.sort.Sorting;
 import dev.by1337.auc.handler.SimpleAuction;
+import dev.by1337.auc.handler.event.PlayerChangeNameEvent;
 import dev.by1337.auc.handler.name.PlayerNameService;
 import dev.by1337.auc.pipeline.LocalChannelContext;
 import dev.by1337.auc.pipeline.LocalChannelHandler;
@@ -39,7 +40,7 @@ public class LotsIndexer implements LocalChannelHandler {
     private EventLoopWorker eventLoop;
     private final Object2IntOpenHashMap<String> sorting2id = new Object2IntOpenHashMap<>();
     private ConcurrentSkipListMap<ClientAucLot, Boolean>[] sorted;
-    private ConcurrentSkipListMap<String, UUID> normalName2UUID = new ConcurrentSkipListMap<>();
+    private final ConcurrentSkipListMap<String, UUID> normalName2UUID = new ConcurrentSkipListMap<>();
     private final Object2ObjectOpenHashMap<UUID, ConcurrentSkipListMap<ClientVaultLot, Boolean>> owner2vaultLots = new Object2ObjectOpenHashMap<>();
     private final Object2ObjectOpenHashMap<UUID, RoaringBitmap> owner2ownedLots = new Object2ObjectOpenHashMap<>();
     private PlayerNameService playerNames;
@@ -50,6 +51,11 @@ public class LotsIndexer implements LocalChannelHandler {
 
     @Override
     public void handle(LocalChannelContext ctx, ChannelMessage msg) throws Exception {
+        if (msg instanceof PlayerChangeNameEvent(UUID uuid, String newName, String oldName)) {
+            if (normalName2UUID.remove(oldName.toLowerCase(), uuid)) {
+                normalName2UUID.put(newName.toLowerCase(Locale.ROOT), uuid);
+            }
+        }
         ctx.fire(msg);
     }
 
@@ -97,7 +103,7 @@ public class LotsIndexer implements LocalChannelHandler {
             for (int i : and) {
                 if (maxIndex < i) continue;
                 var set = index[i];
-                if (set == null){
+                if (set == null) {
                     if (base != null) base.clear();
                     continue;
                 }
@@ -147,7 +153,7 @@ public class LotsIndexer implements LocalChannelHandler {
                     boolean init = false;
                     for (int idx : and) {
                         var set = safeGet(idx, index);
-                        if (set == null){
+                        if (set == null) {
                             buffer.clear();
                             continue;
                         }
@@ -224,17 +230,17 @@ public class LotsIndexer implements LocalChannelHandler {
         return new PlayerVaultResult(map.navigableKeySet().iterator(), map.size());
     }
 
-    public int getPlayerOwnedLotsCount(UUID key){
+    public int getPlayerOwnedLotsCount(UUID key) {
         var v = owner2ownedLots.get(key);
         if (v == null) return 0;
         return v.getCardinality();
     }
 
-    public @Nullable UUID name2uuid(String normalName){
+    public @Nullable UUID name2uuid(String normalName) {
         return normalName2UUID.get(normalName.toLowerCase(Locale.ROOT));
     }
 
-    public Iterator<String> normalPlayerNamesIterator(){
+    public Iterator<String> normalPlayerNamesIterator() {
         return normalName2UUID.navigableKeySet().iterator();
     }
 
@@ -275,7 +281,7 @@ public class LotsIndexer implements LocalChannelHandler {
             if (owner2ownedLots.containsKey(lot.owner()))
                 normalName2UUID.put(name.name().toLowerCase(Locale.ROOT), lot.owner());
         });
-       // set.set(localId, true);
+        // set.set(localId, true);
         set.add(localId);
     }
 
@@ -309,7 +315,7 @@ public class LotsIndexer implements LocalChannelHandler {
 
     private void index(int tag, int lot, boolean state) {
         if (tag < 0) throw new IllegalArgumentException("pos < 0");
-        if (tag >= index.length) index = ensureCapacity(index, tag+1);
+        if (tag >= index.length) index = ensureCapacity(index, tag + 1);
         var bitset = index[tag];
         if (bitset == null) {
             bitset = index[tag] = new RoaringBitmap();
