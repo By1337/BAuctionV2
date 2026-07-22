@@ -300,7 +300,7 @@ public class LotsIndexer implements LocalChannelHandler {
             if (now - released >= REUSE_DELAY_QUANTA) {
                 freeIds.dequeueLong();
                 var id = (int) (v & 0xffffffffL);
-                if (id <= 0 || id > shortIdCounter) {
+                if (id < 0 || id > shortIdCounter) {
                     log.error("freeIds дал неправильный id {}", id);
                     return shortIdCounter++;
                 }

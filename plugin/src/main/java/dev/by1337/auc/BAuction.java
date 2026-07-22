@@ -108,6 +108,7 @@ public class BAuction extends JavaPlugin {
         if (!new File(bmHome, "bauc").exists()) {
             ResourceUtil.saveIfNotExist("menu.txt", this);
             ResourceUtil.saveIfNotExist("menu/select_category.yml", this, new File(bmHome, "bauc/select_category.yml"));
+            ResourceUtil.saveIfNotExist("menu/sell_gui.yml", this, new File(bmHome, "bauc/sell_gui.yml"));
             ResourceUtil.saveIfNotExist("menu/vault.yml", this, new File(bmHome, "bauc/vault.yml"));
             ResourceUtil.saveIfNotExist("menu/lots_items.yml", this, new File(bmHome, "bauc/lots_items.yml"));
             ResourceUtil.saveIfNotExist("menu/home.yml", this, new File(bmHome, "bauc/home.yml"));

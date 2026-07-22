@@ -159,15 +159,24 @@ public class LotsRepository implements LocalChannelHandler {
 
     private ResponseFuture<@Nullable GhostLot> addLot0(ClientItemStack itemStack, UUID owner, long sellingDuration, int count, long price) {
         return zip(
-                itemService.loadItem(itemStack.id()),
-                players.loadName(owner),
-                (item, name) -> new GhostLot(
-                        item,
+                remote.request(new C2SAddNewLotRequest(
+                        itemStack.id(),
                         owner,
-                        name,
-                        price,
-                        count
-                )
+                        sellingDuration,
+                        count,
+                        price
+                )),
+                players.loadName(owner),
+                (flag, name) -> {
+                    if (flag == null || !flag.flag()) return null;
+                    return new GhostLot(
+                            itemStack,
+                            owner,
+                            name,
+                            price,
+                            count
+                    );
+                }
         );
     }
 
