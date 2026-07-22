@@ -11,18 +11,18 @@ import dev.by1337.auc.common.auc.log.LogRecord;
 import dev.by1337.auc.handler.event.ActionResult;
 import dev.by1337.auc.handler.index.BitSetPool;
 import dev.by1337.auc.handler.index.LotsIndexer;
-import dev.by1337.auc.lifecycle.AucLifecycle;
-import dev.by1337.auc.registry.AucRegistries;
-import dev.by1337.auc.search.PlayerVaultResult;
-import dev.by1337.auc.search.SearchResult;
 import dev.by1337.auc.handler.item.ItemStackRepository;
 import dev.by1337.auc.handler.log.LogRepository;
 import dev.by1337.auc.handler.name.PlayerName;
 import dev.by1337.auc.handler.name.PlayerNameService;
+import dev.by1337.auc.lifecycle.AucLifecycle;
 import dev.by1337.auc.pipeline.LocalChannelContext;
 import dev.by1337.auc.pipeline.LocalChannelHandler;
 import dev.by1337.auc.pipeline.LocalPipeline;
 import dev.by1337.auc.pipeline.Remote;
+import dev.by1337.auc.registry.AucRegistries;
+import dev.by1337.auc.search.PlayerVaultResult;
+import dev.by1337.auc.search.SearchResult;
 import dev.by1337.auc.search.filter.SearchFilter;
 import dev.by1337.auc.transaction.Transaction;
 import dev.by1337.auc.user.AucUser;
@@ -30,6 +30,7 @@ import dev.by1337.core.util.misc.Pair;
 import dev.by1337.sync.PlayerDataRepository;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import dev.by1337.sync.common.channel.ChannelMessage;
+import dev.by1337.sync.common.work.EventLoopWorker;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,7 +38,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class Auction implements LocalChannelHandler {
     private LocalPipeline pipeline;
@@ -49,6 +54,7 @@ public class Auction implements LocalChannelHandler {
     private ItemStackRepository itemService;
     private SimpleAuction auction;
     private final AucLifecycle lifecycle;
+    private EventLoopWorker worker;
 
     public Auction(AucLifecycle lifecycle) {
         this.lifecycle = lifecycle;
@@ -56,6 +62,7 @@ public class Auction implements LocalChannelHandler {
 
     @Override
     public void init(LocalPipeline pipeline, Remote remote, SimpleAuction auction) {
+        worker = pipeline.eventLoop();
         this.pipeline = pipeline;
         this.remote = remote;
         this.auction = auction;
@@ -192,6 +199,44 @@ public class Auction implements LocalChannelHandler {
 
     public int getPlayerOwnedLotsCount(UUID key) {
         return index.getPlayerOwnedLotsCount(key);
+    }
+
+    public <T, R> void parallel(
+            Iterator<T> it,
+            Runnable done,
+            Function<T, ResponseFuture<R>> maker,
+            BiConsumer<@NotNull T, @Nullable R> then
+    ) {
+        if (!worker.isWorkerThread()) {
+            worker.execute(() -> parallel(it, done, maker, then));
+            return;
+        }
+        if (!it.hasNext()) {
+            done.run();
+            return;
+        }
+        AtomicInteger inflight = new AtomicInteger();
+        AtomicReference<Consumer<T>> request = new AtomicReference<>();
+        request.set(i -> {
+            worker.assertThread();
+            maker.apply(i).then(v -> {
+                var count = inflight.decrementAndGet();
+                worker.assertThread();
+                then.accept(i, v);
+                if (it.hasNext()) {
+                    T next = it.next();
+                    inflight.incrementAndGet();
+                    pipeline.eventLoop().schedule(() -> request.get().accept(next));
+                } else if (count == 0){
+                    done.run();
+                }
+            });
+        });
+        int limit = 256;
+        while (limit-- > 0 && it.hasNext()) {
+            inflight.incrementAndGet();
+            request.get().accept(it.next());
+        }
     }
 
     @Override

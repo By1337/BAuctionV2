@@ -13,9 +13,9 @@ $lang: ru_RU
 
 sell_success: '<#FF6600>[☃]<#FFFFE6> Предмет <#FF6600>{item_name} x{count} <#FFFFE6>выставлен на продажу за <#FFFF00>${price}<#FFFFE6>!'
 sell_req_item: '<#FF6600>[☃]<#FFFFE6> Вы не можете продать<#FFFF00> Воздух<#FFFFE6>!'
-sell_req_price: '<#FF6600>[☃]<#FFFFE6> Минимальная цена на этот товар<#FFFF00> $10<#FFFFE6>!'
+sell_req_price: '<#FF6600>[☃]<#FFFFE6> Укажите цену продажи!'
 sell_qa_moved_to_vault: '<#FF6600>[☃]<#FFFFE6>Некоторые предметы перемещены в хранилище'
-
+sell_gui: '<#FF6600>[☃]<#FFFFE6> На продажу успешно выставлено <#FFFF00>{count} <#FFFFE6>предметов по <#FFFF00>${price}<#FFFFE6>!'
 illegal_item: 'Вы не можете выставить на аукцион этот предмет!'
 minimum_price: '<#FF6600>[☃]<#FFFFE6> Минимальная цена на <#FF6600>{item_name} x{count} <#FFFFE6>в текущий момент <#FFFF00>${min}<#FFFFE6>!'
 lots_add_error_bad_count: 'не удалось выставить на аук'

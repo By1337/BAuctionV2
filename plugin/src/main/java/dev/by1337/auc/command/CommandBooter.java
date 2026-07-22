@@ -1,11 +1,12 @@
 package dev.by1337.auc.command;
 
 import dev.by1337.auc.BAuction;
-import dev.by1337.auc.command.args.NumberArgument;
+import dev.by1337.auc.command.args.ArgumentNumber;
 import dev.by1337.auc.config.Config;
 import dev.by1337.auc.handler.SimpleAuction;
 import dev.by1337.auc.lifecycle.AucLifecycle;
 import dev.by1337.auc.menu.HomeMenu;
+import dev.by1337.auc.menu.SellGuiMenu;
 import dev.by1337.auc.search.filter.SearchFilter;
 import dev.by1337.auc.search.filter.SearchFilterParser;
 import dev.by1337.auc.transaction.AddLotTransaction;
@@ -72,7 +73,23 @@ public class CommandBooter {
                 }
             }));
         }
-
+        if (!cfg.disabled_commands.contains("sellgui")) {
+            cmd.sub(new Command<CommandSender>(cfg.rename("sellgui")).executor(
+                    new ArgumentNumber<>("price"),
+                    (s, price) -> {
+                        if (s instanceof Player player) {
+                            if (price == null) {
+                                BAuction.sendMessage("sell_req_price", player);
+                                return;
+                            }
+                            var menu = BMenu.menuLoader().create("bauc:sell_gui", player, null);
+                            if (menu instanceof SellGuiMenu sellGuiMenu) {
+                                sellGuiMenu.setPrice(price.doubleValue());
+                            }
+                            menu.open();
+                        }
+                    }));
+        }
         cmd.executor(
                 new ArgumentString<>("name") {
                     @Override
@@ -121,8 +138,8 @@ public class CommandBooter {
         var cmd = lifecycle.bootAdminCommands(new Command<CommandSender>(cfg.rename("aha")));
         cmd.requires(new RequiresPermission<>("aha.use"));
         cmd.sub(new Command<CommandSender>("push").executor(
-                new NumberArgument<>("price"),
-                new NumberArgument<>("count"),
+                new ArgumentNumber<>("price"),
+                new ArgumentNumber<>("count"),
                 (s, price, count) -> {
                     if (price == null || count == null) {
                         s.sendMessage("use /aha push <price> <count>");
@@ -149,8 +166,8 @@ public class CommandBooter {
                     }
                 }));
         cmd.sub(new Command<CommandSender>("push_rand").executor(
-                new NumberArgument<>("price"),
-                new NumberArgument<>("count"),
+                new ArgumentNumber<>("price"),
+                new ArgumentNumber<>("count"),
                 (s, price, count) -> {
                     if (price == null || count == null) {
                         s.sendMessage("use /aha push_rand <price> <count>");
@@ -231,7 +248,7 @@ public class CommandBooter {
         cmd.sub(new Command<CommandSender>("get_uuid").executor(
                 new ArgumentStrings<>("name"),
                 (s, name) -> {
-                    if (name == null){
+                    if (name == null) {
                         s.sendMessage("use /aha get_uuid <name>");
                         return;
                     }

@@ -1,0 +1,36 @@
+id: bauc:sell_gui
+provider: bauc:sell_gui
+type: chest
+size: 54
+title: "<#FF0000>☃ <b><#FF6600>Продажа:<#FF0000> ${price}"
+blocked:
+  name: "<#FF0000>Слот недоступен"
+  lore: "<#FF6600>➥ /ah rent<#FFFFE6> - аренда слотов"
+  all_flags: true
+  material: gray_dye
+items:
+  _d_:
+    slot: 5
+    name: "<#00FF00>Подтвердить"
+    lore:
+      - "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы подтвердить"
+      - ""
+      - "<#FFFFE6>Выставит все предметы"
+      - "<#FFFFE6>из меню на Аукцион"
+    all_flags: true
+    material: lime_dye
+    on_click:
+      - do_sell: ''
+  _c_:
+    slot: 3
+    name: "<#FF0000>Отменить"
+    lore:
+      - "<#FFFFE6>Отказаться от продажи"
+      - "<#FFFFE6>и закрыть меню"
+    all_flags: true
+    material: tipped_arrow
+  _a_:
+    slot: 0-8
+    name: ""
+    all_flags: true
+    material: black_stained_glass_pane

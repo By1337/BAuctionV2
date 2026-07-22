@@ -19,7 +19,7 @@ import java.util.Locale;
 public class SearchArgument<C extends CommandSender> extends Argument<C, Pair<String, SearchFilter>> {
     private static final Logger log = LoggerFactory.getLogger(SearchArgument.class);
     private final ByLocaleSelector<SearchManager> search;
-    private final NumberArgument<C> numberArgument = new NumberArgument<>("$number");
+    private final ArgumentNumber<C> argumentNumber = new ArgumentNumber<>("$number");
     private final Config config;
 
     public SearchArgument(String name, ByLocaleSelector<SearchManager> search, Config config) {
@@ -41,8 +41,8 @@ public class SearchArgument<C extends CommandSender> extends Argument<C, Pair<St
         long maxPrice = -1;
         if (config.ah_search_max_price_perm != null && player.hasPermission(config.ah_search_max_price_perm)) {
             if (in.length > 1 && Character.isDigit(in[in.length - 1].charAt(0))) {
-                numberArgument.parse(c, new CommandReader(in[in.length - 1]), out);
-                Number number = (Number) out.get(numberArgument.name());
+                argumentNumber.parse(c, new CommandReader(in[in.length - 1]), out);
+                Number number = (Number) out.get(argumentNumber.name());
                 if (number != null) {
                     maxPrice = (long) (number.doubleValue() * 100D);
                 }
@@ -92,7 +92,7 @@ public class SearchArgument<C extends CommandSender> extends Argument<C, Pair<St
         if (config.ah_search_max_price_perm != null && player.hasPermission(config.ah_search_max_price_perm)) {
             if (in.length > 1 && Character.isDigit(in[in.length - 1].charAt(0))) {
                 suggestions.suggest(in[in.length - 1] + "0");
-                numberArgument.suggest(c, new CommandReader(in[in.length - 1]), suggestions, ignored);
+                argumentNumber.suggest(c, new CommandReader(in[in.length - 1]), suggestions, ignored);
                 return;
             }
         }

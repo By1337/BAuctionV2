@@ -5,9 +5,9 @@ import dev.by1337.cmd.*;
 import dev.by1337.core.util.math.FastExpressionParser;
 import org.bukkit.entity.Player;
 
-public class NumberArgument<C> extends Argument<C, Number> {
+public class ArgumentNumber<C> extends Argument<C, Number> {
 
-    public NumberArgument(String name) {
+    public ArgumentNumber(String name) {
         super(name);
     }
 

@@ -1,7 +1,7 @@
 package dev.by1337.auc.menu;
 
 import dev.by1337.auc.auc.LotData;
-import dev.by1337.auc.command.args.NumberArgument;
+import dev.by1337.auc.command.args.ArgumentNumber;
 import dev.by1337.auc.util.number.NumberFormatter;
 import dev.by1337.bmenu.command.ExecuteContext;
 import dev.by1337.bmenu.loader.MenuConfig;
@@ -65,7 +65,7 @@ public class SelectCountMenu extends AbstractMenu {
                     }
                 }))
                 .sub(new Command<ExecuteContext>("[add]").executor(
-                        new NumberArgument<>("count"),
+                        new ArgumentNumber<>("count"),
                         (ctx, count0) -> {
                             if (count0 == null) throw new CommandMsgError("use [add] <count>");
                             if (ctx.menu instanceof SelectCountMenu c) {
@@ -76,7 +76,7 @@ public class SelectCountMenu extends AbstractMenu {
                         })
                 )
                 .sub(new Command<ExecuteContext>("[sub]").executor(
-                        new NumberArgument<>("count"),
+                        new ArgumentNumber<>("count"),
                         (ctx, count0) -> {
                             if (count0 == null) throw new CommandMsgError("use [add] <count>");
                             if (ctx.menu instanceof SelectCountMenu c) {

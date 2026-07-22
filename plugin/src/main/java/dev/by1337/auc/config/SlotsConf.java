@@ -21,22 +21,22 @@ public class SlotsConf {
         add_slots = addSlots;
     }
 
-    public int collectSlots(Player player){
+    public int collectSlots(Player player) {
         int res = 0;
         for (SlotsPermPair pair : select_max) {
-            if (player.hasPermission(pair.perm)){
+            if (player.hasPermission(pair.perm)) {
                 res = Math.max(res, pair.slots);
             }
         }
         for (SlotsPermPair pair : add_slots) {
-            if (player.hasPermission(pair.perm)){
+            if (player.hasPermission(pair.perm)) {
                 res += pair.slots;
             }
         }
         return res;
     }
 
-    public record SlotsPermPair(int slots, String perm){
+    public record SlotsPermPair(int slots, String perm) {
         public static final YamlDecoder<SlotsPermPair> DECODER = InlineYamlDecoder.inline(
                 " ",
                 "3 your.permission",

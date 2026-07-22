@@ -3,7 +3,7 @@ package dev.by1337.auc.menu;
 import dev.by1337.auc.BAuction;
 import dev.by1337.auc.auc.ClientAucLot;
 import dev.by1337.auc.auc.ClientVaultLot;
-import dev.by1337.auc.command.args.NumberArgument;
+import dev.by1337.auc.command.args.ArgumentNumber;
 import dev.by1337.auc.search.filter.SearchFilterAndNotPair;
 import dev.by1337.auc.transaction.BuyLotTransaction;
 import dev.by1337.auc.transaction.ResellTransaction;
@@ -55,7 +55,7 @@ class Commands {
                 }
             }))
             .sub(new Command<ExecuteContext>("[buy_lot]").executor(
-                    new NumberArgument<>("count"),
+                    new ArgumentNumber<>("count"),
                     (ctx, count0) -> {
                         var menu = ctx.menu;
                         Player viewer = menu.viewer();

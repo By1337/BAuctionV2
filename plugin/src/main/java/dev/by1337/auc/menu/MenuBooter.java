@@ -15,12 +15,14 @@ public class MenuBooter {
         HomeMenu.bootCommands(commands.copy());
         SelectCountMenu.bootCommands(commands.copy());
         VaultMenu.bootCommands(commands.copy());
+        SellGuiMenu.bootCommands(commands.copy());
 
         subLoader.menuCodecRegistry().register("bauc:home", HomeMenu.HomeMenuV2Config.CODEC);
         subLoader.menuCodecRegistry().register("bauc:vault", VaultMenu.VaultMenuConfig.CODEC);
         subLoader.menuCodecRegistry().register("bauc:confirm", ConfirmMenu.ConfirmMenuConfig.CODEC);
         subLoader.menuCodecRegistry().register("bauc:select_count", SelectCountMenu.SelectCountConfig.CODEC);
         subLoader.menuCodecRegistry().register("bauc:container_view", ContainerViewMenu.ContainerViewConfig.CODEC);
+        subLoader.menuCodecRegistry().register("bauc:sell_gui", SellGuiMenu.SellGuiMenuConfig.CODEC);
         lifecycle.menuRegister(subLoader);
     }
 }

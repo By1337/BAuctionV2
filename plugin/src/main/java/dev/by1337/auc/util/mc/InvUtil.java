@@ -1,5 +1,6 @@
 package dev.by1337.auc.util.mc;
 
+import dev.by1337.auc.BAuction;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -13,11 +14,15 @@ import java.util.Map;
 public class InvUtil {
 
     public static boolean giveOrDrop(Player player, ItemStack... items) {
-        Collection<ItemStack> leftover = player.isDead() ? Arrays.asList(items) : player.getInventory().addItem(items).values();
+        Collection<ItemStack> leftover = !canGiveItems(player) ? Arrays.asList(items) : player.getInventory().addItem(items).values();
         for (ItemStack value : leftover) {
             player.getWorld().dropItemNaturally(player.getLocation(), value);
         }
         return leftover.isEmpty();
+    }
+    public static boolean canGiveItems(Player player){
+        var list = BAuction.playerList();
+        return !player.isDead() && (list == null || list.isOnline(player.getUniqueId()));
     }
 
     public static boolean tryAddFully(ItemStack item, Inventory to, boolean dryRun) {

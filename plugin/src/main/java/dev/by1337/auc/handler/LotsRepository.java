@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -155,6 +156,7 @@ public class LotsRepository implements LocalChannelHandler {
     public ResponseFuture<@Nullable GhostLot> addLot(ClientItemStack itemStack, UUID owner, long sellingDuration, int count, long price) {
         return pipeline.submit(() -> addLot0(itemStack, owner, sellingDuration, count, price));
     }
+
     private ResponseFuture<@Nullable GhostLot> addLot0(ClientItemStack itemStack, UUID owner, long sellingDuration, int count, long price) {
         return zip(
                 itemService.loadItem(itemStack.id()),
@@ -169,7 +171,7 @@ public class LotsRepository implements LocalChannelHandler {
         );
     }
 
-    public ResponseFuture<@Nullable GhostLot> makeGhostLot(ItemStack itemStack,UUID owner, int count, long lprice){
+    public ResponseFuture<@Nullable GhostLot> makeGhostLot(ItemStack itemStack, UUID owner, int count, long lprice) {
         return itemService.pushItem(itemStack).flatMap(id -> zip(
                 itemService.loadItem(id),
                 players.loadName(owner),
@@ -271,24 +273,27 @@ public class LotsRepository implements LocalChannelHandler {
             done.run();
             return;
         }
-
+        AtomicInteger inflight = new AtomicInteger();
         AtomicReference<IntConsumer> request = new AtomicReference<>();
         request.set(i -> {
             worker.assertThread();
             remote.request(maker.apply(i)).then(v -> {
+                var count = inflight.decrementAndGet();
                 then.accept(v);
                 worker.assertThread();
                 if (uids.hasNext()) {
                     int next = uids.nextInt();
+                    inflight.incrementAndGet();
                     pipeline.eventLoop().schedule(() -> request.get().accept(next));
-                } else {
+                } else if (count == 0) {
                     done.run();
                 }
             });
         });
         int limit = 256;
         while (limit-- > 0 && uids.hasNext()) {
-           request.get().accept(uids.nextInt());
+            inflight.incrementAndGet();
+            request.get().accept(uids.nextInt());
         }
     }
 

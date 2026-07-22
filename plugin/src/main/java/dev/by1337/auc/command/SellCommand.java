@@ -2,7 +2,7 @@ package dev.by1337.auc.command;
 
 import dev.by1337.auc.BAuction;
 import dev.by1337.auc.auc.GhostLot;
-import dev.by1337.auc.command.args.NumberArgument;
+import dev.by1337.auc.command.args.ArgumentNumber;
 import dev.by1337.auc.transaction.AddLotTransaction;
 import dev.by1337.auc.util.mc.InvUtil;
 import dev.by1337.auc.util.mc.ItemStackRef;
@@ -29,8 +29,8 @@ public class SellCommand extends Command<CommandSender> {
         this.dsell = dsell;
         requires(s -> s instanceof Player);
         executor(
-                new NumberArgument<>("price"),
-                new NumberArgument<>("count"),
+                new ArgumentNumber<>("price"),
+                new ArgumentNumber<>("count"),
                 this::run
         );
     }

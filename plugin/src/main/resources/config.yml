@@ -36,6 +36,7 @@ slots:
     - 2 bauc.add2
     - 3 bauc.add3
     - 4 bauc.add4
+    - 1 auc.boost.rent1
     - 3 auc.boost.rent3
     - 5 auc.boost.rent5
     - 10 auc.boost.rent10
