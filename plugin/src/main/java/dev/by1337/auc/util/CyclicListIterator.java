@@ -14,6 +14,12 @@ public final class CyclicListIterator<E> {
             throw new IllegalArgumentException("List cannot be empty");
         }
     }
+    public boolean setPosOf(E v){
+        int i = list.indexOf(v);
+        if (i == -1) return false;
+        current = i;
+        return true;
+    }
 
     public E next() {
         current = (current + 1) % list.size();

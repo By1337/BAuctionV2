@@ -1,0 +1,174 @@
+id: bauc:select_category
+provider: default
+type: chest
+size: 45
+title: "<#FF0000>☃<b><#FF6600> Выбор категории"
+items:
+  _o_:
+    slot: 15
+    damage: 0
+    #name: "[❖] Снаряжение"
+    name: "<#FF0000>[❖] <#FF6600>Снаряжение"
+    lore: "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы перейти"
+    all_flags: true
+    material: netherite_chestplate
+    on_click:
+      - open:
+          menu: 'bauc:home'
+          category: 'armor'
+  _m_:
+    slot: 14
+    damage: 0
+    #name: "[❖] Оружие"
+    name: "<#FF0000>[❖] <#FF6600>Оружие"
+    lore: "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы перейти"
+    all_flags: true
+    material: netherite_sword
+    on_click:
+      - open:
+          menu: 'bauc:home'
+          category: 'weapons'
+  _n_:
+    slot: 29
+    #name: "[❖] Яйца и Спавнеры"
+    name: "<#FF0000>[❖] <#FF6600>Яйца и Спавнеры"
+    lore: "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы перейти"
+    all_flags: true
+    material: bee_spawn_egg
+    on_click:
+      - open:
+          menu: 'bauc:home'
+          category: 'spawners_and_eggs'
+  _k_:
+    slot: 30
+    #name: "[❖] Талисманы"
+    name: "<#FF0000>[❖] <#FF6600>Талисманы"
+    lore: "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы перейти"
+    all_flags: true
+    material: totem_of_undying
+    on_click:
+      - open:
+          menu: 'bauc:home'
+          category: 'talismans'
+  _l_:
+    slot: 20
+    #name: "[❖] Ценные ресурсы"
+    name: "<#FF0000>[❖] <#FF6600>Ценные ресурсы"
+    lore: "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы перейти"
+    all_flags: true
+    material: netherite_ingot
+    on_click:
+      - open:
+          menu: 'bauc:home'
+          category: 'resources'
+  _i_:
+    slot: 12
+    #name: "[❖] Блоки"
+    name: "<#FF0000>[❖] <#FF6600>Блоки"
+    lore: "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы перейти"
+    all_flags: true
+    material: coarse_dirt
+    on_click:
+      - open:
+          menu: 'bauc:home'
+          category: 'blocks'
+  _j_:
+    slot: 11
+    #name: "[❖] Все товары"
+    name: "<#FF0000>[❖] <#FF6600>Все товары"
+    lore: "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы перейти"
+    all_flags: true
+    material: hopper_minecart
+    on_click:
+      - open:
+          menu: 'bauc:home'
+          category: 'any'
+  _g_:
+    slot: 21
+    #name: "[❖] Прочие ресурсы"
+    name: "<#FF0000>[❖] <#FF6600>Прочие ресурсы"
+    lore: "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы перейти"
+    all_flags: true
+    material: fermented_spider_eye
+    on_click:
+      - open:
+          menu: 'bauc:home'
+          category: 'other_resources'
+  _h_:
+    slot: 13
+    damage: 0
+    #name: "[❖] Инструменты"
+    name: "<#FF0000>[❖] <#FF6600>Инструменты"
+    lore: "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы перейти"
+    all_flags: true
+    material: netherite_pickaxe
+    on_click:
+      - open:
+          menu: 'bauc:home'
+          category: 'tools'
+  _e_:
+    slot: 33
+    #name: "[❖] Для Грифа"
+    name: "<#FF0000>[❖] <#FF6600>Для Грифа"
+    lore: "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы перейти"
+    all_flags: true
+    material: comparator
+    on_click:
+      - open:
+          menu: 'bauc:home'
+          category: 'grief'
+  _f_:
+    slot: 24
+    #name: "[❖] Книги"
+    name: "<#FF0000>[❖] <#FF6600>Книги"
+    lore: "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы перейти"
+    all_flags: true
+    material: enchanted_book
+    on_click:
+      - open:
+          menu: 'bauc:home'
+          category: 'books'
+  _c_:
+    slot: 31
+    #name: "[❖] Настоящие вещи"
+    name: "<#FF0000>[❖] <#FF6600>Настоящие вещи"
+    lore: "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы перейти"
+    all_flags: true
+    material: enchanted_golden_apple
+    on_click:
+      - open:
+          menu: 'bauc:home'
+          category: 'donat_items'
+  _d_:
+    slot: 22
+    #name: "[❖] Еда"
+    name: "<#FF0000>[❖] <#FF6600>Еда"
+    lore: "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы перейти"
+    all_flags: true
+    material: sweet_berries
+    on_click:
+      - open:
+          menu: 'bauc:home'
+          category: 'edible'
+  _a_:
+    slot: 32
+    #name: "[❖] Зельеварение"
+    name: "<#FF0000>[❖] <#FF6600>Зельеварение"
+    lore: "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы перейти"
+    all_flags: true
+    material: brewing_stand
+    on_click:
+      - open:
+          menu: 'bauc:home'
+          category: 'brewing'
+  _b_:
+    slot: 23
+    #name: "[❖] Зелья"
+    name: "<#FF0000>[❖] <#FF6600>Зелья"
+    lore: "<#FF6600>➥ Нажмите<#FFFFE6>, чтобы перейти"
+    all_flags: true
+    material: dragon_breath
+    on_click:
+      - open:
+          menu: 'bauc:home'
+          category: 'potions'

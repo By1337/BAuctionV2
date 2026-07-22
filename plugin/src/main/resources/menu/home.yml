@@ -52,7 +52,7 @@ items:
     material: chest
     on_click:
       - sound: 'ui.button.click 1 1'
-      - "+categories"
+      - open: 'bauc:select_category'
 
   categories_HW:
     slot: 51

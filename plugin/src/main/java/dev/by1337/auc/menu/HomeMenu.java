@@ -82,6 +82,21 @@ public class HomeMenu extends LotsMenu {
     }
 
     @Override
+    public void open(boolean isReopen) {
+        if (!isReopen) {
+            var v = args.get("category");
+            if (v != null) {
+                var result = auction.registries().category.getByName(v);
+                if (result != null) {
+                    categoryIterator.setPosOf(result);
+                    category = categoryIterator.current();
+                }
+            }
+        }
+        super.open(isReopen);
+    }
+
+    @Override
     protected LotsResult search() {
         if (nop) return LotsResult.EMPTY;
         return auction.search(playerLots, category.filter(), sorting);
