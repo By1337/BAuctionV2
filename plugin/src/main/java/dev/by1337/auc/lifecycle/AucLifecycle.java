@@ -3,6 +3,7 @@ package dev.by1337.auc.lifecycle;
 import dev.by1337.auc.BAuction;
 import dev.by1337.auc.common.auc.log.AuctionLog;
 import dev.by1337.auc.common.registry.NetworkRegistry;
+import dev.by1337.auc.config.Config;
 import dev.by1337.auc.handler.SimpleAuction;
 import dev.by1337.auc.metrics.Metrics;
 import dev.by1337.auc.pipeline.LocalPipeline;
@@ -72,5 +73,8 @@ public abstract class AucLifecycle {
 
     public void bootAucPipeline(LocalPipeline localPipeline) {
 
+    }
+
+    public void configBooted(Config config) {
     }
 }

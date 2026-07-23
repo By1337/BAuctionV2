@@ -40,7 +40,8 @@ public class Config {
             YamlDecoder.STRING.fieldOf("ah_search_max_price_perm"),
             DurationParser.DECODER.fieldOf("resell_cooldown"),
             DurationParser.DECODER.fieldOf("selling_duration"),
-            PostJoinUseDelay.DECODER.fieldOf("post_join_use_delay", new PostJoinUseDelay(false, 10_000))
+            PostJoinUseDelay.DECODER.fieldOf("post_join_use_delay", new PostJoinUseDelay(false, 10_000)),
+            PriceLimiter.DECODER.fieldOf("prices", new PriceLimiter(false, 10_000_000, Map.of()))
     );
     private static final Logger log = LoggerFactory.getLogger(Config.class);
     public final MessageManager eventCtx;
@@ -56,8 +57,9 @@ public class Config {
     public final long resell_cooldown;
     public final long selling_duration;
     public final PostJoinUseDelay post_join_use_delay;
+    public final PriceLimiter priceLimiter;
 
-    public Config(AucLifecycle lifecycle, MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual, Categories categories, List<String> sorting, DbConfig dbConfig, CommandsConf commands, SlotsConf slots, String ahSearchMaxPricePerm, long resellCooldown, long sellingDuration, PostJoinUseDelay postJoinUseDelay) {
+    public Config(AucLifecycle lifecycle, MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual, Categories categories, List<String> sorting, DbConfig dbConfig, CommandsConf commands, SlotsConf slots, String ahSearchMaxPricePerm, long resellCooldown, long sellingDuration, PostJoinUseDelay postJoinUseDelay, PriceLimiter priceLimiter) {
         this.eventCtx = eventCtx;
         this.tags = tags;
         tagsExtractor = new TagsExtractor(tags);
@@ -71,6 +73,10 @@ public class Config {
         resell_cooldown = resellCooldown;
         selling_duration = sellingDuration;
         post_join_use_delay = postJoinUseDelay;
+        this.priceLimiter = priceLimiter;
+        if (priceLimiter != null){
+            priceLimiter.setTags(tagsExtractor);
+        }
         var cmd = lifecycle.bootMessagesCommand(eventCtx.commands());
         cmd.sub(new Command<EventContext>("[visual]").executor(
                 new ArgumentStrings<>("visual"),
@@ -87,6 +93,7 @@ public class Config {
                 }
         ));
         eventCtx.setCommands(cmd);
+        lifecycle.configBooted(this);
     }
 
     public void boot(SimpleAuction auction) {

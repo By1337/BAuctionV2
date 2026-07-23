@@ -97,7 +97,7 @@ public class TagsExtractor {
             }
         }
         if (im instanceof BundleMeta bm) {
-            if (bm.hasItems()) {
+            if (!bm.hasItems()) {
                 result.add("empty_bundle");
             }
         }

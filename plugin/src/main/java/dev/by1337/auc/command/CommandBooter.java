@@ -159,7 +159,10 @@ public class CommandBooter {
                                         BAuction.plugin().metrics().dump(log);
                                         s.sendMessage("done in " + (System.nanoTime() - nanos) / 1_000_000D);
                                     },
-                                    () -> auction.auction().apply(new AddLotTransaction(item.asOne(), pl.getUniqueId(), price.doubleValue(), 1).skipSlotsCheck()),
+                                    () -> auction.auction().apply(new AddLotTransaction(item.asOne(), pl.getUniqueId(), price.doubleValue(), 1)
+                                            .skipSlotsCheck()
+                                            .skipPriceChecks()
+                                    ),
                                     ignored -> {}
                             );
                         });
@@ -185,7 +188,10 @@ public class CommandBooter {
                                 },
                                 () -> {
                                     ItemStack item = new ItemStack(materials.get(random.nextInt(materials.size() - 1)));
-                                    return auction.auction().apply(new AddLotTransaction(item.asOne(), new UUID(1337, random.nextLong()), price.doubleValue() + random.nextInt(0, 250), 1).skipSlotsCheck());
+                                    return auction.auction().apply(new AddLotTransaction(item.asOne(), new UUID(1337, random.nextLong()), price.doubleValue() + random.nextInt(0, 250), 1)
+                                            .skipSlotsCheck()
+                                            .skipPriceChecks()
+                                    );
                                 },
                                 ignored -> {}
                         );

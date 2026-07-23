@@ -5,6 +5,19 @@ sorting:
   - oldest
   - expensive
 
+# Максимальные предмета за 1 штуку
+prices:
+  enabled: true
+  # максимальная цена без разницы сколько штук
+  max: 10kk
+  # максимальная цена поштучно, если здесь нет то будет просто max
+  by_tag:
+    'dirt': 100
+    'bettertalismans*': 100kk
+    '*_sword': 40kk
+
+
+
 post_join_use_delay:
   enable: true
   delay: 10s

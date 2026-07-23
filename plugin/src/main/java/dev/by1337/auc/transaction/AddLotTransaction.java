@@ -4,13 +4,14 @@ import dev.by1337.auc.BAuction;
 import dev.by1337.auc.auc.GhostLot;
 import dev.by1337.auc.common.auc.log.impl.AddLotLog;
 import dev.by1337.auc.handler.Auction;
+import dev.by1337.auc.util.number.NumberFormatter;
 import dev.by1337.edsl.context.EventContext;
+import dev.by1337.plc.PlaceholderResolver;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
     private static final ResponseFuture<@Nullable GhostLot> EMPTY = new ResponseFuture<>(null);
@@ -19,6 +20,7 @@ public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
     private final double price;
     private final int count;
     private boolean skipSlotsCheck;
+    private boolean skipPriceChecks;
     private long sellingDuration;
 
     public AddLotTransaction(ItemStack itemStack, UUID who, double price, int count) {
@@ -31,12 +33,11 @@ public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
 
     @Override
     public ResponseFuture<@Nullable GhostLot> apply(Auction auction) {
-        //todo checks
         if (itemStack.isEmpty()) {
             BAuction.sendMessage("illegal_item", who);
             return EMPTY;
         }
-        long lprice = (long) (price * 100D);
+
         if (!skipSlotsCheck) {
             var player = BAuction.playerList().getPlayer(who);
             if (player == null) return EMPTY;
@@ -47,6 +48,17 @@ public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
                 return EMPTY;
             }
         }
+        if (!skipPriceChecks) {
+            var cfg = BAuction.plugin().config();
+            if (cfg.priceLimiter.enabled()) {
+                var max = cfg.priceLimiter.getMaxPrice(itemStack.asQuantity(count));
+                if (price > max) {
+                    BAuction.sendMessage("maximum_price", who, PlaceholderResolver.of("max", NumberFormatter.format(max)));
+                    return EMPTY;
+                }
+            }
+        }
+        long lprice = (long) (price * 100D);
         return auction.makeGhostLot(itemStack, who, count, lprice)
                 .ifEmpty(() -> BAuction.sendMessage("auction_is_disabled", who))
                 .map(ghostLot -> {
@@ -81,7 +93,7 @@ public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
     }
 
     public AddLotTransaction dsell(boolean flag) {
-        if (flag){
+        if (flag) {
             sellingDuration = 0;
         }
         return this;
@@ -89,6 +101,11 @@ public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
 
     public AddLotTransaction skipSlotsCheck() {
         this.skipSlotsCheck = true;
+        return this;
+    }
+
+    public AddLotTransaction skipPriceChecks() {
+        this.skipPriceChecks = true;
         return this;
     }
 
