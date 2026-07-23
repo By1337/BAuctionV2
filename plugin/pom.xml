@@ -236,7 +236,7 @@
         <dependency>
             <groupId>dev.by1337.edsl</groupId>
             <artifactId>EventDSL</artifactId>
-            <version>1.5</version>
+            <version>1.5.1</version>
         </dependency>
         <dependency>
             <groupId>it.unimi.dsi</groupId>

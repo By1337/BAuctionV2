@@ -13,7 +13,6 @@ import dev.by1337.auc.eco.VaultHook;
 import dev.by1337.auc.handler.Auction;
 import dev.by1337.auc.handler.SimpleAuction;
 import dev.by1337.auc.handler.remote.AuctionBackendBooter;
-import dev.by1337.auc.lifecycle.AucLifecycle;
 import dev.by1337.auc.lifecycle.AucLifecycleImpl;
 import dev.by1337.auc.listener.BukkitEventListener;
 import dev.by1337.auc.menu.MenuBooter;
@@ -99,6 +98,9 @@ public class BAuction extends JavaPlugin {
             getSLF4JLogger().error("Failed to load cfg\n{}", res.error());
         }
         config.tags.search.forEach((k, v) -> v.boot(k));
+        if (config.post_join_use_delay.isEnable()) {
+            lifecycle.addListener(config.post_join_use_delay);
+        }
 
         subLoader = new MenuSubLoader(new File(getDataFolder(), "menus"), this, BMenu.menuLoader());
         MenuBooter.boot(subLoader, lifecycle);
@@ -181,7 +183,8 @@ public class BAuction extends JavaPlugin {
         });
 
     }
-    private void onJoin(PlayerJoinEvent e){
+
+    private void onJoin(PlayerJoinEvent e) {
         if (latestVersion == null) return;
         if (!e.getPlayer().hasPermission("aha.notify")) return;
         if (Objects.equals(latestVersion, getPluginMeta().getVersion())) return;
@@ -214,7 +217,6 @@ public class BAuction extends JavaPlugin {
         BSUtils.safe(() -> aha.close());
         BSUtils.safe(() -> auction.close());
         if (!isEnabled()) {
-            System.out.println("disable backend");
             BSUtils.safe(() -> backend.close());
             backend = null;
         }
@@ -336,18 +338,18 @@ public class BAuction extends JavaPlugin {
 
     static {
         Thread.startVirtualThread(() -> {
-           try {
-               var json = McLangDownloader.parsePage("https://apiv1.bdev.space/version?id=bauctionv2");
-               //{"status":"ok","version":"1.0"}
-               var v = JsonParser.parseString(json);
-               if (v.isJsonObject()){
-                   var obj = v.getAsJsonObject();
-                   if (obj.has("version")){
-                       latestVersion = obj.get("version").getAsString();
-                   }
-               }
-           } catch (Exception ignored){
-           }
+            try {
+                var json = McLangDownloader.parsePage("https://apiv1.bdev.space/version?id=bauctionv2");
+                //{"status":"ok","version":"1.0"}
+                var v = JsonParser.parseString(json);
+                if (v.isJsonObject()) {
+                    var obj = v.getAsJsonObject();
+                    if (obj.has("version")) {
+                        latestVersion = obj.get("version").getAsString();
+                    }
+                }
+            } catch (Exception ignored) {
+            }
         });
     }
 

@@ -3,8 +3,9 @@ server_type: integrated # integrated, bsync
 # если bsync
 bsync_connection: 'bauc'
 bsync_channel: 'bauctionV2'
-# local://<storage-name>
 
+
+# local://<storage-name>
 # bsync синхронизация
 # group://group/<storage-name>
 # server://id/<storage-name>

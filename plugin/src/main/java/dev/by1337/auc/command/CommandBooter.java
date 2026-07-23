@@ -42,7 +42,7 @@ public class CommandBooter {
 
     public static Command<CommandSender> bootUserCommands(Config config, SimpleAuction auction, AucLifecycle lifecycle) {
         var cfg = config.commands;
-        var cmd = lifecycle.bootUserCommands(new Command<CommandSender>(cfg.rename("ah")));
+        var cmd = new Command<CommandSender>(cfg.rename("ah"));
         if (!cfg.disabled_commands.contains("sell")) {
             cmd.sub(new SellCommand(cfg.rename("sell"), false));
         }
@@ -130,12 +130,12 @@ public class CommandBooter {
                         menu.open();
                     }
                 });
-        return cmd;
+        return lifecycle.bootUserCommands(cmd);
     }
 
     public static Command<CommandSender> bootAdminCommands(Config config, SimpleAuction auction, AucLifecycle lifecycle) {
         var cfg = config.commands;
-        var cmd = lifecycle.bootAdminCommands(new Command<CommandSender>(cfg.rename("aha")));
+        var cmd = new Command<CommandSender>(cfg.rename("aha"));
         cmd.requires(new RequiresPermission<>("aha.use"));
         cmd.sub(new Command<CommandSender>("push").executor(
                 new ArgumentNumber<>("price"),
@@ -260,7 +260,7 @@ public class CommandBooter {
                         }
                     });
                 }));
-        return cmd;
+        return lifecycle.bootAdminCommands(cmd);
     }
 
     private static <T> void parallel(

@@ -2,6 +2,7 @@ package dev.by1337.auc.config;
 
 import dev.by1337.auc.auc.sort.SortingBoot;
 import dev.by1337.auc.handler.SimpleAuction;
+import dev.by1337.auc.hook.PostJoinUseDelay;
 import dev.by1337.auc.lifecycle.AucLifecycle;
 import dev.by1337.auc.tag.TagsConfig;
 import dev.by1337.auc.tag.TagsExtractor;
@@ -38,7 +39,8 @@ public class Config {
             SlotsConf.DECODER.fieldOf("slots"),
             YamlDecoder.STRING.fieldOf("ah_search_max_price_perm"),
             DurationParser.DECODER.fieldOf("resell_cooldown"),
-            DurationParser.DECODER.fieldOf("selling_duration")
+            DurationParser.DECODER.fieldOf("selling_duration"),
+            PostJoinUseDelay.DECODER.fieldOf("post_join_use_delay", new PostJoinUseDelay(false, 10_000))
     );
     private static final Logger log = LoggerFactory.getLogger(Config.class);
     public final MessageManager eventCtx;
@@ -53,8 +55,9 @@ public class Config {
     public final String ah_search_max_price_perm;
     public final long resell_cooldown;
     public final long selling_duration;
+    public final PostJoinUseDelay post_join_use_delay;
 
-    public Config(AucLifecycle lifecycle, MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual, Categories categories, List<String> sorting, DbConfig dbConfig, CommandsConf commands, SlotsConf slots, String ahSearchMaxPricePerm, long resellCooldown, long sellingDuration) {
+    public Config(AucLifecycle lifecycle, MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual, Categories categories, List<String> sorting, DbConfig dbConfig, CommandsConf commands, SlotsConf slots, String ahSearchMaxPricePerm, long resellCooldown, long sellingDuration, PostJoinUseDelay postJoinUseDelay) {
         this.eventCtx = eventCtx;
         this.tags = tags;
         tagsExtractor = new TagsExtractor(tags);
@@ -67,6 +70,7 @@ public class Config {
         ah_search_max_price_perm = ahSearchMaxPricePerm;
         resell_cooldown = resellCooldown;
         selling_duration = sellingDuration;
+        post_join_use_delay = postJoinUseDelay;
         var cmd = lifecycle.bootMessagesCommand(eventCtx.commands());
         cmd.sub(new Command<EventContext>("[visual]").executor(
                 new ArgumentStrings<>("visual"),

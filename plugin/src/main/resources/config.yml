@@ -5,10 +5,14 @@ sorting:
   - oldest
   - expensive
 
+post_join_use_delay:
+  enable: true
+  delay: 10s
+
 commands:
   # какое меню открывать по /ah
   ah_menu: 'bauc:home'
-  # удалите не нужные команды
+  # выключите не нужные команды
   disabled_commands: []
     #- sell
     #- search
