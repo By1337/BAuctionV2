@@ -253,13 +253,11 @@ public class LotsIndexer implements LocalChannelHandler {
     }
 
     private void removeIndex(ClientAucLot lot, int localId) {
-        //used.clear(localId);
         used.remove(localId);
         for (int tag : lot.itemStack.tags()) {
             index(tag, localId, false);
         }
         var set = owner2ownedLots.get(lot.owner());
-        //if (set != null) set.clear(localId);
         if (set != null) {
             set.remove(localId);
             if (set.isEmpty()) owner2ownedLots.remove(lot.owner());
@@ -271,7 +269,6 @@ public class LotsIndexer implements LocalChannelHandler {
     }
 
     private void reindex(ClientAucLot lot, int localId) {
-        //used.set(localId);
         used.add(localId);
         for (int tag : lot.itemStack.tags()) {
             index(tag, localId, true);
@@ -281,7 +278,6 @@ public class LotsIndexer implements LocalChannelHandler {
             if (owner2ownedLots.containsKey(lot.owner()))
                 normalName2UUID.put(name.name().toLowerCase(Locale.ROOT), lot.owner());
         });
-        // set.set(localId, true);
         set.add(localId);
     }
 

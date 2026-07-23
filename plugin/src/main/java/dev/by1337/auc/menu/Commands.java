@@ -11,6 +11,7 @@ import dev.by1337.auc.transaction.TakeLotTransaction;
 import dev.by1337.auc.transaction.TakeVaultLotTransaction;
 import dev.by1337.bmenu.BMenu;
 import dev.by1337.bmenu.command.ExecuteContext;
+import dev.by1337.bmenu.menu.command.MenuCommands;
 import dev.by1337.cmd.Command;
 import org.bukkit.entity.Player;
 import org.slf4j.Logger;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
 class Commands {
     private static final Logger log = LoggerFactory.getLogger(Commands.class);
     private static final Command<ExecuteContext> MENU_COMMANDS = new Command<ExecuteContext>("root")
+            .and(MenuCommands.getCommands())
             .sub(new Command<ExecuteContext>("[take_lot]").executor(ctx -> {
                 var menu = ctx.menu;
                 Player viewer = menu.viewer();

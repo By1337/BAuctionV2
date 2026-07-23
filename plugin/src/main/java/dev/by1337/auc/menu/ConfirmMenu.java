@@ -36,8 +36,7 @@ public class ConfirmMenu extends AbstractMenu {
         return COMMANDS;
     }
     static void bootCommands(Command<ExecuteContext> base){
-        COMMANDS = MenuCommands.getCommands()
-                .and(base)
+        COMMANDS = base
                 .sub(new Command<ExecuteContext>("[accept]").executor(ctx -> {
                     if (ctx.menu instanceof ConfirmMenu c) {
                         var cmd = c.args.getOrDefault("on_accept_command", "[console] say bauc:confirm no command!");

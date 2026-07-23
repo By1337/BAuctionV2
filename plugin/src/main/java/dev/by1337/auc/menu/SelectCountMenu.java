@@ -52,7 +52,6 @@ public class SelectCountMenu extends AbstractMenu {
 
     static void bootCommands(Command<ExecuteContext> base){
         COMMANDS = base
-                .and(Commands.create())
                 .sub(new Command<ExecuteContext>("[accept]").executor(ctx -> {
                     if (ctx.menu instanceof SelectCountMenu c) {
                         var cmd = c.args.getOrDefault("on_accept_command", "[console] say bauc:select_count no command!");

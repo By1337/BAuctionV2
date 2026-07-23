@@ -29,6 +29,8 @@ items:
       - "<#FFFFE6>и закрыть меню"
     all_flags: true
     material: tipped_arrow
+    on_click:
+      - close: ''
   _a_:
     slot: 0-8
     name: ""
