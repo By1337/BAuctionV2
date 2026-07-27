@@ -1,11 +1,11 @@
 package dev.by1337.auc.menu;
 
+import dev.by1337.auc.BAuction;
 import dev.by1337.auc.auc.LotData;
 import dev.by1337.bmenu.command.ExecuteContext;
 import dev.by1337.bmenu.loader.MenuConfig;
 import dev.by1337.bmenu.menu.AbstractMenu;
 import dev.by1337.bmenu.menu.Menu;
-import dev.by1337.bmenu.menu.command.MenuCommands;
 import dev.by1337.bmenu.slot.SlotFactory;
 import dev.by1337.cmd.Command;
 import dev.by1337.yaml.codec.PipelineYamlCodecBuilder;
@@ -20,6 +20,19 @@ public class ConfirmMenu extends AbstractMenu {
     public ConfirmMenu(ConfirmMenuConfig config, Player viewer, @Nullable Menu previousMenu) {
         super(config, viewer, previousMenu);
         cfg = config;
+    }
+
+    @Override
+    public void open() {
+        if (previousMenu != null && previousMenu.lastClickedItemPayload() instanceof LotData lot) {
+            long balanceCents = BAuction.economy().getCents(viewer.getUniqueId());
+            long priceCents = lot.lprice();
+            if (balanceCents < priceCents) {
+                BAuction.sendMessage("insufficient_balance", viewer);
+                return;
+            }
+        }
+        super.open();
     }
 
     @Override

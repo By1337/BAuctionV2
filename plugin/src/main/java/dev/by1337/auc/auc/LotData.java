@@ -33,6 +33,7 @@ public interface LotData {
     long removalDate();
 
     long lprice();
+    long lprice_for_one();
 
     double dprice();
 

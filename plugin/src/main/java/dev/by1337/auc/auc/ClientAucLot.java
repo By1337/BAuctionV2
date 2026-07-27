@@ -6,21 +6,6 @@ import dev.by1337.auc.handler.name.PlayerName;
 import java.util.UUID;
 
 public class ClientAucLot implements LotData {
-    /*    private static final DecimalFormat df = new DecimalFormat("#,###");
-        private static final DecimalFormat simple = new DecimalFormat("#");
-        public static final PlaceholderResolver<ClientAucLot> PLACEHOLDERS = Placeholders.<ClientAucLot>create()
-                .withContext("price", v -> v.dprice < 1000 ? simple.format(v.dprice) : df.format(v.dprice))
-                .withContext("seller_uuid", v -> v.lot.owner().toString())
-                .withContext("seller_name", v -> v.playerName.name())
-                .withContext("expires", v -> TimeUtil.getFormat(v.lot.removalDate()))
-                .withContext("price_for_one", v -> v.dprice_for_one < 1000 ? simple.format(v.dprice_for_one) : df.format(v.dprice_for_one))
-                .withContext("material", v -> v.itemStack.material().getKey().getKey())
-                .withContext("count", v -> v.lot.count())
-                .withContext("uid", v -> v.lot.uid())
-                .withContext("item_name", v -> v.itemStack.itemName())
-                .withContext("item_name_no_colors", v -> v.itemStack.itemNameNoColors())
-
-                ;*/
     public final AucLot lot;
     public final ClientItemStack itemStack;
     public final int shortId;
@@ -63,6 +48,10 @@ public class ClientAucLot implements LotData {
         return lot.lprice();
     }
 
+    public long lprice_for_one() {
+        return lprice_for_one;
+    }
+
     public double dprice() {
         return dprice;
     }
@@ -79,15 +68,6 @@ public class ClientAucLot implements LotData {
     public AucLot lot() {
         return lot;
     }
-    //        registerPlaceholder("{item_name}", this::getItem_name);
-    //        registerPlaceholder("{item_name_no_colors}", this::getItem_name_no_colors);
-    //        registerPlaceholder("{seller_is_online}", () -> Bukkit.getPlayer(sellerUuid) != null);
-    //        registerPlaceholder("{seller_is_online_format}", () ->
-    //                (BAuction.playerList().getPlayer(sellerUuid) != null) ?
-    //                        Lang.getMessage("online-seller") : Lang.getMessage("offline-seller")
-    //        );
-
-    //    }
 
 
     @Override

@@ -56,6 +56,11 @@ public class GhostLot implements LotData  {
     }
 
     @Override
+    public long lprice_for_one() {
+        return lprice_for_one;
+    }
+
+    @Override
     public double dprice() {
         return dprice;
     }
