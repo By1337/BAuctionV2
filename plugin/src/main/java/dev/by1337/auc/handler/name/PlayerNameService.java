@@ -48,7 +48,10 @@ public class PlayerNameService implements LocalChannelHandler {
         return pipeline.submit(() -> loadName0(uuid));
     }
 
+    private final Object2ObjectOpenHashMap<UUID, ResponseFuture<@NotNull PlayerName>> inflightLoads = new Object2ObjectOpenHashMap<>();
+
     private ResponseFuture<@NotNull PlayerName> loadName0(UUID uuid) {
+        pipeline.eventLoop().assertThread();
         var name = uuid2name.get(uuid);
         if (name != null) return new ResponseFuture<>(name);
         Player player = BAuction.playerList().getPlayer(uuid);
@@ -58,11 +61,18 @@ public class PlayerNameService implements LocalChannelHandler {
             remote.write(new A2ASetPlayerNamePacket(uuid, res.name()));
             return new ResponseFuture<>(res);
         }
-        return remote.request(new C2SPlayerNameRequest(uuid))
+        var inWork = inflightLoads.get(uuid);
+        if (inWork != null) return inWork;
+        ResponseFuture<@NotNull PlayerName> future = new ResponseFuture<>();
+        inflightLoads.put(uuid, future);
+        remote.request(new C2SPlayerNameRequest(uuid))
                 .map(v -> new PlayerName(v.name())).orElse(() -> new PlayerName("NoName"))
-                .then(v -> {
-                    uuid2name.putIfAbsent(uuid, v);
+                .then(v -> uuid2name.putIfAbsent(uuid, v))
+                .then(res -> {
+                    inflightLoads.remove(uuid);
+                    future.complete(res);
                 });
+        return future;
     }
 
 
