@@ -34,11 +34,11 @@ public class LibrariesUtil {
         // bsync
         if (!hasClass("dev.by1337.sync.common.channel.ChannelMessage")) {
             ClasspathUtil.addUrl(BAuction.plugin(), AucRepositoryUtil.download(AucRepositoryUtil.BDEV_REPO,
-                    "dev.by1337.sync:bsync-common:1.1",
+                    "dev.by1337.sync:bsync-common:1.3",
                     libraries)
             );
             ClasspathUtil.addUrl(BAuction.plugin(), AucRepositoryUtil.download(AucRepositoryUtil.BDEV_REPO,
-                    "dev.by1337.sync:bsync-client:1.1",
+                    "dev.by1337.sync:bsync-client:1.3",
                     libraries)
             );
         }

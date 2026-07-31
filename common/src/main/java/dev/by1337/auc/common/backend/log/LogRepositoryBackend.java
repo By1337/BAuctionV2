@@ -85,7 +85,7 @@ public class LogRepositoryBackend extends GetPostChannelHandler {
     }
 
     private ResponseFuture<A2ALongResponse> publishLog(C2SPublishLog log) {
-        var record = new LogRecord(lastId++, log.log());
+        var record = new LogRecord(++lastId, log.log());
         addBatcher.offer(record);
         cache.put(record.uid(), record);
         channel.broadcast(new S2CLogAdded(record));

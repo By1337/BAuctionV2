@@ -1,6 +1,6 @@
 main: dev.by1337.auc.BAuction
 name: BAuctionV2
-version: 1.0
+version: 1.1
 api-version: "1.21"
 depend:
   - BLib

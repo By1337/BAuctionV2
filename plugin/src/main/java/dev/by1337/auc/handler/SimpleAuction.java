@@ -1,5 +1,6 @@
 package dev.by1337.auc.handler;
 
+import dev.by1337.auc.BAuction;
 import dev.by1337.auc.config.Config;
 import dev.by1337.auc.handler.eco.EcoGiver;
 import dev.by1337.auc.handler.event.UserMailEvent;
@@ -15,8 +16,8 @@ import dev.by1337.auc.pipeline.LocalPipeline;
 import dev.by1337.auc.pipeline.request.LocalRequestsHandler;
 import dev.by1337.auc.registry.AucRegistries;
 import dev.by1337.auc.user.AucUser;
-import dev.by1337.sync.DataManager;
-import dev.by1337.sync.PlayerDataRepository;
+import dev.by1337.sync.k2v.DataManager;
+import dev.by1337.sync.k2v.PlayerDataRepository;
 import dev.by1337.sync.common.util.BSUtils;
 import dev.by1337.sync.common.work.EventLoopWorker;
 import org.bukkit.plugin.Plugin;
@@ -118,6 +119,7 @@ public class SimpleAuction {
     }
 
     public void onReady() {
+        if (BAuction.auction() == null) return;
         pipeline.initAll(backend, this);
     }
 

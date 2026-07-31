@@ -27,7 +27,7 @@ import dev.by1337.auc.search.filter.SearchFilter;
 import dev.by1337.auc.transaction.Transaction;
 import dev.by1337.auc.user.AucUser;
 import dev.by1337.core.util.misc.Pair;
-import dev.by1337.sync.PlayerDataRepository;
+import dev.by1337.sync.k2v.PlayerDataRepository;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import dev.by1337.sync.common.channel.ChannelMessage;
 import dev.by1337.sync.common.work.EventLoopWorker;

@@ -2,6 +2,7 @@ package dev.by1337.auc.handler.remote;
 
 import dev.by1337.auc.common.backend.BackendPipelineFactory;
 import dev.by1337.auc.common.handler.BAucRuntime;
+import dev.by1337.auc.common.network.AucPackets;
 import dev.by1337.auc.config.Config;
 import dev.by1337.auc.handler.SimpleAuction;
 import dev.by1337.auc.pipeline.Remote;
@@ -26,30 +27,30 @@ public class AuctionBackendBooter {
 
     private static final Logger log = LoggerFactory.getLogger(AuctionBackendBooter.class);
 
-    public static Backend bootRemote(String channelId,Connection connection, Runnable onReady, Runnable onDisabled) {
+    public static Backend bootRemote(String channelId, Connection connection, Runnable onReady, Runnable onDisabled) {
         var conn = dev.by1337.sync.bukkit.BSync.getConnection("bauc");
-        var channel = conn.addChannel(channelId, "bauctionv2", c -> {
-            c.pipeline().addLast("bauc-ref", new ChannelHandler() {
-                @Override
-                public void init(ChannelRuntime runtime) {
-                }
-
-                @Override
-                public void handle(ChannelContext ctx, ChannelMessage msg) throws Exception {
-                    if (msg instanceof ChannelActiveMessage) {
-                        onReady.run();
-                    } else if (msg instanceof ChannelInactiveMessage) {
-                        onDisabled.run();
-                    } else {
-                        connection.write(msg);
+        var channel = conn.addChannel(channelId, "bauctionv2", c -> c
+                .addRegistries(AucPackets.MAIN)
+                .pipeline().addLast("bauc-ref", new ChannelHandler() {
+                    @Override
+                    public void init(ChannelRuntime runtime) {
                     }
-                }
 
-                @Override
-                public void close() {
-                }
-            });
-        }, SimpleAuction.WORKER);
+                    @Override
+                    public void handle(ChannelContext ctx, ChannelMessage msg) throws Exception {
+                        if (msg instanceof ChannelActiveMessage) {
+                            onReady.run();
+                        } else if (msg instanceof ChannelInactiveMessage) {
+                            onDisabled.run();
+                        } else {
+                            connection.write(msg);
+                        }
+                    }
+
+                    @Override
+                    public void close() {
+                    }
+                }), SimpleAuction.WORKER);
         return new Backend() {
             @Override
             public void close() {
