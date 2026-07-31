@@ -13,6 +13,7 @@ import dev.by1337.bmenu.BMenu;
 import dev.by1337.bmenu.command.ExecuteContext;
 import dev.by1337.bmenu.menu.command.MenuCommands;
 import dev.by1337.cmd.Command;
+import dev.by1337.item.ItemComponents;
 import org.bukkit.entity.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,7 @@ class Commands {
                                 if (v == null || !v.success) return;
                                 if (menu.isOpened()) {
                                     if (menu instanceof LotsMenu lotsMenu) {
-                                        lotsMenu.rewriteLotDisplay(lot, lotsMenu.cfg().taken.build(lot.itemStack.itemModel(), lot.placeholders()));
+                                        lotsMenu.rewriteLotDisplay(lot, lotsMenu.cfg().taken.build(lot.itemStack.itemModel().with(m -> m.set(ItemComponents.MATERIAL, null)), lot.placeholders()));
                                     }
                                     menu.refresh();
                                 }
@@ -47,7 +48,7 @@ class Commands {
                                 if (v == null || !v.success) return;
                                 if (menu.isOpened()) {
                                     if (menu instanceof LotsMenu lotsMenu) {
-                                        lotsMenu.rewriteLotDisplay(lot, lotsMenu.cfg().taken.build(lot.itemStack().itemModel(), lot.placeholders()));
+                                        lotsMenu.rewriteLotDisplay(lot, lotsMenu.cfg().taken.build(lot.itemStack().itemModel().with(m -> m.set(ItemComponents.MATERIAL, null)), lot.placeholders()));
                                     }
                                     menu.refresh();
                                 }
@@ -74,7 +75,7 @@ class Commands {
                                         if (count != lot.count()) return;
                                         if (menu.isOpened()) {
                                             if (menu instanceof LotsMenu lotsMenu) {
-                                                lotsMenu.rewriteLotDisplay(lot, lotsMenu.cfg().purchased.build(lot.itemStack.itemModel(), lot.placeholders()));
+                                                lotsMenu.rewriteLotDisplay(lot, lotsMenu.cfg().purchased.build(lot.itemStack.itemModel().with(m -> m.set(ItemComponents.MATERIAL, null)), lot.placeholders()));
                                             }
                                             menu.refresh();
                                         }
