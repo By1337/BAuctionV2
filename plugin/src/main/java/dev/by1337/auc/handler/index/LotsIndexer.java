@@ -4,7 +4,7 @@ import dev.by1337.auc.auc.ClientAucLot;
 import dev.by1337.auc.auc.ClientVaultLot;
 import dev.by1337.auc.auc.sort.Sorting;
 import dev.by1337.auc.handler.SimpleAuction;
-import dev.by1337.auc.handler.event.PlayerChangeNameEvent;
+import dev.by1337.auc.handler.event.*;
 import dev.by1337.auc.handler.name.PlayerNameService;
 import dev.by1337.auc.pipeline.LocalChannelContext;
 import dev.by1337.auc.pipeline.LocalChannelHandler;
@@ -55,7 +55,16 @@ public class LotsIndexer implements LocalChannelHandler {
             if (normalName2UUID.remove(oldName.toLowerCase(), uuid)) {
                 normalName2UUID.put(newName.toLowerCase(Locale.ROOT), uuid);
             }
+        } else if (msg instanceof LotUpdateEvent(ClientAucLot lot)) {
+            insertOrUpdateLot(lot);
+        } else if (msg instanceof RemoveLotEvent(ClientAucLot lot)) {
+            removeLot(lot);
+        } else if (msg instanceof VaultLotUpdateEvent(ClientVaultLot lot)) {
+            addVaultLot(lot);
+        } else if (msg instanceof RemoveVaultLotEvent(ClientVaultLot lot)) {
+            removeVaultLot(lot);
         }
+
         ctx.fire(msg);
     }
 
@@ -191,7 +200,7 @@ public class LotsIndexer implements LocalChannelHandler {
         return base;
     }
 
-    public void removeLot(ClientAucLot lot) {
+    private void removeLot(ClientAucLot lot) {
         eventLoop.assertThread();
         int id = lot.shortId;
         for (var map : sorted) {
@@ -201,7 +210,7 @@ public class LotsIndexer implements LocalChannelHandler {
         releaseShortId(id);
     }
 
-    public void insertOrUpdateLot(ClientAucLot lot) {
+    private void insertOrUpdateLot(ClientAucLot lot) {
         eventLoop.assertThread();
         int localId = lot.shortId;
         boolean reindex = false;
@@ -213,7 +222,7 @@ public class LotsIndexer implements LocalChannelHandler {
             reindex(lot, localId);
     }
 
-    public void addVaultLot(ClientVaultLot lot) {
+    private void addVaultLot(ClientVaultLot lot) {
         eventLoop.assertThread();
         var map = owner2vaultLots.computeIfAbsent(lot.owner(), k -> new ConcurrentSkipListMap<>((o1, o2) -> {
             if (o1.uid() == o2.uid()) return 0;
@@ -244,7 +253,7 @@ public class LotsIndexer implements LocalChannelHandler {
         return normalName2UUID.navigableKeySet().iterator();
     }
 
-    public void removeVaultLot(ClientVaultLot lot) {
+    private void removeVaultLot(ClientVaultLot lot) {
         eventLoop.assertThread();
         var set = owner2vaultLots.get(lot.owner());
         if (set == null) return;

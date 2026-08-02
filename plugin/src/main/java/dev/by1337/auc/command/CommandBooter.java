@@ -15,6 +15,7 @@ import dev.by1337.bmenu.BMenu;
 import dev.by1337.cmd.*;
 import dev.by1337.cmd.argument.ArgumentString;
 import dev.by1337.cmd.argument.ArgumentStrings;
+import dev.by1337.core.BCore;
 import dev.by1337.core.command.bcmd.requires.RequiresPermission;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import net.kyori.adventure.text.Component;
@@ -28,6 +29,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -266,6 +268,18 @@ public class CommandBooter {
                         }
                     });
                 }));
+
+        cmd.sub(new Command<CommandSender>("base64").executor((s) -> {
+            if (s instanceof Player pl) {
+                var item = pl.getInventory().getItemInMainHand();
+                if (item.isEmpty()) {
+                    s.sendMessage("Has no item in main hand!");
+                    return;
+                }
+                var v = Base64.getEncoder().encodeToString(BCore.getItemStackSerializer().serialize(item, pl.getWorld()));
+                s.sendMessage(Component.text(v).hoverEvent(Component.text("copy")).clickEvent(ClickEvent.copyToClipboard(v)));
+            }
+        }));
         return lifecycle.bootAdminCommands(cmd);
     }
 

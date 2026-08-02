@@ -9,7 +9,7 @@ import dev.by1337.auc.common.auc.VaultLot;
 import dev.by1337.auc.common.network.a2a.A2AFlagResponse;
 import dev.by1337.auc.common.network.c2s.*;
 import dev.by1337.auc.common.network.s2c.*;
-import dev.by1337.auc.handler.event.ActionResult;
+import dev.by1337.auc.handler.event.*;
 import dev.by1337.auc.handler.index.LotsIndexer;
 import dev.by1337.auc.handler.item.ItemStackRepository;
 import dev.by1337.auc.handler.name.PlayerNameService;
@@ -233,18 +233,18 @@ public class LotsRepository implements LocalChannelHandler {
                     lot.playerName
             );
             lots.put(v2.uid(), v2);
-            indexer.insertOrUpdateLot(v2);
+            pipeline.execute(new LotUpdateEvent(v2));
         } else if (msg instanceof S2CLotUpdate(AucLot newLot)) {
             placeLot(newLot);
         } else if (msg instanceof S2COnVaultLotRemovePacket(int uid)) {
             var lot = vault.remove(uid);
             if (lot != null) {
-                indexer.removeVaultLot(lot);
+                pipeline.execute(new RemoveVaultLotEvent(lot));
             }
         } else if (msg instanceof S2COnLotRemovePacket(int uid)) {
             var lot = lots.remove(uid);
             if (lot != null) {
-                indexer.removeLot(lot);
+                pipeline.execute(new RemoveLotEvent(lot));
             }
         } else if (msg instanceof S2CVaultLotUpdate(VaultLot lot)) {
             placeVaultLot(lot);
@@ -320,7 +320,7 @@ public class LotsRepository implements LocalChannelHandler {
                             }
                             var newItem = new ClientAucLot(newLot, item, shortId, name);
                             lots.put(newLot.uid(), newItem);
-                            indexer.insertOrUpdateLot(newItem);
+                            pipeline.execute(new LotUpdateEvent(newItem));
                         }))
         ;
     }
@@ -336,7 +336,7 @@ public class LotsRepository implements LocalChannelHandler {
                                     item
                             );
                             vault.put(cvl.uid(), cvl);
-                            indexer.addVaultLot(cvl);
+                            pipeline.execute(new VaultLotUpdateEvent(cvl));
                         }))
         ;
     }
