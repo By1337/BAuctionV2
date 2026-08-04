@@ -4,6 +4,9 @@ import dev.by1337.auc.handler.index.Tag2IdService;
 import dev.by1337.auc.tag.TagsExtractor;
 import dev.by1337.core.BCore;
 import dev.by1337.item.ItemModel;
+import it.unimi.dsi.fastutil.ints.IntIterators;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.TranslationArgument;
@@ -11,6 +14,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +26,7 @@ public class ClientItemStack {
     private final ItemStack itemStack;
     private final ItemModel itemModel;
     private final int[] tags;
+    private final IntSet tagsSet;
     private final Material material;
     private final String itemName;
     private final String itemNameNoColors;
@@ -33,6 +38,8 @@ public class ClientItemStack {
         material = itemStack.getType();
         this.itemModel = itemModel;
         this.tags = tags;
+        tagsSet = new IntOpenHashSet(tags.length);
+        IntIterators.pour(IntIterators.wrap(tags), tagsSet, Integer.MAX_VALUE);
         itemName = itemName(itemStack);
         itemNameNoColors = itemNameNoColors(itemStack);
     }
@@ -46,6 +53,21 @@ public class ClientItemStack {
             tags[x++] = tag2id.getId(sTag);
         }
         return new ClientItemStack(id, bytes, itemStack, ItemModel.fromItemStack(itemStack), tags);
+    }
+
+    public boolean noneOfTags(int @Nullable [] arr) {
+        if (arr == null) return true;
+        for (int i : arr) {
+            if (tagsSet.contains(i)) return false;
+        }
+        return true;
+    }
+    public boolean allOfTags(int @Nullable [] and) {
+        if (and == null) return true;
+        for (int i : and) {
+            if (!tagsSet.contains(i)) return false;
+        }
+        return true;
     }
 
     @Contract(pure = true)

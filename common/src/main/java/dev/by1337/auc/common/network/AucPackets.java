@@ -6,10 +6,9 @@ import dev.by1337.auc.common.network.a2a.A2ASetPlayerNamePacket;
 import dev.by1337.auc.common.network.c2s.*;
 import dev.by1337.auc.common.network.s2c.*;
 import dev.by1337.sync.common.packet.PacketRegistry;
-import dev.by1337.sync.common.packet.Packets;
 
 public class AucPackets {
-    public static final PacketRegistry MAIN = new PacketRegistry("bauc:main", 1)
+    public static final PacketRegistry MAIN = new PacketRegistry("bauc:main", 2)
             .add(0, C2SAddNewLotRequest.class, C2SAddNewLotRequest::new)
             .add(1, S2CLotUpdate.class, S2CLotUpdate::new)
             .add(2, A2AFlagResponse.class, A2AFlagResponse::new)
@@ -46,12 +45,10 @@ public class AucPackets {
             .add(33, C2SGetVaultLotRequest.class, C2SGetVaultLotRequest::new)
             .add(34, C2SPlayerUUIDRequest.class, C2SPlayerUUIDRequest::new)
             .add(35, S2CPlayerNameUUIDResponse.class, S2CPlayerNameUUIDResponse::new)
+            .add(36, S2CEndOfLots.class, S2CEndOfLots::new)
+            .add(37, S2CEndOfVaultLots.class, S2CEndOfVaultLots::new)
             .lock();
 
     public static void boot() {
-    }
-
-    static {
-        Packets.registerPackets(MAIN);
     }
 }
