@@ -61,14 +61,14 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
     private void removalTick() {
         if (closing) return;
         var now = System.currentTimeMillis();
-        int limit = 1000;
+        int limit = 250;
         while (limit-- > 0 && !lots.set.isEmpty()) {
             var v = lots.set.getFirst();
             if (v.removalDate() > now) break;
             logs.publishLog(new LotExpirationLog(now, v.owner(), v.lprice(), v.item(), v.count()));
             move2vault(new C2SMove2VaultRequest(v.uid(), v.owner(), ONE_DAY_MS));
         }
-        limit = 1000;
+        limit = 250;
         while (limit-- > 0 && !vault.set.isEmpty()) {
             var v = vault.set.getFirst();
             if (v.removalDate() > now) break;
@@ -80,7 +80,7 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
 
     private void onGetAllVaultLots(ChannelContext ctx, C2SGetAllVaultLotsRequest r) {
         int[] uids = vault.lots.keySet().toIntArray();
-        sendUids(uids, 0, 4096, ctx.connection(), S2CActualVaultLotsUids::new);
+        sendUids(uids, 0, 4096, ctx.connection(), S2CActualVaultLotsUids::new, () -> ctx.connection().write(new S2CEndOfVaultLots()));
     }
 
     private ResponseFuture<S2COptionalVaultLot> getVaultLot(C2SGetVaultLotRequest r) {
@@ -89,11 +89,14 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
 
     private void onGetAllLots(ChannelContext ctx, C2SGetAllLotsRequest r) {
         int[] uids = lots.lots.keySet().toIntArray();
-        sendUids(uids, 0, 4096, ctx.connection(), S2CActualLotsUids::new);
+        sendUids(uids, 0, 4096, ctx.connection(), S2CActualLotsUids::new, () -> ctx.connection().write(new S2CEndOfLots()));
     }
 
-    private void sendUids(int[] uids, int from, int limit, Connection connection, Function<int[], ExpectsResponse<A2AFlagResponse>> f) {
-        if (from >= uids.length) return;
+    private void sendUids(int[] uids, int from, int limit, Connection connection, Function<int[], ExpectsResponse<A2AFlagResponse>> f, Runnable end) {
+        if (from >= uids.length) {
+            end.run();
+            return;
+        }
         int len = Math.min(uids.length - from, limit);
         if (len <= 0) return;
         log.info("SEND {}-{} of {}", from, from + len, uids.length);
@@ -101,7 +104,7 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         System.arraycopy(uids, from, arr, 0, len);
         f.apply(arr).request(pipeline, connection, 60_000).ifPresent(flag -> {
             if (!flag.flag()) return;
-            sendUids(uids, from + len, limit, connection, f);
+            sendUids(uids, from + len, limit, connection, f, end);
         });
     }
 
@@ -152,7 +155,7 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         int newCount = lot.count() - r.count();
         if (newCount <= 0) {
             lots.remove(r.uid());
-            channel.broadcast(new S2COnVaultLotRemovePacket(r.uid())); 
+            channel.broadcast(new S2COnLotRemovePacket(r.uid()));
             return new ResponseFuture<>(new A2AFlagResponse(true));
         }
         AucLot newLot = new AucLot(
