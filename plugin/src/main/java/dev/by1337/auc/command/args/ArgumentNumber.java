@@ -17,7 +17,6 @@ public class ArgumentNumber<C> extends Argument<C, Number> {
         if (str.isEmpty()) return;
         str = str
                 .replace(",", "")
-                .replace(".", "")
                 .replace("к", "k")
         ;
         try {
@@ -35,7 +34,6 @@ public class ArgumentNumber<C> extends Argument<C, Number> {
         }
         str = str
                 .replace(",", "")
-                .replace(".", "")
                 .replace("к", "k")
         ;
         if (str.endsWith("*")) {
