@@ -18,6 +18,7 @@ import dev.by1337.cmd.argument.ArgumentStrings;
 import dev.by1337.core.BCore;
 import dev.by1337.core.command.bcmd.requires.RequiresPermission;
 import dev.by1337.sync.common.callback.ResponseFuture;
+import dev.by1337.yaml.BukkitCodecs;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.Material;
@@ -280,6 +281,22 @@ public class CommandBooter {
                 s.sendMessage(Component.text(v).hoverEvent(Component.text("copy")).clickEvent(ClickEvent.copyToClipboard(v)));
             }
         }));
+        cmd.sub(new Command<CommandSender>("materials_by_filter").executor(
+                new ArgumentStrings<>("f"),
+                (s, f) -> {
+                    var v = BukkitCodecs.material().wildcard().decode(f).getOrThrow();
+                    StringBuilder sb = new StringBuilder();
+                    for (Material material : v) {
+                        sb.append(material.key().value()).append(", ");
+                    }
+                    if (sb.isEmpty()){
+                        s.sendMessage("No material found!");
+                        return;
+                    }
+                    sb.setLength(sb.length() - 2);
+                    var res = sb.toString();
+                    s.sendMessage(Component.text(res).hoverEvent(Component.text("copy")).clickEvent(ClickEvent.copyToClipboard(res)));
+                }));
         return lifecycle.bootAdminCommands(cmd);
     }
 

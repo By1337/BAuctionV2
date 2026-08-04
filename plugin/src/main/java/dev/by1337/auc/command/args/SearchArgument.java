@@ -6,6 +6,7 @@ import dev.by1337.auc.search.filter.PriceLimiterSearchFilter;
 import dev.by1337.auc.search.filter.SearchFilter;
 import dev.by1337.auc.search.filter.SearchFilterAndList;
 import dev.by1337.auc.util.ByLocaleSelector;
+import dev.by1337.auc.util.number.EconomyUtil;
 import dev.by1337.cmd.*;
 import dev.by1337.core.util.misc.Pair;
 import org.bukkit.command.CommandSender;
@@ -44,7 +45,7 @@ public class SearchArgument<C extends CommandSender> extends Argument<C, Pair<St
                 argumentNumber.parse(c, new CommandReader(in[in.length - 1]), out);
                 Number number = (Number) out.get(argumentNumber.name());
                 if (number != null) {
-                    maxPrice = (long) (number.doubleValue() * 100D);
+                    maxPrice = EconomyUtil.toCents(number.doubleValue());
                 }
                 input = input.substring(0, input.lastIndexOf(' '));
             }

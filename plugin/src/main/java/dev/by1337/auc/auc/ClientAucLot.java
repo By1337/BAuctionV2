@@ -2,6 +2,7 @@ package dev.by1337.auc.auc;
 
 import dev.by1337.auc.common.auc.AucLot;
 import dev.by1337.auc.handler.name.PlayerName;
+import dev.by1337.auc.util.number.EconomyUtil;
 
 import java.util.UUID;
 
@@ -18,8 +19,8 @@ public class ClientAucLot implements LotData {
         this.lot = lot;
         this.itemStack = itemStack;
         this.shortId = shortId;
-        dprice = lot.lprice() / 100D;
-        dprice_for_one = ((double) lot.lprice() / lot.count()) / 100D;
+        dprice = EconomyUtil.fromCents(lot.lprice());
+        dprice_for_one = EconomyUtil.fromCents(lot.lprice() / lot.count());
         lprice_for_one = lot.lprice_for_one;
         this.playerName = playerName;
     }

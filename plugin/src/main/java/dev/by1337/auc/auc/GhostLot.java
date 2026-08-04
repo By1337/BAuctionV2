@@ -1,6 +1,7 @@
 package dev.by1337.auc.auc;
 
 import dev.by1337.auc.handler.name.PlayerName;
+import dev.by1337.auc.util.number.EconomyUtil;
 
 import java.util.UUID;
 
@@ -19,9 +20,9 @@ public class GhostLot implements LotData  {
         this.owner = owner;
         this.ownerName = ownerName;
         this.lprice = lprice;
-        dprice = lprice / 100D;
+        dprice = EconomyUtil.fromCents(lprice);
         lprice_for_one = lprice / count;
-        dprice_for_one = lprice_for_one / 100D;
+        dprice_for_one = EconomyUtil.fromCents(lprice_for_one);
         this.count = count;
     }
 

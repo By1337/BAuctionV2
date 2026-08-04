@@ -1,5 +1,6 @@
 package dev.by1337.auc.eco;
 
+import dev.by1337.auc.util.number.EconomyUtil;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -17,13 +18,13 @@ public class VaultHook {
     }
 
     public long getCents(UUID uuid){
-        return (long) (getBalance(Bukkit.getOfflinePlayer(uuid)) * 100D);
+        return EconomyUtil.toCents(getBalance(Bukkit.getOfflinePlayer(uuid)));
     }
     public void withdrawCents(UUID uuid, long count) {
-        withdrawPlayer(Bukkit.getOfflinePlayer(uuid), count / 100D);
+        withdrawPlayer(Bukkit.getOfflinePlayer(uuid), EconomyUtil.fromCents(count));
     }
     public void depositCents(UUID uuid, long count) {
-        depositPlayer(Bukkit.getOfflinePlayer(uuid), count / 100D);
+        depositPlayer(Bukkit.getOfflinePlayer(uuid), EconomyUtil.fromCents(count));
     }
 
 

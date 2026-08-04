@@ -7,6 +7,7 @@ import dev.by1337.auc.transaction.AddLotTransaction;
 import dev.by1337.auc.util.mc.InvUtil;
 import dev.by1337.auc.util.mc.ItemStackRef;
 import dev.by1337.auc.util.mc.MCUtil;
+import dev.by1337.auc.util.number.EconomyUtil;
 import dev.by1337.cmd.Command;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import org.bukkit.command.CommandSender;
@@ -91,7 +92,7 @@ public class SellCommand extends Command<CommandSender> {
                                     one,
                                     result,
                                     who,
-                                    (long) (((price / count) * result) * 100D)
+                                    EconomyUtil.toCents((price / count) * result)
                             ).then(r -> {
                                 if (r != null && r.success) {
                                     BAuction.sendMessage("sell_qa_moved_to_vault", player);

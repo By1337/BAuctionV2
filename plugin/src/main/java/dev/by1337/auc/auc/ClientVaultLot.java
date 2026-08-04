@@ -2,6 +2,7 @@ package dev.by1337.auc.auc;
 
 import dev.by1337.auc.common.auc.VaultLot;
 import dev.by1337.auc.handler.name.PlayerName;
+import dev.by1337.auc.util.number.EconomyUtil;
 
 import java.util.UUID;
 
@@ -17,9 +18,9 @@ public class ClientVaultLot implements LotData {
         this.lot = lot;
         this.playerName = playerName;
         this.itemStack = itemStack;
-        dprice = lot.lprice() / 100D;
+        dprice = EconomyUtil.fromCents(lot.lprice());
         lprice_for_one = lot.lprice() / lot.count();
-        dprice_for_one = ((double) lot.lprice() / lot.count()) / 100D;
+        dprice_for_one = EconomyUtil.fromCents(lot.lprice() / lot.count());
     }
 
     @Override
