@@ -15,7 +15,7 @@
 
 item_info_lore: &info
   - "<st><#FF0000>                         "
-  - "<#00FF00>$<#FFFFE6> Ценa:<#00FF00> ${price}"
+  - "<#00FF00>$<#FFFFE6> Ценa:<#00FF00> $${price}"
   - "<#FFFF00>⭐<#FFFFE6> Продавец:<#FFFF00> {seller_name}"
   - "<#FF0066>⟲<#FFFFE6> Истeкaeт:<#FF0066> {expires}"
   - "<st><#FF0000>                         "
@@ -25,7 +25,7 @@ vault_lot:
     - '<#FF6600> ➥ Нажмите<#FFFFE6>, чтобы <#FFFF00>забрать'
     - "<st><#FF0000>                         "
     - '&r '
-    - '<#00FF00>$<#FFFFE6> Цена:<#00FF00> ${price}'
+    - '<#00FF00>$<#FFFFE6> Цена:<#00FF00> $${price}'
     - "<#FF6600>●<#FFFFE6> Статус: {lot_status}"
     - '<#FF0066>⟲<#FFFFE6> Удаление: <#FF0066>{expires}'
     - "<st><#FF0000>                         "

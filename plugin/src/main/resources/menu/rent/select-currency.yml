@@ -43,7 +43,7 @@ items:
     amount: '{slot_count}'
     base_lore: &base_lore
       - "<#FF0000><st>                         "
-      - "<#FFFF00> $<#FFFFE6> Цена: <#FFFF00>${eco_price_commas}"
+      - "<#FFFF00> $<#FFFFE6> Цена: <#FFFF00>$${eco_price_commas}"
       - "<#FF6600> ⛁<#FFFFE6> Баланс: <#FF6600>$%vault_eco_balance_commas%"
       - "<#FF0000><st>                         "
     oneOf:

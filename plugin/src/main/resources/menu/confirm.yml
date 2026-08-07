@@ -11,7 +11,7 @@ show_item:
   slot: 13
   lore:
     - ""
-    - "<#00FF00>$<#FFFFE6> Ценa:<#00FF00> ${price}"
+    - "<#00FF00>$<#FFFFE6> Ценa:<#00FF00> $${price}"
     - "<#FF6600>?<#FFFFE6> Продавец:<#FF6600> {seller_name}"
     - ""
   on_click:

@@ -24,7 +24,7 @@ default:
     base_lore: &base_lore
       - "<#FF6600> ➥ Нажмите<#FFFFE6>, чтобы выбрать валюту"
       - "<#FF0000><st>                                            "
-      - "<#00FF00> $<#FFFFE6> Цена: <#00FF00>{pp_price_commas} ТК<#FFFFE6> | <#FFFF00>${eco_price_commas}"
+      - "<#00FF00> $<#FFFFE6> Цена: <#00FF00>{pp_price_commas} ТК<#FFFFE6> | <#FFFF00>$${eco_price_commas}"
       - "<#009900> ⛁<#FFFFE6> Баланс: <#009900>%playerpoints_points% ТК<#FFFFE6> | <#FF6600>$%vault_eco_balance_commas%"
       - "<#FF0000><st>                                            "
     oneOf:

@@ -2,7 +2,7 @@ id: bauc:sell_gui
 provider: bauc:sell_gui
 type: chest
 size: 54
-title: "<#FF0000>☃ <b><#FF6600>Продажа:<#FF0000> ${price}"
+title: "<#FF0000>☃ <b><#FF6600>Продажа:<#FF0000> $${price}"
 blocked:
   name: "<#FF0000>Слот недоступен"
   lore: "<#FF6600>➥ /ah rent<#FFFFE6> - аренда слотов"

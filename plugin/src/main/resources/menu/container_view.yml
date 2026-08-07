@@ -9,7 +9,7 @@ items:
     lore:
       - ""
       - "<st><#FF0000>                        "
-      - "<#00FF00>$<#FFFFE6> Ценa<#00FF00> ${price}"
+      - "<#00FF00>$<#FFFFE6> Ценa<#00FF00> $${price}"
       - "<#FF6600>⚕<#FFFFE6> Прoдaвeц:<#FF6600> {seller_name}"
       - "<st><#FF0000>                        "
     material: lime_dye

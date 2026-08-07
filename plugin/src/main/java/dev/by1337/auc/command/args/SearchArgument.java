@@ -46,8 +46,8 @@ public class SearchArgument<C extends CommandSender> extends Argument<C, Pair<St
                 Number number = (Number) out.get(argumentNumber.name());
                 if (number != null) {
                     maxPrice = EconomyUtil.toCents(number.doubleValue());
+                    input = input.substring(0, input.lastIndexOf(' '));
                 }
-                input = input.substring(0, input.lastIndexOf(' '));
             }
         }
 
@@ -93,8 +93,16 @@ public class SearchArgument<C extends CommandSender> extends Argument<C, Pair<St
         if (config.ah_search_max_price_perm != null && player.hasPermission(config.ah_search_max_price_perm)) {
             if (in.length > 1 && Character.isDigit(in[in.length - 1].charAt(0))) {
                 suggestions.suggest(in[in.length - 1] + "0");
-                argumentNumber.suggest(c, new CommandReader(in[in.length - 1]), suggestions, ignored);
-                return;
+                ArgumentMap map = new ArgumentMap(3);
+                argumentNumber.suggest(c, new CommandReader(in[in.length - 1]), suggestions, map);
+                if (map.size() > 0){
+                    for (Object value : map.values()) {
+                        if (value != null){
+                            suggestions.suggest(String.valueOf(value));
+                        }
+                    }
+                    return;
+                }
             }
         }
 
