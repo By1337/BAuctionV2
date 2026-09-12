@@ -102,6 +102,7 @@ public class CommandBooter {
                             suggestions.suggest("{player}");
                             return;
                         }
+                        if (!suggestions.isEmpty()) return;
                         var auc = BAuction.auction();
                         if (auc == null) return;
                         var playerList = BAuction.playerList();
