@@ -18,7 +18,7 @@ public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
     private static final ResponseFuture<@Nullable GhostLot> EMPTY = new ResponseFuture<>(null);
     private final ItemStack itemStack;
     private final UUID who;
-    private final long lprice;
+    private final long centsPrice;
     private final int count;
     private boolean skipSlotsCheck;
     private boolean skipPriceChecks;
@@ -28,11 +28,11 @@ public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
         this(itemStack, who, EconomyUtil.toCents(price), count);
     }
 
-    public AddLotTransaction(ItemStack itemStack, UUID who, long lprice, int count) {
+    public AddLotTransaction(ItemStack itemStack, UUID who, long centsPrice, int count) {
         this.itemStack = itemStack.getAmount() != 1 ? itemStack.asOne() : itemStack;
         this.who = who;
         this.count = count;
-        this.lprice = lprice;
+        this.centsPrice = centsPrice;
         sellingDuration = BAuction.plugin().config().selling_duration;
     }
 
@@ -57,19 +57,24 @@ public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
             var cfg = BAuction.plugin().config();
             if (cfg.priceLimiter.enabled()) {
                 var max = cfg.priceLimiter.getMaxPrice(itemStack.asQuantity(count));
-                if (lprice > max) {
+                if (centsPrice > max) {
                     BAuction.sendMessage("maximum_price", who, PlaceholderResolver.of("max", NumberFormatter.format(max)));
                     return EMPTY;
                 }
             }
         }
         //long lprice = (long) (price * 100D);
-        return auction.makeGhostLot(itemStack, who, count, lprice)
+        return auction.makeGhostLot(itemStack, who, count, centsPrice)
                 .ifEmpty(() -> BAuction.sendMessage("auction_is_disabled", who))
                 .map(ghostLot -> {
-                    if ((double) lprice / count < 0.01D) {
+                    if ((double) centsPrice / count < 1_00D) {
                         BAuction.sendMessage("minimum_price", who, ghostLot.<EventContext>placeholders()
-                                .append("min", 0.01D * count));
+                                .append("min",  count));
+                        return null;
+                    }
+                    if (centsPrice < 10_00) {
+                        BAuction.sendMessage("minimum_price", who, ghostLot.<EventContext>placeholders()
+                                .append("min",  10));
                         return null;
                     }
                     return ghostLot;
@@ -78,14 +83,14 @@ public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
                         who,
                         sellingDuration,
                         count,
-                        lprice
+                        centsPrice
                 ).then(l -> {
                     if (l != null) {
                         auction.publishLog(new AddLotLog(
                                 System.currentTimeMillis(),
                                 who,
-                                lprice,
-                                l.itemStack().id(),
+                                centsPrice,
+                                l.clientItemStack().id(),
                                 count
                         ));
                     }
@@ -122,11 +127,15 @@ public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
         return who;
     }
 
-    public long lprice() {
-        return lprice;
+    public long centsPrice() {
+        return centsPrice;
     }
 
     public int count() {
         return count;
+    }
+
+    public long sellingDuration() {
+        return sellingDuration;
     }
 }

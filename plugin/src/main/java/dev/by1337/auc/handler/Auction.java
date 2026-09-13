@@ -21,6 +21,7 @@ import dev.by1337.auc.pipeline.LocalChannelHandler;
 import dev.by1337.auc.pipeline.LocalPipeline;
 import dev.by1337.auc.pipeline.Remote;
 import dev.by1337.auc.registry.AucRegistries;
+import dev.by1337.auc.search.LotsResult;
 import dev.by1337.auc.search.PlayerVaultResult;
 import dev.by1337.auc.search.SearchResult;
 import dev.by1337.auc.search.filter.SearchFilter;
@@ -31,13 +32,12 @@ import dev.by1337.sync.k2v.PlayerDataRepository;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import dev.by1337.sync.common.channel.ChannelMessage;
 import dev.by1337.sync.common.work.EventLoopWorker;
+import it.unimi.dsi.fastutil.ints.IntObjectPair;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -122,12 +122,31 @@ public class Auction implements LocalChannelHandler {
         return repo.addLot(itemStack, owner, sellingDuration, count, price);
     }
 
+    @Deprecated
     public SearchResult search(@Nullable SearchFilter filter, Sorting sorting) {
         return index.search(filter, sorting);
     }
 
+    @Deprecated
     public SearchResult search(@Nullable UUID owner, @Nullable SearchFilter filter, Sorting sorting) {
         return index.search(owner, filter, sorting);
+    }
+
+    public NavigableSet<ClientAucLot> lotsSet() {
+        return index.lotsSet();
+    }
+
+    public NavigableSet<ClientAucLot> lotsSet(@Nullable Sorting sorting) {
+        return index.lotsSet(sorting);
+    }
+
+    public NavigableSet<ClientAucLot> lotsSetByMaterial(int ordinal, @Nullable Sorting sorting) {
+        return index.lotsSetByMaterial(ordinal, sorting);
+    }
+
+    @Nullable
+    public BitSetPool.PooledBitSet ownerMask(UUID owner) {
+        return index.ownerMask(owner);
     }
 
     public ResponseFuture<@Nullable Long> publishLog(AuctionLog log) {
@@ -179,18 +198,22 @@ public class Auction implements LocalChannelHandler {
         return repo.subtractOrRemoveLot(lot0, count);
     }
 
+    public ResponseFuture<ActionResult> subtractOrRemoveLot(int uid, int count) {
+        return repo.subtractOrRemoveLot(uid, count);
+    }
+
     public ResponseFuture<@Nullable Pair<UUID, String>> findUUID(String name) {
         return players.findUUID(name);
     }
 
     @Nullable
     public BitSetPool.PooledBitSet findLotsWithTags(int @Nullable [] and, int @Nullable [] not) {
-        return index.findLotsWithTags(and, not);
+        return index.findWithTags(and, not);
     }
 
     @Nullable
     public BitSetPool.PooledBitSet findLotsWithTags(int @Nullable [] @Nullable [] ands, int @Nullable [] @Nullable [] nots) {
-        return index.findLotsWithTags(ands, nots);
+        return index.findWithTags(ands, nots);
     }
 
     public ResponseFuture<@Nullable GhostLot> makeGhostLot(ItemStack itemStack, UUID owner, int count, long lprice) {
@@ -199,6 +222,14 @@ public class Auction implements LocalChannelHandler {
 
     public int getPlayerOwnedLotsCount(UUID key) {
         return index.getPlayerOwnedLotsCount(key);
+    }
+
+    public ResponseFuture<ActionResult> subtractOrRemoveLots(Collection<IntObjectPair<ClientAucLot>> lots) {
+        return repo.subtractOrRemoveLots(lots);
+    }
+
+    public ResponseFuture<ActionResult> subtractOrRemoveLots(int[] raw) {
+        return repo.subtractOrRemoveLots(raw);
     }
 
     public <T, R> void parallel(
@@ -249,5 +280,43 @@ public class Auction implements LocalChannelHandler {
 
     }
 
+    public LocalPipeline pipeline() {
+        return pipeline;
+    }
 
+    public Remote remote() {
+        return remote;
+    }
+
+    public LotsRepository repo() {
+        return repo;
+    }
+
+    public LotsIndexer index() {
+        return index;
+    }
+
+    public PlayerNameService players() {
+        return players;
+    }
+
+    public LogRepository log() {
+        return log;
+    }
+
+    public ItemStackRepository itemService() {
+        return itemService;
+    }
+
+    public SimpleAuction auction() {
+        return auction;
+    }
+
+    public AucLifecycle lifecycle() {
+        return lifecycle;
+    }
+
+    public EventLoopWorker worker() {
+        return worker;
+    }
 }

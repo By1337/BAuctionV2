@@ -54,6 +54,7 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         registerGet(C2SRemoveVaultLotRequest.class, this::removeVaultLot);
         registerGet(C2SGetLotRequest.class, this::getLot);
         registerGet(C2SGetVaultLotRequest.class, this::getVaultLot);
+        registerGet(C2SMassSubtractLotRequest.class, this::massSubtractLot);
         registerPost(C2SGetAllLotsRequest.class, this::onGetAllLots);
         registerPost(C2SGetAllVaultLotsRequest.class, this::onGetAllVaultLots);
     }
@@ -65,14 +66,14 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         while (limit-- > 0 && !lots.set.isEmpty()) {
             var v = lots.set.getFirst();
             if (v.removalDate() > now) break;
-            logs.publishLog(new LotExpirationLog(now, v.owner(), v.lprice(), v.item(), v.count()));
+            logs.publishLog(new LotExpirationLog(now, v.owner(), v.cents(), v.item(), v.count()));
             move2vault(new C2SMove2VaultRequest(v.uid(), v.owner(), ONE_DAY_MS));
         }
         limit = 250;
         while (limit-- > 0 && !vault.set.isEmpty()) {
             var v = vault.set.getFirst();
             if (v.removalDate() > now) break;
-            logs.publishLog(new VaultLotExpirationLog(now, v.owner(), v.lprice(), v.item(), v.count()));
+            logs.publishLog(new VaultLotExpirationLog(now, v.owner(), v.centsPrice(), v.item(), v.count()));
             removeVaultLot(new C2SRemoveVaultLotRequest(v.uid()));
         }
         worker.schedule(this::removalTick, 100);
@@ -149,14 +150,35 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
         worker.schedule(this::removalTick, 100);
     }
 
+    private ResponseFuture<A2AFlagResponse> massSubtractLot(C2SMassSubtractLotRequest r) {
+        int[] payload = r.payload();
+        if (payload.length < 2) return new ResponseFuture<>(new A2AFlagResponse(false));
+        for (int i = 0; i < payload.length; ) {
+            int uid = payload[i];
+            int count = payload[i + 1];
+            i += 2;
+            var lot = lots.get(uid);
+            if (lot == null || lot.count() < count) return new ResponseFuture<>(new A2AFlagResponse(false));
+        }
+        for (int i = 0; i < payload.length; ) {
+            subtractLot(payload[i], payload[i + 1]);
+            i += 2;
+        }
+        return new ResponseFuture<>(new A2AFlagResponse(true));
+    }
+
     private ResponseFuture<A2AFlagResponse> onSubtractLot(C2SSubtractLotRequest r) {
-        var lot = lots.get(r.uid());
-        if (lot == null || lot.count() < r.count()) return new ResponseFuture<>(new A2AFlagResponse(false));
-        int newCount = lot.count() - r.count();
+        return new ResponseFuture<>(new A2AFlagResponse(subtractLot(r.uid(), r.count())));
+    }
+
+    private boolean subtractLot(int uid, int count) {
+        var lot = lots.get(uid);
+        if (lot == null || lot.count() < count) return false;
+        int newCount = lot.count() - count;
         if (newCount <= 0) {
-            lots.remove(r.uid());
-            channel.broadcast(new S2COnLotRemovePacket(r.uid()));
-            return new ResponseFuture<>(new A2AFlagResponse(true));
+            lots.remove(uid);
+            channel.broadcast(new S2COnLotRemovePacket(uid));
+            return true;
         }
         AucLot newLot = new AucLot(
                 lot.uid(),
@@ -168,14 +190,14 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
                 lot.lprice_for_one * newCount
         );
         lots.update(newLot);
-        channel.broadcast(new S2CLotCountChange(r.uid(), newCount)); 
-        return new ResponseFuture<>(new A2AFlagResponse(true));
+        channel.broadcast(new S2CLotCountChange(uid, newCount));
+        return true;
     }
 
     private ResponseFuture<A2AFlagResponse> removeVaultLot(C2SRemoveVaultLotRequest rm) {
         VaultLot removed = vault.remove(rm.uid());
         if (removed == null) return new ResponseFuture<>(new A2AFlagResponse(false));
-        channel.broadcast(new S2COnVaultLotRemovePacket(rm.uid())); 
+        channel.broadcast(new S2COnVaultLotRemovePacket(rm.uid()));
         return new ResponseFuture<>(new A2AFlagResponse(true));
     }
 
@@ -190,13 +212,14 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
                 packet.count,
                 packet.price
         ));
-        channel.broadcast(new S2CVaultLotUpdate(vaultLot)); 
+        channel.broadcast(new S2CVaultLotUpdate(vaultLot));
         return new ResponseFuture<>(new A2AFlagResponse(true));
     }
 
     private ResponseFuture<A2AFlagResponse> move2vault(C2SMove2VaultRequest move) {
         return move2vault(move, false);
     }
+
     private ResponseFuture<A2AFlagResponse> move2vault(C2SMove2VaultRequest move, boolean silentRemove) {
         var lot = lots.remove(move.uid());
         if (lot == null) return new ResponseFuture<>(new A2AFlagResponse(false));
@@ -206,12 +229,12 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
                 move.newOwner(),
                 System.currentTimeMillis() + move.storeDuration(),
                 lot.count(),
-                lot.lprice()
+                lot.cents()
         ));
-        if (!silentRemove){
-            channel.broadcast(new S2COnLotRemovePacket(lot.uid())); 
+        if (!silentRemove) {
+            channel.broadcast(new S2COnLotRemovePacket(lot.uid()));
         }
-        channel.broadcast(new S2CVaultLotUpdate(vaultLot)); 
+        channel.broadcast(new S2CVaultLotUpdate(vaultLot));
         return new ResponseFuture<>(new A2AFlagResponse(true));
     }
 
@@ -219,7 +242,7 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
     private ResponseFuture<A2AFlagResponse> removeLot(C2SRemoveLotRequest remove) {
         var flag = lots.remove(remove.uid()) != null;
         if (flag) {
-            channel.broadcast(new S2COnLotRemovePacket(remove.uid())); 
+            channel.broadcast(new S2COnLotRemovePacket(remove.uid()));
         }
         return new ResponseFuture<>(new A2AFlagResponse(flag));
     }
@@ -236,10 +259,10 @@ public class LotsRepositoryBackend extends GetPostChannelHandler {
                 packet.price
         ));
         if (packet.sellingDuration <= 0) {
-            logs.publishLog(new LotExpirationLog(now, v.owner(), v.lprice(), v.item(), v.count()));
+            logs.publishLog(new LotExpirationLog(now, v.owner(), v.cents(), v.item(), v.count()));
             move2vault(new C2SMove2VaultRequest(v.uid(), v.owner(), ONE_DAY_MS), true);
         } else {
-            channel.broadcast(new S2CLotUpdate(v)); 
+            channel.broadcast(new S2CLotUpdate(v));
         }
         return new ResponseFuture<>(new A2AFlagResponse(true));
     }

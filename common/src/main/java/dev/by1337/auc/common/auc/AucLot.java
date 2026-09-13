@@ -92,7 +92,7 @@ public class AucLot implements BaseLot{
         return count;
     }
 
-    public long lprice() {
+    public long cents() {
         return lprice;
     }
 

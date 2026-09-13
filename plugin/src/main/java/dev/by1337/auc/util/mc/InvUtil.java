@@ -14,6 +14,7 @@ import java.util.Map;
 public class InvUtil {
 
     public static boolean giveOrDrop(Player player, ItemStack... items) {
+        if (items.length == 0) return true;
         Collection<ItemStack> leftover = !canGiveItems(player) ? Arrays.asList(items) : player.getInventory().addItem(items).values();
         for (ItemStack value : leftover) {
             player.getWorld().dropItemNaturally(player.getLocation(), value);

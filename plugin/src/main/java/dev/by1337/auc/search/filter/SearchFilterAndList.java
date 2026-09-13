@@ -1,11 +1,14 @@
 package dev.by1337.auc.search.filter;
 
 import dev.by1337.auc.auc.ClientItemStack;
+import dev.by1337.auc.auc.sort.Sorting;
 import dev.by1337.auc.handler.index.BitSetPool;
 import dev.by1337.auc.handler.index.LotsIndexer;
-import org.jetbrains.annotations.Nullable;
+import dev.by1337.auc.handler.index.search.SearchEngine;
+import dev.by1337.auc.search.LotsResult;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class SearchFilterAndList implements SearchFilter {
@@ -15,25 +18,15 @@ public class SearchFilterAndList implements SearchFilter {
         this.filters = filters;
     }
 
-    @Override
-    public @Nullable BitSetPool.PooledBitSet search(LotsIndexer indexer) {
-        BitSetPool.PooledBitSet result = null;
+    public LotsResult searchLots(LotsIndexer indexer, Sorting sorting) {
+        return apply(indexer, LotsResult.of(indexer.lotsSet(sorting)));
+    }
+
+    public LotsResult apply(LotsIndexer indexer, LotsResult upper){
         for (SearchFilter filter : filters) {
-            var v = filter.search(indexer);
-            if (v != null) {
-                if (v.isEmpty()) {
-                    if (result != null) result.release();
-                    return v;
-                }
-                if (result == null) {
-                    result = v;
-                } else {
-                    result.and(v.lotMask());
-                    v.release();
-                }
-            }
+            upper = filter.apply(indexer, upper);
         }
-        return result;
+        return upper;
     }
 
     @Override
@@ -51,5 +44,17 @@ public class SearchFilterAndList implements SearchFilter {
         for (SearchFilter filter : filters) {
             filter.forEachAnds(consumer);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        SearchFilterAndList that = (SearchFilterAndList) o;
+        return Objects.equals(filters, that.filters);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(filters);
     }
 }

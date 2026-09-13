@@ -1,6 +1,5 @@
 package dev.by1337.auc.menu;
 
-import dev.by1337.auc.auc.LotData;
 import dev.by1337.auc.auc.category.Category;
 import dev.by1337.auc.auc.sort.Sorting;
 import dev.by1337.auc.search.LotsResult;
@@ -99,12 +98,14 @@ public class HomeMenu extends LotsMenu {
     @Override
     protected LotsResult search() {
         if (nop) return LotsResult.EMPTY;
-        return auction.search(playerLots, category.filter(), sorting);
-    }
-
-    @Override
-    protected LotData getByUid(int uid, LotData old) {
-        return auction.getLot(uid);
+        long nanos = System.nanoTime();
+        try {
+            var v = category.filter().searchLots(auction.index(), sorting);
+            if (playerLots != null) return v.whereOwner(auction.index(), playerLots);
+            return v;
+        } finally {
+            loader.logger().info("time {}us", (System.nanoTime() - nanos) / 1000D);
+        }
     }
 
     public void setSearch(@Nullable SearchFilter search) {

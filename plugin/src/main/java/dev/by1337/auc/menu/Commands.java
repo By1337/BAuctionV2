@@ -1,6 +1,7 @@
 package dev.by1337.auc.menu;
 
 import dev.by1337.auc.BAuction;
+import dev.by1337.auc.auc.BuyableLot;
 import dev.by1337.auc.auc.ClientAucLot;
 import dev.by1337.auc.auc.ClientVaultLot;
 import dev.by1337.auc.command.args.ArgumentNumber;
@@ -67,7 +68,7 @@ class Commands {
                             BAuction.sendMessage("auction_is_disabled", viewer);
                             return;
                         }
-                        if (menu.lastClickedItemPayload() instanceof ClientAucLot lot) {
+                        if (menu.lastClickedItemPayload() instanceof BuyableLot lot) {
                             int count = count0 != null ? Math.min(lot.count(), count0.intValue()) : lot.count();
                             auction.apply(new BuyLotTransaction(viewer.getUniqueId(), lot, count))
                                     .then(v -> {
@@ -75,7 +76,7 @@ class Commands {
                                         if (count != lot.count()) return;
                                         if (menu.isOpened()) {
                                             if (menu instanceof LotsMenu lotsMenu) {
-                                                lotsMenu.rewriteLotDisplay(lot, lotsMenu.cfg().purchased.build(lot.itemStack.itemModel().with(m -> m.set(ItemComponents.MATERIAL, null)), lot.placeholders()));
+                                                lotsMenu.rewriteLotDisplay(lot, lotsMenu.cfg().purchased.build(lot.itemModel().with(m -> m.set(ItemComponents.MATERIAL, null)), lot.placeholders()));
                                             }
                                             menu.refresh();
                                         }

@@ -74,7 +74,7 @@ public class Config {
         selling_duration = sellingDuration;
         post_join_use_delay = postJoinUseDelay;
         this.priceLimiter = priceLimiter;
-        if (priceLimiter != null){
+        if (priceLimiter != null) {
             priceLimiter.setTags(tagsExtractor);
         }
         var cmd = lifecycle.bootMessagesCommand(eventCtx.commands());

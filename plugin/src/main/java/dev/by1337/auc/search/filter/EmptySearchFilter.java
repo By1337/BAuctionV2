@@ -1,18 +1,23 @@
 package dev.by1337.auc.search.filter;
 
 import dev.by1337.auc.auc.ClientItemStack;
-import dev.by1337.auc.handler.index.BitSetPool;
+import dev.by1337.auc.auc.sort.Sorting;
 import dev.by1337.auc.handler.index.LotsIndexer;
-import org.jetbrains.annotations.Nullable;
+import dev.by1337.auc.search.LotsResult;
 
 import java.util.function.Consumer;
 
 public record EmptySearchFilter() implements SearchFilter {
     public static final EmptySearchFilter INSTANCE = new EmptySearchFilter();
 
-    @Override
-    public @Nullable BitSetPool.PooledBitSet search(LotsIndexer indexer) {
-        return null;
+
+
+    public LotsResult searchLots(LotsIndexer indexer, Sorting sorting) {
+        return LotsResult.of(indexer.lotsSet(sorting));
+    }
+
+    public LotsResult apply(LotsIndexer indexer, LotsResult upper){
+        return upper;
     }
 
     @Override

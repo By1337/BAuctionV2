@@ -1,10 +1,13 @@
 package dev.by1337.auc.search.filter;
 
 import dev.by1337.auc.auc.ClientItemStack;
-import dev.by1337.auc.handler.index.BitSetPool;
+import dev.by1337.auc.auc.sort.Sorting;
 import dev.by1337.auc.handler.index.LotsIndexer;
+import dev.by1337.auc.search.LotsResult;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 
@@ -12,9 +15,17 @@ public record ComplexSearchFilter(
         int @Nullable [] @Nullable [] ands,
         int @Nullable [] @Nullable [] nots
 ) implements SearchFilter {
-    @Override
-    public @Nullable BitSetPool.PooledBitSet search(LotsIndexer indexer) {
-        return indexer.findLotsWithTags(ands, nots);
+   /* @Override
+    public BitSetPool.PooledBitSet search(SearchEngine indexer) {
+        return indexer.findWithTags(ands, nots);
+    }*/
+
+    public LotsResult searchLots(LotsIndexer indexer, Sorting sorting) {
+        var set = indexer.lotsSet(sorting);
+        return LotsResult.of(set.size(), indexer.findWithTags(ands, nots), set.iterator());
+    }
+    public LotsResult apply(LotsIndexer indexer, LotsResult upper){
+        return LotsResult.of(upper.size(), indexer.findWithTags(ands, nots), upper);
     }
 
     @Override
@@ -45,4 +56,15 @@ public record ComplexSearchFilter(
         return arr[i];
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        ComplexSearchFilter that = (ComplexSearchFilter) o;
+        return Objects.deepEquals(ands, that.ands) && Objects.deepEquals(nots, that.nots);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(Arrays.deepHashCode(ands), Arrays.deepHashCode(nots));
+    }
 }

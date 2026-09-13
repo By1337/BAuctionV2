@@ -8,7 +8,7 @@ import dev.by1337.auc.common.network.s2c.*;
 import dev.by1337.sync.common.packet.PacketRegistry;
 
 public class AucPackets {
-    public static final PacketRegistry MAIN = new PacketRegistry("bauc:main", 2)
+    public static final PacketRegistry MAIN = new PacketRegistry("bauc:main", 3)
             .add(0, C2SAddNewLotRequest.class, C2SAddNewLotRequest::new)
             .add(1, S2CLotUpdate.class, S2CLotUpdate::new)
             .add(2, A2AFlagResponse.class, A2AFlagResponse::new)
@@ -47,6 +47,7 @@ public class AucPackets {
             .add(35, S2CPlayerNameUUIDResponse.class, S2CPlayerNameUUIDResponse::new)
             .add(36, S2CEndOfLots.class, S2CEndOfLots::new)
             .add(37, S2CEndOfVaultLots.class, S2CEndOfVaultLots::new)
+            .add(38, C2SMassSubtractLotRequest.class, C2SMassSubtractLotRequest::new)
             .lock();
 
     public static void boot() {

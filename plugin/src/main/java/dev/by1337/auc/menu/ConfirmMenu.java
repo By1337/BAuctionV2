@@ -26,7 +26,7 @@ public class ConfirmMenu extends AbstractMenu {
     public void open() {
         if (previousMenu != null && previousMenu.lastClickedItemPayload() instanceof LotData lot) {
             long balanceCents = BAuction.economy().getCents(viewer.getUniqueId());
-            long priceCents = lot.lprice();
+            long priceCents = lot.pricer().centsFor(lot.normalCount());
             if (balanceCents < priceCents) {
                 BAuction.sendMessage("insufficient_balance", viewer);
                 return;
@@ -39,7 +39,7 @@ public class ConfirmMenu extends AbstractMenu {
     protected void generate() {
         if (previousMenu != null && previousMenu.lastClickedItemPayload() instanceof LotData lot) {
             for (int slot : cfg.show_item.slots()) {
-                setItem(cfg.show_item.build(lot.itemStack().itemModel(lot.count()), lot.placeholders()), slot);
+                setItem(cfg.show_item.build(lot.itemStack().itemModel(lot.normalCount()), lot.placeholders()), slot);
             }
         }
     }

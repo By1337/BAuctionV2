@@ -1,6 +1,7 @@
 package dev.by1337.auc.search;
 
 import dev.by1337.auc.assets.McLang;
+import dev.by1337.auc.search.filter.MaterialSearchFilter;
 import dev.by1337.auc.search.filter.SearchFilter;
 import dev.by1337.auc.search.filter.SearchFilterParser;
 import dev.by1337.yaml.decoder.RecordYamlDecoder;
@@ -8,6 +9,7 @@ import dev.by1337.yaml.decoder.YamlDecoder;
 import net.kyori.adventure.translation.Translatable;
 import net.kyori.adventure.translation.Translator;
 import org.bukkit.Keyed;
+import org.bukkit.Material;
 import org.bukkit.Registry;
 import org.bukkit.enchantments.Enchantment;
 import org.jspecify.annotations.NonNull;
@@ -34,7 +36,10 @@ public class SearchManager {
         for (Map.Entry<String, SearchFilter> e : config.search.entrySet()) {
             addLookup(e.getKey(), e.getValue());
         }
-        addRegistry(Registry.MATERIAL, lang);
+        //addRegistry(Registry.MATERIAL, lang);
+        for (Material material : Registry.MATERIAL) {
+            addLookup(lang.getTranslation(material.translationKey()), new MaterialSearchFilter(material));
+        }
         addRegistry(Registry.POTION_EFFECT_TYPE, lang);
         for (Enchantment enchantment : Registry.ENCHANTMENT) {
             addLookup(lang.getTranslation(enchantment.description()), SearchFilter.ofTag(enchantment.getKey().value()));

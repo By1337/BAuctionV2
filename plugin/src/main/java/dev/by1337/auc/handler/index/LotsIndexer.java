@@ -3,22 +3,26 @@ package dev.by1337.auc.handler.index;
 import dev.by1337.auc.auc.ClientAucLot;
 import dev.by1337.auc.auc.ClientVaultLot;
 import dev.by1337.auc.auc.sort.Sorting;
+import dev.by1337.auc.handler.Auction;
 import dev.by1337.auc.handler.SimpleAuction;
 import dev.by1337.auc.handler.event.*;
+import dev.by1337.auc.handler.index.search.SearchEngine;
 import dev.by1337.auc.handler.name.PlayerNameService;
 import dev.by1337.auc.pipeline.LocalChannelContext;
 import dev.by1337.auc.pipeline.LocalChannelHandler;
 import dev.by1337.auc.pipeline.LocalPipeline;
 import dev.by1337.auc.pipeline.Remote;
+import dev.by1337.auc.registry.AucRegistry;
+import dev.by1337.auc.search.LotsResult;
 import dev.by1337.auc.search.PlayerVaultResult;
 import dev.by1337.auc.search.SearchResult;
-import dev.by1337.auc.search.filter.PriceLimiterSearchFilter;
 import dev.by1337.auc.search.filter.SearchFilter;
 import dev.by1337.sync.common.channel.ChannelMessage;
 import dev.by1337.sync.common.work.EventLoopWorker;
 import it.unimi.dsi.fastutil.longs.LongArrayPriorityQueue;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import org.bukkit.Material;
 import org.jetbrains.annotations.Nullable;
 import org.roaringbitmap.RoaringBitmap;
 import org.slf4j.Logger;
@@ -28,7 +32,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.TimeUnit;
 
-public class LotsIndexer implements LocalChannelHandler {
+public class LotsIndexer implements LocalChannelHandler, SearchEngine {
     private static final Logger log = LoggerFactory.getLogger(LotsIndexer.class);
     private static final long REUSE_GRANULARITY_NS = TimeUnit.SECONDS.toNanos(5);
     private static final int REUSE_DELAY_QUANTA = (int) (TimeUnit.SECONDS.toNanos(30) / REUSE_GRANULARITY_NS);
@@ -44,9 +48,13 @@ public class LotsIndexer implements LocalChannelHandler {
     private final Object2ObjectOpenHashMap<UUID, ConcurrentSkipListMap<ClientVaultLot, Boolean>> owner2vaultLots = new Object2ObjectOpenHashMap<>();
     private final Object2ObjectOpenHashMap<UUID, RoaringBitmap> owner2ownedLots = new Object2ObjectOpenHashMap<>();
     private PlayerNameService playerNames;
+    private Auction auction;
+    private final ConcurrentSkipListMap<ClientAucLot, Boolean>[][] material2lots;
+    private AucRegistry<Sorting> sortingRegistry;
 
     public LotsIndexer() {
         sorting2id.defaultReturnValue(0);
+        material2lots = new ConcurrentSkipListMap[Material.values().length][];
     }
 
     @Override
@@ -69,142 +77,103 @@ public class LotsIndexer implements LocalChannelHandler {
     }
 
     @Override
+    public RoaringBitmap[] index() {
+        return index;
+    }
+
+    @Override
+    public RoaringBitmap used() {
+        return used;
+    }
+
+    @Override
     public void init(LocalPipeline pipeline, Remote remote, SimpleAuction auction) {
+        this.auction = auction.auction();
         playerNames = pipeline.get(PlayerNameService.class);
         eventLoop = pipeline.eventLoop();
         int x = 0;
-        sorted = new ConcurrentSkipListMap[auction.registries().sorting.size()];
+        sortingRegistry = auction.registries().sorting;
+        sorted = new ConcurrentSkipListMap[sortingRegistry.size()];
         for (Sorting sorting : auction.registries().sorting) {
             sorting2id.put(sorting.id(), x);
             sorted[x++] = new ConcurrentSkipListMap<>(sorting.comparator());
         }
     }
 
+    public NavigableSet<ClientAucLot> lotsSet() {
+        return lotsSet(null);
+    }
 
+    public NavigableSet<ClientAucLot> lotsSet(@Nullable Sorting sorting) {
+        var set = sorted[sorting == null ? 0 : sorting2id.getInt(sorting.id())];
+        return set.navigableKeySet();
+    }
+
+    public NavigableSet<ClientAucLot> lotsSetByMaterial(int ordinal, @Nullable Sorting sorting) {
+        var sorted = material2lots[ordinal];
+        if (sorted == null) return Collections.emptyNavigableSet();
+        var set = sorted[sorting == null ? 0 : sorting2id.getInt(sorting.id())];
+        if (set == null) return Collections.emptyNavigableSet();
+        return set.navigableKeySet();
+    }
+
+    public @Nullable BitSetPool.PooledBitSet ownerMask(UUID owner) {
+        return new BitSetPool.PooledBitSet(owner2ownedLots.get(owner), false);
+    }
+
+
+    @Deprecated
     public SearchResult search(@Nullable UUID owner, @Nullable SearchFilter filter, Sorting sorting) {
-        if (owner == null) return search(filter, sorting);
-        var ownerMask = owner2ownedLots.get(owner);
-        if (ownerMask == null) return SearchResult.EMPTY;
-        @Nullable BitSetPool.PooledBitSet mask = filter != null ? filter.search(this) : null;
-        if (mask == null || mask.isEmpty()) {
-            mask = BitSetPool.get(ownerMask);
+        if (filter != null) {
+            if (owner != null){
+                var mask = ownerMask(owner);
+                if (mask == null) return SearchResult.EMPTY;
+                LotsResult result = filter.searchLots(this, sorting);
+                return new SearchResult(LotsResult.of(mask.lotMask().getCardinality(), mask, result));
+            }
+            return new SearchResult(filter.searchLots(this, sorting));
+        } else if (owner != null) {
+            var mask = ownerMask(owner);
+            if (mask == null) return SearchResult.EMPTY;
+            var v = LotsResult.of(mask.lotMask().getCardinality(), mask, lotsSet(sorting).iterator());
+            return new SearchResult(v);
         } else {
-            mask.and(ownerMask);
+            return new SearchResult(LotsResult.of(lotsSet(sorting)));
         }
-        var set = sorted[sorting2id.getInt(sorting.id())];
-        return new SearchResult(mask.cardinality(), mask, set.navigableKeySet().iterator(), filter instanceof PriceLimiterSearchFilter p ? p.maxPrice : -1L);
     }
 
+    @Deprecated
     public SearchResult search(@Nullable SearchFilter filter, Sorting sorting) {
-        @Nullable BitSetPool.PooledBitSet mask = filter != null ? filter.search(this) : null;
-        var set = sorted[sorting2id.getInt(sorting.id())];
-        return new SearchResult(mask != null ? mask.cardinality() : set.size(), mask, set.navigableKeySet().iterator(), filter instanceof PriceLimiterSearchFilter p ? p.maxPrice : -1L);
+        if (filter == null) return new SearchResult(LotsResult.of(lotsSet(sorting)));
+        return new SearchResult(filter.searchLots(this, sorting));
     }
 
-    public @Nullable BitSetPool.PooledBitSet findLotsWithTags(int @Nullable [] and, int @Nullable [] not) {
-        if (and == null && not == null) return null;
-        BitSetPool.PooledBitSet base = null;
-        var index = this.index;
-        int maxIndex = index.length - 1;
-        if (and == null) {
-            base = BitSetPool.get(used);
-        } else {
-            for (int i : and) {
-                if (maxIndex < i) continue;
-                var set = index[i];
-                if (set == null) {
-                    if (base != null) base.clear();
-                    continue;
-                }
-                if (base == null) {
-                    base = BitSetPool.get(set);
-                } else {
-                    base.and(set);
-                }
-            }
-        }
-        if (base == null) return BitSetPool.empty();
-        if (not != null) {
-            for (int i : not) {
-                if (maxIndex < i) continue;
-                var set = index[i];
-                if (set == null) continue;
-                base.andNot(set);
-            }
-        }
-        return base;
+    @Deprecated
+    public SearchResult search(@Nullable BitSetPool.PooledBitSet mask, Sorting sorting) {
+        if (mask == null) return new SearchResult(LotsResult.of(lotsSet(sorting)));
+        var v = LotsResult.of(mask.lotMask().getCardinality(), mask, lotsSet(sorting).iterator());
+        return new SearchResult(v);
     }
 
-    private static <T> @Nullable T safeGet(int i, @Nullable T[] arr) {
-        if (arr == null || i < 0 || i >= arr.length) {
-            return null;
-        }
-        return arr[i];
-    }
-
-    public @Nullable BitSetPool.PooledBitSet findLotsWithTags(
-            int @Nullable [] @Nullable [] ands,
-            int @Nullable [] @Nullable [] nots
-    ) {
-        int filtersCount = Math.max(ands != null ? ands.length : 0, nots != null ? nots.length : 0);
-        if (filtersCount == 0) return null;
-        BitSetPool.PooledBitSet base = null;
-        var index = this.index;
-        var buffer = BitSetPool.get(null);
-        try {
-            for (int i = 0; i < filtersCount; i++) {
-                buffer.clear();
-                int[] and = safeGet(i, ands);
-                int[] not = safeGet(i, nots);
-                if (and == null) {
-                    buffer.copy(used);
-                } else {
-                    boolean init = false;
-                    for (int idx : and) {
-                        var set = safeGet(idx, index);
-                        if (set == null) {
-                            buffer.clear();
-                            continue;
-                        }
-                        if (!init) {
-                            buffer.copy(set);
-                            init = true;
-                        } else {
-                            buffer.and(set);
-                        }
-                    }
-                    if (!init) {
-                        //has no lots
-                        continue;
-                    }
-                }
-                if (buffer.isEmpty()) continue;
-                if (not != null) {
-                    for (int idx : not) {
-                        var set = safeGet(idx, index);
-                        if (set != null)
-                            buffer.andNot(set);
-                    }
-                }
-                if (buffer.isEmpty()) continue;
-                if (base == null) {
-                    base = BitSetPool.get(buffer.lotMask());
-                } else {
-                    base.or(buffer.lotMask());
-                }
-            }
-        } finally {
-            buffer.release();
-        }
-        if (base == null) return BitSetPool.empty();
-        return base;
-    }
 
     private void removeLot(ClientAucLot lot) {
         eventLoop.assertThread();
         int id = lot.shortId;
         for (var map : sorted) {
             map.remove(lot, Boolean.TRUE);
+        }
+        int material = lot.itemStack.materialOrdinal;
+        var v = material2lots[material];
+        if (v != null) {
+            for (ConcurrentSkipListMap<ClientAucLot, Boolean> map : v) {
+                if (map != null) {
+                    map.remove(lot, Boolean.TRUE);
+                    if (map.isEmpty()) {
+                        material2lots[material] = null;
+                        break;
+                    }
+                }
+            }
         }
         removeIndex(lot, id);
         releaseShortId(id);
@@ -215,8 +184,24 @@ public class LotsIndexer implements LocalChannelHandler {
         int localId = lot.shortId;
         boolean reindex = false;
         for (var map : sorted) {
-            var old = map.put(lot, Boolean.TRUE);
-            if (!reindex) reindex = old == null;
+            //нужен map#remove так как map#put не заменит ключ, а нам надо
+            reindex |= !map.remove(lot, Boolean.TRUE);
+            map.put(lot, Boolean.TRUE);
+        }
+        int material = lot.itemStack.materialOrdinal;
+        var v = material2lots[material];
+        if (v == null) {
+            v = material2lots[material] = new ConcurrentSkipListMap[sortingRegistry.size()];
+        }
+        for (Sorting sorting : sortingRegistry) {
+            int sortId = sorting2id.getInt(sorting.id());
+            var map = v[sortId];
+            if (map == null) {
+                map = v[sortId] = new ConcurrentSkipListMap<>(sorting.comparator());
+            } else {
+                map.remove(lot, Boolean.TRUE);
+            }
+            map.put(lot, Boolean.TRUE);
         }
         if (reindex)
             reindex(lot, localId);

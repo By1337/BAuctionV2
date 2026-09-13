@@ -8,7 +8,6 @@ import dev.by1337.auc.handler.event.ActionResult;
 import dev.by1337.auc.util.mc.InvUtil;
 import dev.by1337.auc.util.mc.MCUtil;
 import dev.by1337.sync.common.callback.ResponseFuture;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.slf4j.Logger;
@@ -48,7 +47,7 @@ public class TakeVaultLotTransaction implements Transaction<ActionResult> {
             auction.publishLog(new TakeVaultLog(
                     System.currentTimeMillis(),
                     who,
-                    lot.lprice(),
+                    lot.centsPrice(),
                     lot.itemStack.id(),
                     lot.count()
             ));
@@ -67,5 +66,13 @@ public class TakeVaultLotTransaction implements Transaction<ActionResult> {
                 }
             });
         });
+    }
+
+    public ClientVaultLot lot() {
+        return lot;
+    }
+
+    public UUID who() {
+        return who;
     }
 }

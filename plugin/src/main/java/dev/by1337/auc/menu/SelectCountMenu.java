@@ -20,17 +20,24 @@ import org.jetbrains.annotations.Nullable;
 public class SelectCountMenu extends AbstractMenu {
     private static final PlaceholderResolver<SelectCountMenu> PLACEHOLDERS = Placeholders.<SelectCountMenu>create()
             .withContext("result_count", v -> v.count)
-            .withContext("result_price", v -> NumberFormatter.format(v.lot.dprice_for_one() * v.count));
+            .withContext("result_price", v -> NumberFormatter.format(v.lot.pricer().priceForOne * v.count));
     public static Command<ExecuteContext> COMMANDS;
     private final SelectCountConfig cfg;
     private int count = 1;
+    private final int minimum;
     private LotData lot;
+    private final int max;
 
     public SelectCountMenu(SelectCountConfig config, Player viewer, @Nullable Menu previousMenu) {
         super(config, viewer, previousMenu);
         cfg = config;
         if (previousMenu != null && previousMenu.lastClickedItemPayload() instanceof LotData lot) {
             this.lot = lot;
+            max = this.lot.normalCount();
+            minimum = lot.minimum();
+        } else {
+            minimum = 1;
+            max = minimum;
         }
         addPlaceholderResolver(PLACEHOLDERS.bindCtx(this));
     }
@@ -50,7 +57,7 @@ public class SelectCountMenu extends AbstractMenu {
         }
     }
 
-    static void bootCommands(Command<ExecuteContext> base){
+    static void bootCommands(Command<ExecuteContext> base) {
         COMMANDS = base
                 .sub(new Command<ExecuteContext>("[accept]").executor(ctx -> {
                     if (ctx.menu instanceof SelectCountMenu c) {
@@ -68,8 +75,8 @@ public class SelectCountMenu extends AbstractMenu {
                         (ctx, count0) -> {
                             if (count0 == null) throw new CommandMsgError("use [add] <count>");
                             if (ctx.menu instanceof SelectCountMenu c) {
-                                c.count += count0.intValue();
-                                c.count = Math.clamp(c.count, 1, c.lot.count());
+                                c.count += Math.max(count0.intValue(), c.minimum);
+                                c.count = Math.clamp(c.count, c.minimum, c.max);
                                 c.refresh();
                             }
                         })
@@ -79,8 +86,8 @@ public class SelectCountMenu extends AbstractMenu {
                         (ctx, count0) -> {
                             if (count0 == null) throw new CommandMsgError("use [add] <count>");
                             if (ctx.menu instanceof SelectCountMenu c) {
-                                c.count -= count0.intValue();
-                                c.count = Math.clamp(c.count, 1, c.lot.count());
+                                c.count -= Math.max(count0.intValue(), c.minimum);
+                                c.count = Math.clamp(c.count, c.minimum, c.max);
                                 c.refresh();
                             }
                         })

@@ -12,7 +12,7 @@ public class BitSetPool {
 
     public static PooledBitSet get(@Nullable RoaringBitmap base) {
         RoaringBitmap set = sets.poll();
-        var v = new PooledBitSet(set == null ? new RoaringBitmap() : set);
+        var v = new PooledBitSet(set == null ? new RoaringBitmap() : set, true);
         if (base == null) {
             v.clear();
         } else {
@@ -22,19 +22,22 @@ public class BitSetPool {
     }
 
     public static PooledBitSet empty() {
-        return new PooledBitSet(null);
+        return new PooledBitSet(null, false);
     }
 
     public static final class PooledBitSet {
         private RoaringBitmap src;
+        private final boolean releasble;
 
-        public PooledBitSet(RoaringBitmap src) {
+        public PooledBitSet(RoaringBitmap src, boolean releasble) {
             this.src = src;
+            this.releasble = releasble;
         }
 
         public void release() {
             var v = src;
             src = null;
+            if (!releasble) return;
             if (v == null) return;
             sets.offer(v);
         }

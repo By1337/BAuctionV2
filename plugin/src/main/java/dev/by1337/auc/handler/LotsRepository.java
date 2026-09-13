@@ -25,11 +25,13 @@ import dev.by1337.sync.common.work.EventLoopWorker;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntIterators;
 import it.unimi.dsi.fastutil.ints.IntListIterator;
+import it.unimi.dsi.fastutil.ints.IntObjectPair;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -75,10 +77,30 @@ public class LotsRepository implements LocalChannelHandler {
         return vault.get(uid);
     }
 
+    public ResponseFuture<ActionResult> subtractOrRemoveLots(int[] raw){
+        return pipeline.submit(() -> remote.request(new C2SMassSubtractLotRequest(raw))
+                .map(ActionResult::of).orElse(ActionResult::deny));
+    }
+    public ResponseFuture<ActionResult> subtractOrRemoveLots(Collection<IntObjectPair<ClientAucLot>> lots){
+        if (lots.isEmpty()) return new ResponseFuture<>(ActionResult.deny());
+        int[] array =  new int[lots.size()*2];
+        int x = 0;
+        for (IntObjectPair<ClientAucLot> lot : lots) {
+            array[x] = lot.right().uid();
+            array[x+1] = lot.firstInt();
+            x++;
+        }
+        return pipeline.submit(() -> remote.request(new C2SMassSubtractLotRequest(array))
+                .map(ActionResult::of).orElse(ActionResult::deny));
+    }
 
     public ResponseFuture<ActionResult> subtractOrRemoveLot(ClientAucLot lot0, int count) {
         if (count == lot0.count()) return removeLot(lot0);
         return pipeline.submit(() -> remote.request(new C2SSubtractLotRequest(lot0.uid(), count))
+                .map(ActionResult::of).orElse(ActionResult::deny));
+    }
+    public ResponseFuture<ActionResult> subtractOrRemoveLot(int uid, int count) {
+        return pipeline.submit(() -> remote.request(new C2SSubtractLotRequest(uid, count))
                 .map(ActionResult::of).orElse(ActionResult::deny));
     }
 
@@ -102,7 +124,7 @@ public class LotsRepository implements LocalChannelHandler {
                 vault.owner(),
                 VAULT_STORE_DURATION_MS,
                 vault.count(),
-                vault.lot.lprice()
+                vault.lot.centsPrice()
         ))).map(ActionResult::of).orElse(ActionResult::deny);
     }
 

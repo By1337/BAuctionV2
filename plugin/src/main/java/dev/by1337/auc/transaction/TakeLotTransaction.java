@@ -38,7 +38,7 @@ public class TakeLotTransaction implements Transaction<ActionResult> {
             auction.publishLog(new TakeLotLog(
                     System.currentTimeMillis(),
                     who,
-                    lot.lprice(),
+                    lot.centsPrice(),
                     lot.itemStack.id(),
                     lot.count()
             ));
@@ -52,7 +52,7 @@ public class TakeLotTransaction implements Transaction<ActionResult> {
                                 i,
                                 i.getAmount(),
                                 who,
-                                lot.lprice_for_one * i.getAmount()
+                                lot.pricer.centsPriceForOne * i.getAmount()
                         ).then(r -> {
                             if (r == null || !r.success) {
                                 log.error("Не удалось переместить ItemStack в хранилище!{} {}", lot, i);
@@ -72,5 +72,13 @@ public class TakeLotTransaction implements Transaction<ActionResult> {
                 }
             });
         });
+    }
+
+    public UUID who() {
+        return who;
+    }
+
+    public ClientAucLot lot() {
+        return lot;
     }
 }

@@ -8,6 +8,7 @@ import dev.by1337.bmenu.slot.impl.SimpleSlotContent;
 import dev.by1337.core.BCore;
 import dev.by1337.item.ItemModel;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
+import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -22,6 +23,7 @@ public abstract class PutableMenu extends AbstractMenu {
     private final IntSet putableSlots = new IntArraySet();
     private final SlotContent[] playerItems;
     private static final SimpleSlotContent EMPTY = new SimpleSlotContent(ItemModel.AIR);
+    protected boolean hasClick;
 
     public PutableMenu(MenuConfig config, Player viewer, @Nullable Menu previousMenu) {
         super(config, viewer, previousMenu);
@@ -31,6 +33,12 @@ public abstract class PutableMenu extends AbstractMenu {
     public void addPutableSlot(int slot) {
         putableSlots.add(slot);
         playerItems[slot] = EMPTY;
+    }
+    public void addPutableSlot(int... slots) {
+        for (int slot : slots) {
+            putableSlots.add(slot);
+            playerItems[slot] = EMPTY;
+        }
     }
 
     public void clearPutableSlots() {
@@ -59,6 +67,7 @@ public abstract class PutableMenu extends AbstractMenu {
     public void onClick(InventoryDragEvent e) {
         int size = getInventory().getSize();
         if (e.getRawSlots().stream().allMatch(i -> i >= size || putableSlots.contains(i.intValue()))) {
+            hasClick = true;
             e.setCancelled(false);
             return;
         }
@@ -68,6 +77,7 @@ public abstract class PutableMenu extends AbstractMenu {
     @Override
     public void onClick(InventoryClickEvent e) {
         if (e.getClickedInventory() != getInventory() || putableSlots.contains(e.getSlot())) {
+            hasClick = true;
             e.setCancelled(false);
             return;
         }

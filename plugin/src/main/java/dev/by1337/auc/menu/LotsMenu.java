@@ -18,19 +18,20 @@ import dev.by1337.item.ItemModel;
 import dev.by1337.plc.PlaceholderResolver;
 import dev.by1337.plc.Placeholders;
 import dev.by1337.yaml.codec.PipelineYamlCodecBuilder;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntIterators;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class LotsMenu extends AbstractMenu {
     private static final PlaceholderResolver<LotsMenu> PLACEHOLDERS = Placeholders.<LotsMenu>create()
+            .of("example", (value, menu) -> value.equals("skull") ? "123" : 321)
             .withContext("current_page", v -> v.currentPage + 1)
             .withContext("max_page", v -> v.maxPage + 1)
             .withContext("has_next_page", v -> v.hasNextPage);
@@ -55,6 +56,7 @@ public abstract class LotsMenu extends AbstractMenu {
                 }
             }));
     private static Command<ExecuteContext> COMMANDS;
+    private static final Executor WORKER = Executors.newFixedThreadPool(4);
 
     protected int currentPage = 0;
     protected int maxPage = 0;
@@ -65,7 +67,11 @@ public abstract class LotsMenu extends AbstractMenu {
     protected final Auction auction;
     private final LotData[] viewingLots;
     private boolean hasNextPage;
-    private final Int2ObjectOpenHashMap<SlotContent> lotRewriter = new Int2ObjectOpenHashMap<>();
+    private final Map<Object, SlotContent> lotRewriter = new IdentityHashMap<>();
+    private final AtomicBoolean inWork = new AtomicBoolean();
+    private final AtomicBoolean reqRefresh = new AtomicBoolean();
+    private final SlotContent[] lotsLayer;
+    private final SlotContent[] lotsLayerBuffer;
 
     public LotsMenu(LotsMenuConfig config, Player viewer, @Nullable Menu previousMenu) {
         super(config, viewer, previousMenu);
@@ -73,6 +79,8 @@ public abstract class LotsMenu extends AbstractMenu {
         viewingLots = new LotData[animationMask().length];
         auction = BAuction.auction();
         addPlaceholderResolver(PLACEHOLDERS.bindCtx(this));
+        lotsLayer = layers.getMatrix(2);
+        lotsLayerBuffer = new SlotContent[lotsLayer.length];
     }
 
     @Override
@@ -93,26 +101,27 @@ public abstract class LotsMenu extends AbstractMenu {
     public void tick() {
         for (int i = 0; i < viewingLots.length; i++) {
             var old = viewingLots[i];
-            if (old != null && !lotRewriter.containsKey(old.uid())) {
-                var actual = getByUid(old.uid(), old);
+            if (old != null && !lotRewriter.containsKey(old)) {
+                var actual = old.update(auction);
                 if (actual != old) {
-                    setLot(i, actual != null ? actual : old, actual == null);
+                    setLotToBuffer(i, actual != null ? actual : old, actual == null);
                 }
             }
         }
         super.tick();
+        if (reqRefresh.get()) {
+            asyncBuildMenu();
+        }
     }
 
     public void research() {
         lots.clear();
         if (searchResult != null) searchResult.release();
-        searchResult = search();
+        searchResult = null;
         refresh();
     }
 
     protected abstract LotsResult search();
-
-    protected abstract LotData getByUid(int uid, LotData old);
 
     static void bootCommands(Command<ExecuteContext> base) {
         COMMANDS = base.and(LOTS_COMMANDS);
@@ -123,85 +132,103 @@ public abstract class LotsMenu extends AbstractMenu {
         return COMMANDS;
     }
 
-    @Override
-    protected void generate() {
-        if (searchResult == null) {
-            research();
-        }
-        Arrays.fill(layers.getMatrix(3), null);
-
-        int[] slots = cfg.slots;
-
-        int pageCount = (searchResult.size() + slots.length - 1) / slots.length;
-        maxPage = Math.max(0, pageCount - 1);
-
-        currentPage = Math.min(currentPage, maxPage);
-
-        Arrays.fill(viewingLots, null);
-        var slotsIterator = IntIterators.wrap(slots);
-        loop:
-        for (int x = currentPage * slots.length; x < searchResult.size(); x++) {
-            while (lots.size() - 1 < x) {
-                var next = searchResult.next();
-                if (next == null) break loop;
-                lots.add(next);
-            }
-            LotData lot0 = lots.get(x);
-            if (slotsIterator.hasNext()) {
-                int slot = slotsIterator.nextInt();
-                var rewrite = lotRewriter.get(lot0.uid());
-                if (rewrite != null) {
-                    setItem(rewrite, slot);
-                } else {
-                    var actual = getByUid(lot0.uid(), lot0);
-                    LotData lot = actual == null ? lot0 : actual;
-                    setLot(slot, lot, actual == null);
-                    viewingLots[slot] = actual;
+    private void asyncBuildMenu() {
+        if (!inWork.compareAndSet(false, true)) return;
+        WORKER.execute(() -> {
+            reqRefresh.set(false);
+            Arrays.fill(lotsLayerBuffer, null);
+            try {
+                var lots = this.lots;
+                LotsResult searchResult = this.searchResult;
+                if (searchResult == null) {
+                    lots.clear();
+                    this.searchResult = searchResult = search();
                 }
-            } else {
-                break loop;
+                int[] slots = cfg.slots;
+
+                int pageCount = (searchResult.size() + slots.length - 1) / slots.length;
+                maxPage = Math.max(0, pageCount - 1);
+
+                currentPage = Math.min(currentPage, maxPage);
+
+                Arrays.fill(viewingLots, null);
+                var slotsIterator = IntIterators.wrap(slots);
+                loop:
+                for (int x = currentPage * slots.length; x < searchResult.size(); x++) {
+                    while (lots.size() - 1 < x) {
+                        var next = searchResult.next();
+                        if (next == null) break loop;
+                        lots.add(next);
+                    }
+                    LotData lot0 = lots.get(x);
+                    if (slotsIterator.hasNext()) {
+                        int slot = slotsIterator.nextInt();
+                        var rewrite = lotRewriter.get(lot0);
+                        if (rewrite != null) {
+                            setItem(rewrite, slot, lotsLayerBuffer);
+                        } else {
+                            var actual = lot0.update(auction);
+                            LotData lot = actual == null ? lot0 : actual;
+                            setLotToBuffer(slot, lot, actual == null);
+                            viewingLots[slot] = actual;
+                        }
+                    } else {
+                        break loop;
+                    }
+                }
+                if (lots.size() < (currentPage + 1) * slots.length) {
+                    var next = searchResult.next();
+                    if (next != null) lots.add(next);
+                    else maxPage = currentPage;
+                }
+                hasNextPage = lots.size() > (currentPage + 1) * slots.length;
+                this.title.setData(this.setPlaceholders(this.config.title()));
+            } finally {
+                System.arraycopy(lotsLayerBuffer, 0, lotsLayer, 0, lotsLayer.length);
+                inWork.set(false);
             }
-        }
-        if (lots.size() < (currentPage + 1) * slots.length){
-            var next = searchResult.next();
-            if (next != null) lots.add(next);
-            else maxPage = currentPage;
-        }
-        hasNextPage = lots.size() > (currentPage + 1) * slots.length;
+        });
     }
 
-    private void setLot(int slot, LotData lot, boolean outdated) {
+    @Override
+    protected void generate() {
+        Arrays.fill(layers.getMatrix(3), null);
+        reqRefresh.set(true);
+        asyncBuildMenu();
+    }
+
+    private void setLotToBuffer(int slot, LotData lot, boolean outdated) {
         Material itemType = lot.itemStack().material();
         SlotFactory maker;
         ItemModel base = null;
         if (this instanceof VaultMenu && cfg.always_show_vault_lot) {
             maker = cfg.vault_lot;
-            base = lot.itemStack().itemModel().withAmount(lot.count());
+            base = lot.itemStack().itemModel().withAmount(lot.normalCount());
         } else if (lot.getClass() == ClientVaultLot.class) {
             maker = cfg.vault_lot;
-            base = lot.itemStack().itemModel().withAmount(lot.count());
+            base = lot.itemStack().itemModel().withAmount(lot.normalCount());
         } else if (outdated) {
             maker = cfg.sold;
-        } else if (lot.owner().equals(viewer.getUniqueId())) {
+        } else if (lot.isOwner(viewer.getUniqueId())) {
             maker = cfg.owned;
-            base = lot.itemStack().itemModel().withAmount(lot.count());
+            base = lot.itemStack().itemModel().withAmount(lot.normalCount());
         } else if (Tag.SHULKER_BOXES.isTagged(itemType) || Tag.ITEMS_BUNDLES.isTagged(itemType)) {
             maker = cfg.container;
             base = lot.itemStack().itemModel();
-        } else if (lot.count() == 1) {
+        } else if (lot.normalCount() == 1) {
             maker = cfg.one;
             base = lot.itemStack().itemModel();
         } else {
             maker = cfg.many;
-            base = lot.itemStack().itemModel().withAmount(lot.count());
+            base = lot.itemStack().itemModel().withAmount(lot.normalCount());
         }
         var slotData = maker.build(base, lot.placeholders());
         slotData.setPayload(lot);
-        setItem(slotData, slot);
+        setItem(slotData, slot, lotsLayerBuffer);
     }
 
-    public void rewriteLotDisplay(LotData lot, SlotContent content) {
-        lotRewriter.put(lot.uid(), content);
+    public void rewriteLotDisplay(Object lot, SlotContent content) {
+        lotRewriter.put(lot, content);
     }
 
     public LotsMenuConfig cfg() {
@@ -220,8 +247,7 @@ public abstract class LotsMenu extends AbstractMenu {
                 .field(SlotFactory.CODEC, "taken", v -> v.taken, (m, v) -> m.taken = v)
                 .field(SlotFactory.CODEC, "purchased", v -> v.purchased, (m, v) -> m.purchased = v)
                 .field(SlotFactory.CODEC, "vault_lot", v -> v.vault_lot, (m, v) -> m.vault_lot = v)
-                .bool("always_show_vault_lot", v -> v.always_show_vault_lot, (m,v) -> m.always_show_vault_lot = v)
-                ;
+                .bool("always_show_vault_lot", v -> v.always_show_vault_lot, (m, v) -> m.always_show_vault_lot = v);
 
         public int[] slots;
         public SlotFactory sold;

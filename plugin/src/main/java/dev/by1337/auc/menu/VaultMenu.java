@@ -36,14 +36,6 @@ public class VaultMenu extends LotsMenu {
         };
     }
 
-    @Override
-    protected LotData getByUid(int uid, LotData old) {
-        if (old == null) return null;
-        if (old.getClass() == ClientVaultLot.class)
-            return auction.getVaultLot(uid);
-        return auction.getLot(uid);
-    }
-
     static void bootCommands(Command<ExecuteContext> base) {
     }
 

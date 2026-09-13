@@ -105,6 +105,7 @@ public class SimpleAuction {
             return backend;
         } else if (server_type.equals("bsync")) {
             return backend = AuctionBackendBooter.bootRemote(
+                    config.dbConfig.bsync_connection,
                     config.dbConfig.bsync_channel,
                     pipeline.asConnection(),
                     () -> {

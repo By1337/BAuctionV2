@@ -30,12 +30,6 @@ public class PlayerNameBackend extends GetPostChannelHandler {
         registerPost(A2ASetPlayerNamePacket.class, this::setName);
     }
 
-    private ResponseFuture<S2CPlayerNameUUIDResponse> getUUID(C2SPlayerUUIDRequest r) {
-        var pair = BSUtils.safe(() -> table.findByName(r.name()).orElse(null));
-        if (pair == null) return new ResponseFuture<>(new S2CPlayerNameUUIDResponse(null, null));
-        return new ResponseFuture<>(new S2CPlayerNameUUIDResponse(pair.value, pair.key));
-    }
-
     @Override
     public void init(ChannelRuntime runtime) {
         if (!(runtime instanceof BAucRuntime server)) throw new IllegalArgumentException("Invalid runtime type");
@@ -47,6 +41,12 @@ public class PlayerNameBackend extends GetPostChannelHandler {
                         .maximumSize(65536)
                         .expireAfterAccess(Duration.ofHours(2))
         );
+    }
+
+    private ResponseFuture<S2CPlayerNameUUIDResponse> getUUID(C2SPlayerUUIDRequest r) {
+        var pair = BSUtils.safe(() -> table.findByName(r.name()).orElse(null));
+        if (pair == null) return new ResponseFuture<>(new S2CPlayerNameUUIDResponse(null, null));
+        return new ResponseFuture<>(new S2CPlayerNameUUIDResponse(pair.value, pair.key));
     }
 
     private void setName(A2ASetPlayerNamePacket packet) {

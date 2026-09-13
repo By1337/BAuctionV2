@@ -3,6 +3,7 @@ package dev.by1337.auc.transaction;
 import dev.by1337.auc.BAuction;
 import dev.by1337.auc.auc.ClientAucLot;
 import dev.by1337.auc.auc.ClientVaultLot;
+import dev.by1337.auc.auc.LotData;
 import dev.by1337.auc.handler.Auction;
 import dev.by1337.auc.util.DurationFormatter;
 import dev.by1337.auc.util.mc.InvUtil;
@@ -13,7 +14,6 @@ import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 public class ResellTransaction implements Transaction<Boolean> {
     private final UUID who;
@@ -52,7 +52,7 @@ public class ResellTransaction implements Transaction<Boolean> {
                 final ClientVaultLot lot = l;
                 auction.removeVaultLot(lot).then(r -> {
                     if (r == null || !r.success) return;
-                    auction.addLot(lot.itemStack, lot.owner(), BAuction.plugin().config().selling_duration, lot.count(), lot.lprice()).then(s -> {
+                    auction.addLot(lot.itemStack, lot.owner(), BAuction.plugin().config().selling_duration, lot.count(), lot.centsPrice()).then(s -> {
                         if (s == null) {
                             returnItem(lot.itemStack.asQuantity(lot.count()), loc);
                         }
@@ -61,12 +61,12 @@ public class ResellTransaction implements Transaction<Boolean> {
             }
         }
         if (lots.size() != 0) {
-            ClientAucLot l;
-            while (limit-- > 0 && (l = lots.next()) != null) {
-                final ClientAucLot lot = l;
+            LotData l;
+            while (limit-- > 0 && (l = lots.next()) != null && l instanceof ClientAucLot lot) {
+                //final ClientAucLot lot = l;
                 auction.removeLot(lot).then(r -> {
                     if (r == null || !r.success) return;
-                    auction.addLot(lot.itemStack, lot.owner(), BAuction.plugin().config().selling_duration, lot.count(), lot.lprice()).then(s -> {
+                    auction.addLot(lot.itemStack, lot.owner(), BAuction.plugin().config().selling_duration, lot.count(), lot.centsPrice()).then(s -> {
                         if (s == null) {
                             returnItem(lot.itemStack.asQuantity(lot.count()), loc);
                         }
@@ -87,5 +87,9 @@ public class ResellTransaction implements Transaction<Boolean> {
                 location.getWorld().dropItemNaturally(location, itemStack);
             }
         });
+    }
+
+    public UUID who() {
+        return who;
     }
 }

@@ -77,7 +77,7 @@ public class VaultLot implements BaseLot{
         return count;
     }
 
-    public long lprice() {
+    public long centsPrice() {
         return lprice;
     }
 

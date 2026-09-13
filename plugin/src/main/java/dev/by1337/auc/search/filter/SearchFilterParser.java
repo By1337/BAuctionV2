@@ -9,9 +9,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.bukkit.Material;
 import org.bukkit.Registry;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class SearchFilterParser {
 
@@ -27,6 +25,8 @@ public class SearchFilterParser {
     public static SearchFilter parse(String input) {
         if (input.isBlank()) return EmptySearchFilter.INSTANCE;
         ExpReader reader = new ExpReader(input);
+
+        Set<Material> materials = new HashSet<>();
 
         List<IntArrayList> ands = new ArrayList<>();
         List<IntArrayList> nots = new ArrayList<>();
@@ -54,7 +54,12 @@ public class SearchFilterParser {
                         break loop;
                     }
                     default -> {
-                        and.add(Tag2IdService.INSTANCE.getId(token));
+                        int id = Tag2IdService.INSTANCE.getId(token);
+                        and.add(id);
+                        var mat = Tag2IdService.INSTANCE.getMaterial(id);
+                        if (mat != null){
+                            materials.add(mat);
+                        }
                     }
                 }
             }
@@ -63,24 +68,33 @@ public class SearchFilterParser {
             ands.add(and);
         if (!not.isEmpty())
             nots.add(not);
+        SearchFilter result;
         int size = Math.max(ands.size(), nots.size());
         if (size == 0) return EmptySearchFilter.INSTANCE;
         if (size == 1) {
-            return new SearchFilterAndNotPair(
+            result = new SearchFilterAndNotPair(
                     !and.isEmpty() ? and.toIntArray() : null,
                     !not.isEmpty() ? not.toIntArray() : null,
                     new String[]{input}
             );
+        }else {
+            int[][] resAnds = new int[size][];
+            int[][] resNots = new int[size][];
+            for (int i = 0; i < size; i++) {
+                IntArrayList a = ands.size() > i ? ands.get(i) : null;
+                IntArrayList n = nots.size() > i ? nots.get(i) : null;
+                if (a != null && !a.isEmpty()) resAnds[i] = a.toIntArray();
+                if (n != null && n.isEmpty()) resNots[i] = n.toIntArray();
+            }
+            result = new ComplexSearchFilter(resAnds, resNots);
         }
-        int[][] resAnds = new int[size][];
-        int[][] resNots = new int[size][];
-        for (int i = 0; i < size; i++) {
-            IntArrayList a = ands.size() > i ? ands.get(i) : null;
-            IntArrayList n = nots.size() > i ? nots.get(i) : null;
-            if (a != null && !a.isEmpty()) resAnds[i] = a.toIntArray();
-            if (n != null && n.isEmpty()) resNots[i] = n.toIntArray();
+        if (materials.isEmpty()) return result;
+        if (materials.size() > 10) return result;
+        Material[] arr = materials.toArray(new Material[0]);
+        if (arr.length == 1){
+            return new MaterialSearchFilter(arr[0]).and(result);
         }
-        return new ComplexSearchFilter(resAnds, resNots);
+        return new MaterialsSearchFilter(arr).and(result);
     }
 
     private static List<String> parseToken(ExpReader reader) {
