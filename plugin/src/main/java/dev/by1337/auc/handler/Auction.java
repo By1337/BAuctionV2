@@ -21,17 +21,16 @@ import dev.by1337.auc.pipeline.LocalChannelHandler;
 import dev.by1337.auc.pipeline.LocalPipeline;
 import dev.by1337.auc.pipeline.Remote;
 import dev.by1337.auc.registry.AucRegistries;
-import dev.by1337.auc.search.LotsResult;
 import dev.by1337.auc.search.PlayerVaultResult;
 import dev.by1337.auc.search.SearchResult;
 import dev.by1337.auc.search.filter.SearchFilter;
 import dev.by1337.auc.transaction.Transaction;
 import dev.by1337.auc.user.AucUser;
 import dev.by1337.core.util.misc.Pair;
-import dev.by1337.sync.k2v.PlayerDataRepository;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import dev.by1337.sync.common.channel.ChannelMessage;
 import dev.by1337.sync.common.work.EventLoopWorker;
+import dev.by1337.sync.k2v.PlayerDataRepository;
 import it.unimi.dsi.fastutil.ints.IntObjectPair;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -258,7 +257,7 @@ public class Auction implements LocalChannelHandler {
                     T next = it.next();
                     inflight.incrementAndGet();
                     pipeline.eventLoop().schedule(() -> request.get().accept(next));
-                } else if (count == 0){
+                } else if (count == 0) {
                     done.run();
                 }
             });

@@ -18,12 +18,14 @@ public class CommandsConf {
     public final String ah_menu;
     public final List<String> disabled_commands;
     public final Map<String, String> renamer;
+
     public CommandsConf(String ahMenu, List<String> disabled_commands, Map<String, String> renamer) {
         ah_menu = ahMenu;
         this.disabled_commands = disabled_commands;
         this.renamer = Collections.unmodifiableMap(renamer);
     }
-    public String rename(String s){
+
+    public String rename(String s) {
         return renamer.getOrDefault(s, s);
     }
 }

@@ -1,7 +1,6 @@
 package dev.by1337.auc.assets;
 
 import dev.by1337.core.ServerVersion;
-import dev.by1337.sync.common.packet.Packet;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -13,7 +12,7 @@ public class McLangDownloader {
     public static final String SITE = "https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets";
     public static final String LANG_PATH = "assets/minecraft/lang";
 
-    public static File downloadLang(String locale){
+    public static File downloadLang(String locale) {
         locale = locale.toLowerCase();
         File out = new File("./.cache/auction/" + ServerVersion.CURRENT_ID + "+" + locale + ".json");
         if (out.exists()) return out;

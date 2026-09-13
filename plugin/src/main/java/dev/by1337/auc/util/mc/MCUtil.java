@@ -9,7 +9,7 @@ public class MCUtil {
 
     private static final Logger log = LoggerFactory.getLogger(MCUtil.class);
 
-    public static void assertMain(){
+    public static void assertMain() {
         if (!Bukkit.isStopping() && !Bukkit.isPrimaryThread())
             throw new IllegalStateException("async trap");
     }

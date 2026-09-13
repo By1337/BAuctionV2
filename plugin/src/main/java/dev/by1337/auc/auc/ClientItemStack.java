@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
-public class ClientItemStack implements ItemStackData{
+public class ClientItemStack implements ItemStackData {
     private final int id;
     private final byte[] bytes;
     private final int[] tags;
@@ -26,7 +26,7 @@ public class ClientItemStack implements ItemStackData{
         this.id = id;
         this.bytes = bytes;
         this.tags = tags;
-        itemData = new ItemStackDataImpl(itemModel,  itemStack);
+        itemData = new ItemStackDataImpl(itemModel, itemStack);
         tagsSet = new IntOpenHashSet(tags.length);
         IntIterators.pour(IntIterators.wrap(tags), tagsSet, Integer.MAX_VALUE);
         materialOrdinal = itemStack.getType().ordinal();
@@ -50,6 +50,7 @@ public class ClientItemStack implements ItemStackData{
         }
         return true;
     }
+
     public boolean allOfTags(int @Nullable [] and) {
         if (and == null) return true;
         for (int i : and) {

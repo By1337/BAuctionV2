@@ -152,7 +152,7 @@ items:
               is_pp: true
 
       - lore: &lore
-        - *base_lore
+          - *base_lore
         on_click:
           - open:
               menu: auc_rent:confirm

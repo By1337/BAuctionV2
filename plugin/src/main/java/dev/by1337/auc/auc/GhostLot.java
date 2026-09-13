@@ -8,13 +8,12 @@ import dev.by1337.plc.PlaceholderResolver;
 
 import java.util.UUID;
 
-public class GhostLot implements LotData  {
+public class GhostLot implements LotData {
     private static final PlaceholderResolver<GhostLot> PLACEHOLDERS = LotData.<GhostLot>createPlaceholders()
             .withContext("seller_uuid", v -> v.owner.toString())
             .withContext("seller_name", GhostLot::ownerName)
             .withContext("uid", GhostLot::uid)
-            .withContext("expires", v -> DurationFormatter.getFormat(v.removalDate()))
-            ;
+            .withContext("expires", v -> DurationFormatter.getFormat(v.removalDate()));
     private final ClientItemStack itemStack;
     private final UUID owner;
     private final PlayerName ownerName;
@@ -43,7 +42,7 @@ public class GhostLot implements LotData  {
         return itemStack;
     }
 
-   // @Override
+    // @Override
     public int uid() {
         return -1;
     }

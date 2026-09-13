@@ -2,13 +2,10 @@ package dev.by1337.auc.search.filter;
 
 import dev.by1337.auc.auc.ClientItemStack;
 import dev.by1337.auc.auc.sort.Sorting;
-import dev.by1337.auc.handler.index.BitSetPool;
 import dev.by1337.auc.handler.index.LotsIndexer;
 import dev.by1337.auc.handler.index.Tag2IdService;
-import dev.by1337.auc.handler.index.search.SearchEngine;
 import dev.by1337.auc.search.LotsResult;
 import org.bukkit.Material;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 

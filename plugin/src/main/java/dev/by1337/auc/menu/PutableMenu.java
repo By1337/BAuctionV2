@@ -8,7 +8,6 @@ import dev.by1337.bmenu.slot.impl.SimpleSlotContent;
 import dev.by1337.core.BCore;
 import dev.by1337.item.ItemModel;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
-import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -34,6 +33,7 @@ public abstract class PutableMenu extends AbstractMenu {
         putableSlots.add(slot);
         playerItems[slot] = EMPTY;
     }
+
     public void addPutableSlot(int... slots) {
         for (int slot : slots) {
             putableSlots.add(slot);

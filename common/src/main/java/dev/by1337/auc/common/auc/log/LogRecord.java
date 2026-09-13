@@ -7,11 +7,12 @@ import java.util.UUID;
 
 public record LogRecord(long uid, AuctionLog log) {
 
-    public void write(ByteBuf buf, int protocolVersion){
+    public void write(ByteBuf buf, int protocolVersion) {
         buf.writeLong(uid);
         log.write(buf, protocolVersion);
     }
-    public static LogRecord read(ByteBuf buf, int protocolVersion){
+
+    public static LogRecord read(ByteBuf buf, int protocolVersion) {
         long uid = buf.readLong();
         AuctionLog log = AuctionLog.read(buf, protocolVersion);
         return new LogRecord(uid, log);

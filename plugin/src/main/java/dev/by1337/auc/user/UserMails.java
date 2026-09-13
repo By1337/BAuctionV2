@@ -29,6 +29,7 @@ public class UserMails {
             throw new IllegalArgumentException("Bad mail " + s);
         }
     }
+
     public static int getInt(String s) {
         var arr = s.split("\\|", 2);
         if (arr.length != 2) throw new IllegalArgumentException("Bad mail " + s);

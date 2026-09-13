@@ -14,8 +14,7 @@ public class ClientVaultLot implements LotData {
             .withContext("seller_uuid", v -> v.lot.owner().toString())
             .withContext("seller_name", ClientVaultLot::ownerName)
             .withContext("uid", ClientVaultLot::uid)
-            .withContext("expires", v -> DurationFormatter.getFormat(v.removalDate()))
-            ;
+            .withContext("expires", v -> DurationFormatter.getFormat(v.removalDate()));
     public final VaultLot lot;
     public final PlayerName playerName;
     public final ClientItemStack itemStack;

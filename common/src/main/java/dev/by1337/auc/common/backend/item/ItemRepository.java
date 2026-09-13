@@ -26,7 +26,7 @@ public class ItemRepository {
                     hash BINARY(32) NOT NULL,
                     data MEDIUMBLOB NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
+                
                     PRIMARY KEY (id),
                     UNIQUE KEY uk_hash (hash)
                 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC
@@ -82,11 +82,11 @@ public class ItemRepository {
 
     public int putIfAbsent(byte[] hash, byte[] data) throws SQLException {
         String sql = """
-            INSERT INTO `%s` (hash, data)
-            VALUES (?, ?)
-            ON DUPLICATE KEY UPDATE
-                id = LAST_INSERT_ID(id)
-            """.formatted(tableName);
+                INSERT INTO `%s` (hash, data)
+                VALUES (?, ?)
+                ON DUPLICATE KEY UPDATE
+                    id = LAST_INSERT_ID(id)
+                """.formatted(tableName);
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {

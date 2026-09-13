@@ -22,6 +22,7 @@ public class VaultLotExpirationLog implements AuctionLog, WithItemStackLog, With
         this.item = item;
         this.count = count;
     }
+
     public VaultLotExpirationLog(ByteBuf buf) {
         byte version = buf.readByte();
         timestamp = buf.readLong();

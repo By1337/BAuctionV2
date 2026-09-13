@@ -8,7 +8,8 @@ import io.netty.buffer.ByteBuf;
 
 import java.util.UUID;
 
-public record C2SMove2VaultRequest(int uid, UUID newOwner, long storeDuration) implements Packet, ExpectsResponse<A2AFlagResponse> {
+public record C2SMove2VaultRequest(int uid, UUID newOwner,
+                                   long storeDuration) implements Packet, ExpectsResponse<A2AFlagResponse> {
     public C2SMove2VaultRequest(ByteBuf buf, int protocolVersion) {
         this(buf.readInt(), ByteBufCodecs.readUUID(buf), buf.readLong());
     }

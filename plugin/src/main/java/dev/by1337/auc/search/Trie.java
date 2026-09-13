@@ -66,7 +66,7 @@ public class Trie<T> {
                 char c = prefix.charAt(i);
                 boolean validSpace = c == ' ' && node.key != null;
                 node = node.children.get(prefix.charAt(i));
-                if (node == null && validSpace){
+                if (node == null && validSpace) {
                     start = i;
                     validPrefix = false;
                     break;

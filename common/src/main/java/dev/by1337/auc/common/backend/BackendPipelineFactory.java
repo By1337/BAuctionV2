@@ -7,12 +7,12 @@ import dev.by1337.sync.common.channel.pipeline.Pipeline;
 
 public class BackendPipelineFactory {
 
-    public static void make(Pipeline pipeline){
+    public static void make(Pipeline pipeline) {
         pipeline
                 .addLast("item_stack_repository", new ItemServiceBackend())
                 .addLast("lots_repository", new LotsRepositoryBackend())
                 .addLast("name_repository", new PlayerNameBackend())
                 .addLast("log_repository", new LogRepositoryBackend())
-                ;
+        ;
     }
 }

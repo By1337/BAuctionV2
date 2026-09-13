@@ -50,8 +50,9 @@ public abstract class GetPostChannelHandler implements ChannelHandler {
     }
 
     public <T extends ChannelMessage> void registerPost(Class<T> t, Consumer<T> c) {
-        posts.put(t, (ctx, v) -> c.accept((T)v));
+        posts.put(t, (ctx, v) -> c.accept((T) v));
     }
+
     public <T extends ChannelMessage> void registerPost(Class<T> t, BiConsumer<ChannelContext, T> c) {
         posts.put(t, c);
     }
@@ -72,6 +73,6 @@ public abstract class GetPostChannelHandler implements ChannelHandler {
 
 
     public interface EConsumer<T> {
-         void accept(ChannelContext ctx, T t);
+        void accept(ChannelContext ctx, T t);
     }
 }

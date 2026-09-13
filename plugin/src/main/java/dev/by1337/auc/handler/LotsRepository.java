@@ -77,17 +77,18 @@ public class LotsRepository implements LocalChannelHandler {
         return vault.get(uid);
     }
 
-    public ResponseFuture<ActionResult> subtractOrRemoveLots(int[] raw){
+    public ResponseFuture<ActionResult> subtractOrRemoveLots(int[] raw) {
         return pipeline.submit(() -> remote.request(new C2SMassSubtractLotRequest(raw))
                 .map(ActionResult::of).orElse(ActionResult::deny));
     }
-    public ResponseFuture<ActionResult> subtractOrRemoveLots(Collection<IntObjectPair<ClientAucLot>> lots){
+
+    public ResponseFuture<ActionResult> subtractOrRemoveLots(Collection<IntObjectPair<ClientAucLot>> lots) {
         if (lots.isEmpty()) return new ResponseFuture<>(ActionResult.deny());
-        int[] array =  new int[lots.size()*2];
+        int[] array = new int[lots.size() * 2];
         int x = 0;
         for (IntObjectPair<ClientAucLot> lot : lots) {
             array[x] = lot.right().uid();
-            array[x+1] = lot.firstInt();
+            array[x + 1] = lot.firstInt();
             x++;
         }
         return pipeline.submit(() -> remote.request(new C2SMassSubtractLotRequest(array))
@@ -99,6 +100,7 @@ public class LotsRepository implements LocalChannelHandler {
         return pipeline.submit(() -> remote.request(new C2SSubtractLotRequest(lot0.uid(), count))
                 .map(ActionResult::of).orElse(ActionResult::deny));
     }
+
     public ResponseFuture<ActionResult> subtractOrRemoveLot(int uid, int count) {
         return pipeline.submit(() -> remote.request(new C2SSubtractLotRequest(uid, count))
                 .map(ActionResult::of).orElse(ActionResult::deny));

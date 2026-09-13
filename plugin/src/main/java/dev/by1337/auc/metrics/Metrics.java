@@ -9,6 +9,7 @@ import java.util.function.LongSupplier;
 public final class Metrics {
     private final Map<String, WindowedMetric> metrics =
             new ConcurrentHashMap<>();
+
     public Metrics() {
     }
 
@@ -41,6 +42,7 @@ public final class Metrics {
             logger.info("{}\n{}", entry.getKey(), entry.getValue().snapshot().toString());
         }
     }
+
     public String dump() {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, WindowedMetric> entry : metrics.entrySet()) {

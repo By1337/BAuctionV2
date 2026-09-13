@@ -30,25 +30,27 @@ public class BatchedLotSubtractor {
         for (Data value : data.values()) {
             var item = auction.getLot(value.uid);
             if (item == null) continue;
-           // log.info("{}x{}", item.itemStack.material(), value.count);
+            // log.info("{}x{}", item.itemStack.material(), value.count);
         }
     }
 
-    public int getUsedLots(int uid){
+    public int getUsedLots(int uid) {
         var v = data.get(uid);
         if (v == null) return 0;
         return v.count;
     }
-    public int[] usedLots(){
+
+    public int[] usedLots() {
         return data.keySet().toIntArray();
     }
 
     public long centsTotal() {
         return totalSum;
     }
+
     public void addExtra(ItemStack item, int count) {
         int max = item.getMaxStackSize();
-        while (count > 0){
+        while (count > 0) {
             int x = Math.min(count, max);
             extra.add(item.asQuantity(x));
             count -= x;

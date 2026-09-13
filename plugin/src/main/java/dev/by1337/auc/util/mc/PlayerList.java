@@ -48,7 +48,8 @@ public class PlayerList implements Listener {
     public @Nullable Player getPlayer(String name) {
         return name2player.get(name.toLowerCase(Locale.ROOT));
     }
-    public String tryFixName(String name){
+
+    public String tryFixName(String name) {
         var pl = getPlayer(name);
         if (pl != null) return pl.getName();
         return name;

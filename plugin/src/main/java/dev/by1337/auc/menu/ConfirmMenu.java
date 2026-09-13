@@ -48,7 +48,8 @@ public class ConfirmMenu extends AbstractMenu {
     public Command<ExecuteContext> getCommands() {
         return COMMANDS;
     }
-    static void bootCommands(Command<ExecuteContext> base){
+
+    static void bootCommands(Command<ExecuteContext> base) {
         COMMANDS = base
                 .sub(new Command<ExecuteContext>("[accept]").executor(ctx -> {
                     if (ctx.menu instanceof ConfirmMenu c) {

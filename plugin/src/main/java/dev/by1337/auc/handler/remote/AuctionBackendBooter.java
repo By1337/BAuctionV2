@@ -27,7 +27,7 @@ public class AuctionBackendBooter {
 
     private static final Logger log = LoggerFactory.getLogger(AuctionBackendBooter.class);
 
-    public static Backend bootRemote(String bsync,String channelId, Connection connection, Runnable onReady, Runnable onDisabled) {
+    public static Backend bootRemote(String bsync, String channelId, Connection connection, Runnable onReady, Runnable onDisabled) {
         var conn = dev.by1337.sync.bukkit.BSync.getConnection(bsync);//"bauc"
         var channel = conn.addChannel(channelId, "bauctionv2", c -> c
                 .addRegistries(AucPackets.MAIN)

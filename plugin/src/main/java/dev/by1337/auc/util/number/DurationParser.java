@@ -5,30 +5,31 @@ import dev.by1337.yaml.decoder.YamlDecoder;
 public class DurationParser {
     public static final YamlDecoder<Long> DECODER = YamlDecoder.STRING.map(DurationParser::parseDuration);
 
-    public static long parseDuration(String s){
-       final StringBuilder number = new StringBuilder();
-       final StringBuilder type = new StringBuilder();
+    public static long parseDuration(String s) {
+        final StringBuilder number = new StringBuilder();
+        final StringBuilder type = new StringBuilder();
         long out = 0;
         char[] arr = s.toCharArray();
 
-        for (char c : arr){
-            if (Character.isDigit(c)){
-                if (!type.isEmpty() && !number.isEmpty()){
+        for (char c : arr) {
+            if (Character.isDigit(c)) {
+                if (!type.isEmpty() && !number.isEmpty()) {
                     out += getResult(Integer.parseInt(number.toString()), type.toString());
                     number.setLength(0);
                     type.setLength(0);
                 }
                 number.append(c);
-            }else {
+            } else {
                 type.append(c);
             }
         }
-        if (!type.isEmpty() && !number.isEmpty()){
+        if (!type.isEmpty() && !number.isEmpty()) {
             out += getResult(Integer.parseInt(number.toString()), type.toString());
         }
         return out;
     }
-    private static long getResult(int x, String s){
+
+    private static long getResult(int x, String s) {
         return switch (s) {
             case "s" -> 1000L * x;
             case "m" -> 60000L * x;

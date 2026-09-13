@@ -32,7 +32,7 @@ public class ClientAucLot implements LotData, BuyableLot {
         this.playerName = playerName;
     }
 
-    public int shortIdOr(int def){
+    public int shortIdOr(int def) {
         return shortId;
     }
 

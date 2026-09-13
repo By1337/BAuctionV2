@@ -22,6 +22,7 @@ public class LotExpirationLog implements AuctionLog, WithItemStackLog, WithLPric
         this.item = item;
         this.count = count;
     }
+
     public LotExpirationLog(ByteBuf buf) {
         byte version = buf.readByte();
         timestamp = buf.readLong();

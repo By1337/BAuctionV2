@@ -48,7 +48,7 @@ public class DataBatcher<T> {
             }
             size.incrementAndGet();
         } else {
-            if (size.get() >= load50){
+            if (size.get() >= load50) {
                 worker.execute(this::ioTick);
             }
             size.incrementAndGet();

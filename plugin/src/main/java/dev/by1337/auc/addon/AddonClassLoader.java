@@ -58,7 +58,7 @@ public class AddonClassLoader extends URLClassLoader {
             } catch (ClassNotFoundException ignored) {
             }
         }
-        if (description == null){
+        if (description == null) {
             close();
             throw new InvalidAddonException("has no main class");
         }
@@ -68,7 +68,7 @@ public class AddonClassLoader extends URLClassLoader {
             try {
                 jarClass = Class.forName(description.mainClass(), true, this);
             } catch (ClassNotFoundException ex) {
-                throw new InvalidAddonException("Cannot find main class "+description.mainClass(), ex);
+                throw new InvalidAddonException("Cannot find main class " + description.mainClass(), ex);
             }
             Class<? extends AbstractAddon> pluginClass;
             try {

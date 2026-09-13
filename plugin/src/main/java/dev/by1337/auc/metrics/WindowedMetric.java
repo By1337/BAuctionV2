@@ -56,7 +56,7 @@ public final class WindowedMetric {
 
         private final long[] samples = new long[SAMPLE_SIZE];
         private final AtomicInteger sampleIndex = new AtomicInteger();
-        private final  MetricFormatter formatter;
+        private final MetricFormatter formatter;
 
         private Window(int size, MetricFormatter formatter) {
             this.size = size;

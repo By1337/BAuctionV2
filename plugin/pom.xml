@@ -49,12 +49,12 @@
                                     <exclude>com.h2database:*</exclude>
                                 </excludes>
                             </artifactSet>
-<!--                            <relocations>
-                                <relocation>
-                                    <pattern>dev.by1337.edsl</pattern>
-                                    <shadedPattern>dev.by1337.auc.libs.dev.by1337.edsl</shadedPattern>
-                                </relocation>
-                            </relocations>-->
+                            <!--                            <relocations>
+                                                            <relocation>
+                                                                <pattern>dev.by1337.edsl</pattern>
+                                                                <shadedPattern>dev.by1337.auc.libs.dev.by1337.edsl</shadedPattern>
+                                                            </relocation>
+                                                        </relocations>-->
                         </configuration>
                     </execution>
                 </executions>

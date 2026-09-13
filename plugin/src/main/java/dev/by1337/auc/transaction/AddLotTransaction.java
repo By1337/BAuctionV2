@@ -69,12 +69,12 @@ public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
                 .map(ghostLot -> {
                     if ((double) centsPrice / count < 1_00D) {
                         BAuction.sendMessage("minimum_price", who, ghostLot.<EventContext>placeholders()
-                                .append("min",  count));
+                                .append("min", count));
                         return null;
                     }
                     if (centsPrice < 10_00) {
                         BAuction.sendMessage("minimum_price", who, ghostLot.<EventContext>placeholders()
-                                .append("min",  10));
+                                .append("min", 10));
                         return null;
                     }
                     return ghostLot;

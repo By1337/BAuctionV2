@@ -101,7 +101,7 @@ class Commands {
                                 h.setSearchInput("<lang:bauctionv2.ah.search.analogs>");
                             } else {
                                 var m = BMenu.menuLoader().create(BAuction.plugin().config().commands.ah_menu, menu.viewer(), menu);
-                                if (m instanceof HomeMenu h){
+                                if (m instanceof HomeMenu h) {
                                     h.setSearch(new SearchFilterAndNotPair(lot.itemStack.tags(), null, new String[0]));
                                     h.setSearchInput("<lang:bauctionv2.ah.search.analogs>");
                                 }
@@ -122,8 +122,7 @@ class Commands {
                         }
                         auction.apply(new ResellTransaction(menu.viewer().getUniqueId()));
 
-                    }))
-            ;
+                    }));
 
     public static Command<ExecuteContext> create() {
         return MENU_COMMANDS.copy();

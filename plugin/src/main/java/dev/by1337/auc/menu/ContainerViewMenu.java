@@ -54,6 +54,7 @@ public class ContainerViewMenu extends AbstractMenu {
             }
         }
     }
+
     private int upTo9(int x) {
         return ((x / 9) * 9) + 9;
     }
@@ -84,12 +85,13 @@ public class ContainerViewMenu extends AbstractMenu {
         //      item.setPayload(lot);
     }
 
-    static void bootCommands(Command<ExecuteContext> base){
+    static void bootCommands(Command<ExecuteContext> base) {
         COMMANDS = base;
     }
+
     @Override
     public Command<ExecuteContext> getCommands() {
-        if (previousMenu != null){
+        if (previousMenu != null) {
             lastClickedItem = previousMenu.lastClickedItem();
             lastClickedSlot = previousMenu.lastClickedSlot();
         }

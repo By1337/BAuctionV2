@@ -24,9 +24,9 @@ commands:
   # какое меню открывать по /ah
   ah_menu: 'bauc:home'
   # выключите не нужные команды
-  disabled_commands: []
+  disabled_commands: [ ]
     #- sell
-    #- search
+  #- search
   # ренейм команд
   commands_renamer:
     ah: ah

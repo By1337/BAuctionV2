@@ -11,12 +11,11 @@ public record EmptySearchFilter() implements SearchFilter {
     public static final EmptySearchFilter INSTANCE = new EmptySearchFilter();
 
 
-
     public LotsResult searchLots(LotsIndexer indexer, Sorting sorting) {
         return LotsResult.of(indexer.lotsSet(sorting));
     }
 
-    public LotsResult apply(LotsIndexer indexer, LotsResult upper){
+    public LotsResult apply(LotsIndexer indexer, LotsResult upper) {
         return upper;
     }
 

@@ -21,7 +21,7 @@ public class SearchResult implements LotsResult {
         var v = result;
         if (v == null) return null;
         LotData data;
-        while ((data = v.next()) != null){
+        while ((data = v.next()) != null) {
             if (data instanceof ClientAucLot l) return l;
         }
         return null;

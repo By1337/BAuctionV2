@@ -5,8 +5,6 @@ import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.NodeType;
 import net.luckperms.api.node.types.PermissionNode;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,6 +21,7 @@ public class LuckPermsUtil {
     public long getPermissionTimeLeft(UUID user, String permission) {
         return getPermissionTimeLeft(luckPerms.getUserManager().getUser(user), permission);
     }
+
     public static long getPermissionTimeLeft(@Nullable User user, String permission) {
         if (user == null) return 0;
         long now = System.currentTimeMillis();

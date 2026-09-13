@@ -22,6 +22,7 @@ public class TakeLotLog implements AuctionLog, WithItemStackLog, WithLPriceLog {
         this.item = item;
         this.count = count;
     }
+
     public TakeLotLog(ByteBuf buf) {
         byte version = buf.readByte();
         timestamp = buf.readLong();

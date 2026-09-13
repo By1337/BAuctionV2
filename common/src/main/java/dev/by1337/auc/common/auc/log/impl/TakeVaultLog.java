@@ -22,6 +22,7 @@ public class TakeVaultLog implements AuctionLog, WithItemStackLog, WithLPriceLog
         this.item = item;
         this.count = count;
     }
+
     public TakeVaultLog(ByteBuf buf) {
         byte version = buf.readByte();
         timestamp = buf.readLong();

@@ -7,5 +7,6 @@ import dev.by1337.sync.common.packet.Packet;
 
 public interface Remote {
     <T extends ChannelMessage> ResponseFuture<T> request(ExpectsResponse<T> msg);
+
     void write(Packet packet);
 }

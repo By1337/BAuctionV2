@@ -1,4 +1,3 @@
-
 package dev.by1337.auc.tag.tester;
 
 import dev.by1337.auc.util.WildcardMatcher;

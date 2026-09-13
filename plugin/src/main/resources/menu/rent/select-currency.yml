@@ -172,7 +172,7 @@ items:
             <<+: *pp_confirm_open
             lore: *base_lore
   f:
-   #name: "[⟲] Вернуться.."
+    #name: "[⟲] Вернуться.."
     name: "<#FF0000>[⟲]<#FF6600> Вернуться.."
     color: "#00FF6600"
     all_flags: true

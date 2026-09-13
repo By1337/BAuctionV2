@@ -46,7 +46,7 @@ public class SearchManager {
         }
     }
 
-    private <T extends Translatable & Keyed> void addRegistry(Registry<@NonNull T> r, McLang lang){
+    private <T extends Translatable & Keyed> void addRegistry(Registry<@NonNull T> r, McLang lang) {
         for (T t : r) {
             addLookup(lang.getTranslation(t.translationKey()), SearchFilter.ofTag(t.getKey().value()));
         }
@@ -68,7 +68,7 @@ public class SearchManager {
         }
     }
 
-    private Set<String> applyAliases(String src){
+    private Set<String> applyAliases(String src) {
         Set<String> set = new HashSet<>();
         set.add(src);
         for (var e : config.aliases.entrySet()) {

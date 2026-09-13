@@ -113,9 +113,9 @@ public interface LotsResult {
         return and(this, o);
     }
 
-    default LotsResult whereOwner(LotsIndexer indexer, UUID owner){
+    default LotsResult whereOwner(LotsIndexer indexer, UUID owner) {
         var mask = indexer.ownerMask(owner);
-        if (mask == null){
+        if (mask == null) {
             release();
             return EMPTY;
         }

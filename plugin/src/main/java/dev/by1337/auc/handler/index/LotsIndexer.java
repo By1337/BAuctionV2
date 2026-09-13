@@ -125,7 +125,7 @@ public class LotsIndexer implements LocalChannelHandler, SearchEngine {
     @Deprecated
     public SearchResult search(@Nullable UUID owner, @Nullable SearchFilter filter, Sorting sorting) {
         if (filter != null) {
-            if (owner != null){
+            if (owner != null) {
                 var mask = ownerMask(owner);
                 if (mask == null) return SearchResult.EMPTY;
                 LotsResult result = filter.searchLots(this, sorting);

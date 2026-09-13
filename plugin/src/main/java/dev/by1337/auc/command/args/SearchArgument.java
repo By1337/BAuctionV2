@@ -95,9 +95,9 @@ public class SearchArgument<C extends CommandSender> extends Argument<C, Pair<St
                 suggestions.suggest(in[in.length - 1] + "0");
                 ArgumentMap map = new ArgumentMap(3);
                 argumentNumber.suggest(c, new CommandReader(in[in.length - 1]), suggestions, map);
-                if (map.size() > 0){
+                if (map.size() > 0) {
                     for (Object value : map.values()) {
-                        if (value != null){
+                        if (value != null) {
                             suggestions.suggest(String.valueOf(value));
                         }
                     }

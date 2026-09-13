@@ -24,7 +24,8 @@ public record ComplexSearchFilter(
         var set = indexer.lotsSet(sorting);
         return LotsResult.of(set.size(), indexer.findWithTags(ands, nots), set.iterator());
     }
-    public LotsResult apply(LotsIndexer indexer, LotsResult upper){
+
+    public LotsResult apply(LotsIndexer indexer, LotsResult upper) {
         return LotsResult.of(upper.size(), indexer.findWithTags(ands, nots), upper);
     }
 

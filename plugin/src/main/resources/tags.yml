@@ -199,7 +199,7 @@ search:
       "damage_10": 'целый'
       "damage_50": 'поломан'
       "damage_80": 'сломан'
-      "незерка":  'netherite_helmet | netherite_chestplate | netherite_leggings | netherite_boots'
+      "незерка": 'netherite_helmet | netherite_chestplate | netherite_leggings | netherite_boots'
       "тнт обычный": 'default_tnt'
       "мешок пустой": 'empty_bundle'
       "мешок": 'bundles'

@@ -18,7 +18,7 @@ public class ActionResult implements ChannelMessage {
         return new ActionResult(true);
     }
 
-    public static ActionResult of(A2AFlagResponse r){
+    public static ActionResult of(A2AFlagResponse r) {
         if (r == null) return deny();
         return r.flag() ? success() : deny();
     }

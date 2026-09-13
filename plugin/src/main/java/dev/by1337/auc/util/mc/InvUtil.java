@@ -9,7 +9,6 @@ import org.bukkit.inventory.PlayerInventory;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map;
 
 public class InvUtil {
 
@@ -21,7 +20,8 @@ public class InvUtil {
         }
         return leftover.isEmpty();
     }
-    public static boolean canGiveItems(Player player){
+
+    public static boolean canGiveItems(Player player) {
         var list = BAuction.playerList();
         return !player.isDead() && (list == null || list.isOnline(player.getUniqueId()));
     }

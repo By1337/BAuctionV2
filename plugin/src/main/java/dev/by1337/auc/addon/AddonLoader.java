@@ -62,7 +62,8 @@ public class AddonLoader implements Closeable {
             }
         }
     }
-    public Collection<AbstractAddon> addons(){
+
+    public Collection<AbstractAddon> addons() {
         return Collections.unmodifiableCollection(addons.values());
     }
 

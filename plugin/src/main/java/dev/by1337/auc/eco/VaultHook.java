@@ -17,12 +17,14 @@ public class VaultHook {
         econ = Objects.requireNonNull(rsp, "Economy not found!").getProvider();
     }
 
-    public long getCents(UUID uuid){
+    public long getCents(UUID uuid) {
         return EconomyUtil.toCents(getBalance(Bukkit.getOfflinePlayer(uuid)));
     }
+
     public void withdrawCents(UUID uuid, long count) {
         withdrawPlayer(Bukkit.getOfflinePlayer(uuid), EconomyUtil.fromCents(count));
     }
+
     public void depositCents(UUID uuid, long count) {
         depositPlayer(Bukkit.getOfflinePlayer(uuid), EconomyUtil.fromCents(count));
     }

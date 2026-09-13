@@ -2,9 +2,7 @@ package dev.by1337.auc.search.filter;
 
 import dev.by1337.auc.auc.ClientItemStack;
 import dev.by1337.auc.auc.sort.Sorting;
-import dev.by1337.auc.handler.index.BitSetPool;
 import dev.by1337.auc.handler.index.LotsIndexer;
-import dev.by1337.auc.handler.index.search.SearchEngine;
 import dev.by1337.auc.search.LotsResult;
 
 import java.util.List;
@@ -22,7 +20,7 @@ public class SearchFilterAndList implements SearchFilter {
         return apply(indexer, LotsResult.of(indexer.lotsSet(sorting)));
     }
 
-    public LotsResult apply(LotsIndexer indexer, LotsResult upper){
+    public LotsResult apply(LotsIndexer indexer, LotsResult upper) {
         for (SearchFilter filter : filters) {
             upper = filter.apply(indexer, upper);
         }

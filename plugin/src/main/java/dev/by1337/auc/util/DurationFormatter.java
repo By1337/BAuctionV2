@@ -51,7 +51,8 @@ public class DurationFormatter {
             if (minutes != 0) return String.format("<lang:bauctionv2.time.format.hours.minutes:%d:%d>", hours, minutes);
             return String.format("<lang:bauctionv2.time.format.hours:%d>", hours);
         } else if (minutes != 0) {
-            if (seconds != 0) return String.format("<lang:bauctionv2.time.format.minutes.seconds:%d:%d>", minutes, seconds);
+            if (seconds != 0)
+                return String.format("<lang:bauctionv2.time.format.minutes.seconds:%d:%d>", minutes, seconds);
             return String.format("<lang:bauctionv2.time.format.minutes:%d>", minutes);
         }
         return String.format("<lang:bauctionv2.time.format.seconds:%d>", seconds);

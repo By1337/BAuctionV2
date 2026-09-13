@@ -1,7 +1,5 @@
 package dev.by1337.auc.menu;
 
-import dev.by1337.auc.auc.ClientVaultLot;
-import dev.by1337.auc.auc.LotData;
 import dev.by1337.auc.auc.sort.Sorting;
 import dev.by1337.auc.search.LotsResult;
 import dev.by1337.bmenu.command.ExecuteContext;

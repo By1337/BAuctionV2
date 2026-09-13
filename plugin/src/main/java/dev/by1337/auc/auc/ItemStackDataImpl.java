@@ -28,6 +28,7 @@ public class ItemStackDataImpl implements ItemStackData {
         itemName = itemName(itemStack);
         itemNameNoColors = itemNameNoColors(itemStack);
     }
+
     @Override
     public boolean matches(ItemStackDataImpl o) {
         if (maxStack != o.maxStack) return false;
@@ -55,6 +56,7 @@ public class ItemStackDataImpl implements ItemStackData {
     public ItemModel itemModel() {
         return model;
     }
+
     @Override
     public ItemModel itemModel(int count) {
         return model.withAmount(count);

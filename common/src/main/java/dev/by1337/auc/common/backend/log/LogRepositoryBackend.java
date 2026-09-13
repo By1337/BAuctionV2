@@ -1,8 +1,9 @@
 package dev.by1337.auc.common.backend.log;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import dev.by1337.auc.common.auc.log.AuctionLog;
 import dev.by1337.auc.common.auc.log.LogRecord;
-import dev.by1337.auc.common.auc.log.impl.TakeLotLog;
 import dev.by1337.auc.common.db.DataBatcher;
 import dev.by1337.auc.common.handler.BAucRuntime;
 import dev.by1337.auc.common.handler.GetPostChannelHandler;
@@ -13,8 +14,6 @@ import dev.by1337.auc.common.network.c2s.C2SPublishLog;
 import dev.by1337.auc.common.network.s2c.S2CLogAdded;
 import dev.by1337.auc.common.network.s2c.S2CLogsLoadResponse;
 import dev.by1337.auc.common.network.s2c.S2COptionalLogRecord;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import dev.by1337.sync.common.callback.ResponseFuture;
 import dev.by1337.sync.common.channel.pipeline.ChannelRuntime;
 import dev.by1337.sync.common.util.BSUtils;
@@ -80,7 +79,7 @@ public class LogRepositoryBackend extends GetPostChannelHandler {
         }
     }
 
-    public void publishLog(AuctionLog log){
+    public void publishLog(AuctionLog log) {
         worker.execute(() -> publishLog(new C2SPublishLog(log)));
     }
 

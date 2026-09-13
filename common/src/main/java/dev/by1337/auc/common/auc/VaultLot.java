@@ -8,7 +8,7 @@ import io.netty.handler.codec.DecoderException;
 import java.util.Objects;
 import java.util.UUID;
 
-public class VaultLot implements BaseLot{
+public class VaultLot implements BaseLot {
     public static final byte VERSION = 1;
 
     private final int uid;
@@ -26,7 +26,8 @@ public class VaultLot implements BaseLot{
         this.count = count;
         this.lprice = lprice;
     }
-    public VaultLot withUid(int uid){
+
+    public VaultLot withUid(int uid) {
         return new VaultLot(uid, item, owner, removalDate, count, lprice);
     }
 
@@ -57,6 +58,7 @@ public class VaultLot implements BaseLot{
 
         return new VaultLot(overrideUID != -1 ? overrideUID : uid, item, owner, removalDate, count, price);
     }
+
     public int uid() {
         return uid;
     }

@@ -74,7 +74,7 @@ public class PriceLimiter {
                 max = Math.max(max, getMaxPrice(stack));
             }
         }
-        if (meta instanceof BundleMeta bm && bm.hasItems()){
+        if (meta instanceof BundleMeta bm && bm.hasItems()) {
             for (ItemStack stack : bm.getItems()) {
                 if (stack == null || stack.isEmpty()) continue;
                 max = Math.max(max, getMaxPrice(stack));

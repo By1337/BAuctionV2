@@ -2,17 +2,13 @@ package dev.by1337.auc.search.filter;
 
 import dev.by1337.auc.auc.ClientItemStack;
 import dev.by1337.auc.auc.sort.Sorting;
-import dev.by1337.auc.handler.index.BitSetPool;
 import dev.by1337.auc.handler.index.LotsIndexer;
 import dev.by1337.auc.handler.index.Tag2IdService;
-import dev.by1337.auc.handler.index.search.SearchEngine;
 import dev.by1337.auc.search.LotsResult;
-import dev.by1337.auc.search.SearchResult;
 import it.unimi.dsi.fastutil.ints.IntIterators;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import org.bukkit.Material;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
@@ -56,7 +52,7 @@ public class MaterialsSearchFilter implements SearchFilter {
 
     @Override
     public LotsResult apply(LotsIndexer indexer, LotsResult upper) {
-        return upper.filter(v ->  ordinalSet.contains(v.itemStack().material().ordinal()));
+        return upper.filter(v -> ordinalSet.contains(v.itemStack().material().ordinal()));
     }
 
     @Override

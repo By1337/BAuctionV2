@@ -22,12 +22,13 @@ public class PdcMap {
 
     private final Map<String, StoredValue> map = new HashMap<>();
 
-    public int getInt(String key){
+    public int getInt(String key) {
         var v = map.get(key);
         if (v instanceof StoredInt(int value)) return value;
         return 0;
     }
-    public void setInt(String key, int v){
+
+    public void setInt(String key, int v) {
         map.put(key, new StoredInt(v));
     }
 
@@ -162,7 +163,7 @@ public class PdcMap {
         map.put(key, new StoredList(list));
     }
 
-    public static PdcMap read(ByteBuf buf){
+    public static PdcMap read(ByteBuf buf) {
         PdcMap map = new PdcMap();
         int size = buf.readInt();
         for (int i = 0; i < size; i++) {
@@ -173,7 +174,7 @@ public class PdcMap {
         return map;
     }
 
-    public void write(ByteBuf buf){
+    public void write(ByteBuf buf) {
         buf.writeInt(map.size());
         for (var e : map.entrySet()) {
             ByteBufCodecs.writeUtf8(buf, e.getKey());

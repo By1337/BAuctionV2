@@ -290,7 +290,7 @@ public class CommandBooter {
                     for (Material material : v) {
                         sb.append(material.key().value()).append(", ");
                     }
-                    if (sb.isEmpty()){
+                    if (sb.isEmpty()) {
                         s.sendMessage("No material found!");
                         return;
                     }

@@ -57,7 +57,7 @@ public class SearchFilterParser {
                         int id = Tag2IdService.INSTANCE.getId(token);
                         and.add(id);
                         var mat = Tag2IdService.INSTANCE.getMaterial(id);
-                        if (mat != null){
+                        if (mat != null) {
                             materials.add(mat);
                         }
                     }
@@ -77,7 +77,7 @@ public class SearchFilterParser {
                     !not.isEmpty() ? not.toIntArray() : null,
                     new String[]{input}
             );
-        }else {
+        } else {
             int[][] resAnds = new int[size][];
             int[][] resNots = new int[size][];
             for (int i = 0; i < size; i++) {
@@ -91,7 +91,7 @@ public class SearchFilterParser {
         if (materials.isEmpty()) return result;
         if (materials.size() > 10) return result;
         Material[] arr = materials.toArray(new Material[0]);
-        if (arr.length == 1){
+        if (arr.length == 1) {
             return new MaterialSearchFilter(arr[0]).and(result);
         }
         return new MaterialsSearchFilter(arr).and(result);
@@ -133,7 +133,7 @@ public class SearchFilterParser {
                 }
             }
             if (!result.isEmpty())
-                return result.subList(0, result.size()-1);
+                return result.subList(0, result.size() - 1);
         }
         return List.of(word);
     }

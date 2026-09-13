@@ -1,9 +1,9 @@
 package dev.by1337.auc.common.backend.log;
 
+import com.zaxxer.hikari.HikariDataSource;
 import dev.by1337.auc.common.auc.log.AuctionLog;
 import dev.by1337.auc.common.auc.log.LogQuery;
 import dev.by1337.auc.common.auc.log.LogRecord;
-import com.zaxxer.hikari.HikariDataSource;
 import dev.by1337.sync.bd.repo.UUIDUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -76,7 +76,7 @@ public class AuctionLogRepository {
 
             connection.setAutoCommit(false);
             LogRecord log;
-            while (limit-- > 0 && (log = queue.poll()) != null){
+            while (limit-- > 0 && (log = queue.poll()) != null) {
                 c.accept(log);
                 statement.setLong(1, log.uid());
                 statement.setLong(2, log.timestamp());
@@ -91,6 +91,7 @@ public class AuctionLogRepository {
         }
 
     }
+
     public void put(LogRecord log) throws SQLException {
         String sql = """
                 INSERT IGNORE INTO `%s` (`id`, `timestamp`, `actor`, `subject`, `type`, `payload`)

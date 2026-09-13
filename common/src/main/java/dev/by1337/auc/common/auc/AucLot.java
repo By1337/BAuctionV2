@@ -8,7 +8,7 @@ import io.netty.handler.codec.DecoderException;
 import java.util.Objects;
 import java.util.UUID;
 
-public class AucLot implements BaseLot{
+public class AucLot implements BaseLot {
     public static final byte VERSION = 1;
     private final int uid;
     private final int item;

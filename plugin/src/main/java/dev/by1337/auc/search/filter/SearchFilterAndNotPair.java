@@ -10,7 +10,8 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-public record SearchFilterAndNotPair(int @Nullable [] and, int @Nullable [] not, String[] from) implements SearchFilter {
+public record SearchFilterAndNotPair(int @Nullable [] and, int @Nullable [] not,
+                                     String[] from) implements SearchFilter {
 
 /*    @Override
     public BitSetPool.PooledBitSet search(SearchEngine indexer) {
@@ -22,7 +23,7 @@ public record SearchFilterAndNotPair(int @Nullable [] and, int @Nullable [] not,
         return LotsResult.of(set.size(), indexer.findWithTags(and, not), set.iterator());
     }
 
-    public LotsResult apply(LotsIndexer indexer, LotsResult upper){
+    public LotsResult apply(LotsIndexer indexer, LotsResult upper) {
         return LotsResult.of(upper.size(), indexer.findWithTags(and, not), upper);
     }
 

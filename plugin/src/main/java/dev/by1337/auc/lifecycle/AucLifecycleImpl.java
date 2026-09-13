@@ -23,10 +23,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class AucLifecycleImpl extends AucLifecycle {
     private final List<AucLifecycle> listeners = new CopyOnWriteArrayList<>();
 
-    public void addListener(AucLifecycle lifecycle){
+    public void addListener(AucLifecycle lifecycle) {
         listeners.add(lifecycle);
     }
-    public void addListeners(Collection<? extends AucLifecycle> lifecycle){
+
+    public void addListeners(Collection<? extends AucLifecycle> lifecycle) {
         listeners.addAll(lifecycle);
     }
 
@@ -148,6 +149,7 @@ public class AucLifecycleImpl extends AucLifecycle {
             BSUtils.safe(() -> listener.bootAucPipeline(localPipeline));
         }
     }
+
     public void configBooted(Config config) {
         for (AucLifecycle listener : listeners) {
             BSUtils.safe(() -> listener.configBooted(config));

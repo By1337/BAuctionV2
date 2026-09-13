@@ -41,7 +41,6 @@ public class TagsConfig {
     }
 
 
-
     public Set<String> apply(Collection<String> tags) {
         List<String> out = new ArrayList<>(tags);
         tag_rewriter.forEach((pattern, replaces) -> {

@@ -2,16 +2,14 @@ package dev.by1337.auc.search.filter;
 
 import dev.by1337.auc.auc.ClientItemStack;
 import dev.by1337.auc.auc.sort.Sorting;
-import dev.by1337.auc.handler.index.BitSetPool;
 import dev.by1337.auc.handler.index.LotsIndexer;
-import dev.by1337.auc.handler.index.search.SearchEngine;
 import dev.by1337.auc.search.LotsResult;
 
 import java.util.Objects;
 import java.util.function.Consumer;
 
 
-public class PriceLimiterSearchFilter implements SearchFilter{
+public class PriceLimiterSearchFilter implements SearchFilter {
     private final SearchFilter delegated;
     public final long maxPrice;
 
@@ -24,7 +22,7 @@ public class PriceLimiterSearchFilter implements SearchFilter{
         return LotsResult.of(indexer.lotsSet(sorting)).filter(l -> l.centsPrice() <= maxPrice);
     }
 
-    public LotsResult apply(LotsIndexer indexer, LotsResult upper){
+    public LotsResult apply(LotsIndexer indexer, LotsResult upper) {
         return upper.filter(l -> l.centsPrice() <= maxPrice);
     }
 

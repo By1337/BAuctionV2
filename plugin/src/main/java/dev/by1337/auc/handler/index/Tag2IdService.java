@@ -24,7 +24,7 @@ public class Tag2IdService {
         }
     }
 
-    public @Nullable Material getMaterial(int tag){
+    public @Nullable Material getMaterial(int tag) {
         return tagId2material.get(tag);
     }
 

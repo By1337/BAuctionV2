@@ -5,8 +5,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.roaringbitmap.RoaringBitmap;
 
-import java.util.BitSet;
-
 public class BitSetPool {
     private static final MpmcArrayQueue<RoaringBitmap> sets = new MpmcArrayQueue<>(256);
 
@@ -41,7 +39,8 @@ public class BitSetPool {
             if (v == null) return;
             sets.offer(v);
         }
-        public RoaringBitmap lotMask(){
+
+        public RoaringBitmap lotMask() {
             //LotMask set;
             return src;
         }
@@ -49,7 +48,7 @@ public class BitSetPool {
         public int cardinality() {
             if (src == null) return 0;
             return src.getCardinality();
-          //  return src.cardinality();
+            //  return src.cardinality();
         }
 
         public void andNot(@NotNull RoaringBitmap other) {
@@ -71,7 +70,7 @@ public class BitSetPool {
             if (this.src == null) throw new IllegalStateException("Empty");
             this.src.clear();
             this.src.or(src);
-           // this.src.copy(src);
+            // this.src.copy(src);
         }
 
         public void set(int bit, boolean f) {
@@ -100,7 +99,7 @@ public class BitSetPool {
 
         public boolean get(int bit) {
             if (src == null) return false;
-           return src.contains(bit);
+            return src.contains(bit);
             //return src.get(bit);
         }
 

@@ -19,7 +19,7 @@ public interface LotData {
         return Math.min(count(), itemStack().maxStack());
     }
 
-    default int shortIdOr(int def){
+    default int shortIdOr(int def) {
         return def;
     }
 
@@ -58,6 +58,7 @@ public interface LotData {
     default long centsPrice() {
         return pricer().centsFor(count());
     }
+
     default long centsForOne() {
         return pricer().centsForOne();
     }
