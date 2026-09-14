@@ -99,13 +99,13 @@ public class HomeMenu extends LotsMenu {
     protected LotsResult search() {
         if (nop) return LotsResult.EMPTY;
         long nanos = System.nanoTime();
-        try {
+    //    try {
             var v = category.filter().searchLots(auction.index(), sorting);
             if (playerLots != null) return v.whereOwner(auction.index(), playerLots);
             return v;
-        } finally {
-            loader.logger().info("time {}us", (System.nanoTime() - nanos) / 1000D);
-        }
+    //    } finally {
+    //        loader.logger().info("time {}us", (System.nanoTime() - nanos) / 1000D);
+    //    }
     }
 
     public void setSearch(@Nullable SearchFilter search) {
