@@ -76,3 +76,9 @@ visual:
     <<: *auto_removal
     material: red_dye
     name: '&c<lang:bauctionv2.visual.insufficient_balance>'
+
+web:
+  static: 'baucv2'
+  url: "wss://btunnel.bdev.space/api/ws"
+  secret: ~
+  description: ~

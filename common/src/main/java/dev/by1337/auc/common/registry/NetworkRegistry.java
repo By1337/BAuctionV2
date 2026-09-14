@@ -3,6 +3,8 @@ package dev.by1337.auc.common.registry;
 import io.netty.buffer.ByteBuf;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -17,5 +19,8 @@ public class NetworkRegistry<T> {
 
     public @Nullable Function<ByteBuf, T> creator(String id) {
         return map.get(id);
+    }
+    public Collection<String> types(){
+        return Collections.unmodifiableCollection(map.keySet());
     }
 }

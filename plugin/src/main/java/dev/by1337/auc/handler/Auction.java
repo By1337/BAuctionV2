@@ -40,6 +40,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -229,6 +230,28 @@ public class Auction implements LocalChannelHandler {
 
     public ResponseFuture<ActionResult> subtractOrRemoveLots(int[] raw) {
         return repo.subtractOrRemoveLots(raw);
+    }
+
+    public <T, R, R1> ResponseFuture<List<R1>> parallelMap(
+            Iterator<T> it,
+            Function<T, ResponseFuture<R>> maker,
+            BiFunction<@NotNull T, @Nullable R, @Nullable R1> map
+    ) {
+        List<R1> result = new ArrayList<>();
+        ResponseFuture<List<R1>> future = new ResponseFuture<>();
+        parallel(
+                it,
+                () -> future.complete(result),
+                maker,
+                (t, r) -> {
+                    R1 res =  map.apply(t,r);
+                   if (res != null){
+                       result.add(res);
+                   }
+                }
+        );
+
+        return future;
     }
 
     public <T, R> void parallel(

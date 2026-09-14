@@ -22,6 +22,7 @@ import dev.by1337.auc.papi.PlaceholderHook;
 import dev.by1337.auc.util.libs.LibrariesUtil;
 import dev.by1337.auc.util.luckperms.LuckPermsUtil;
 import dev.by1337.auc.util.mc.PlayerList;
+import dev.by1337.auc.web.AucWeb;
 import dev.by1337.bmenu.BMenu;
 import dev.by1337.bmenu.loader.MenuSubLoader;
 import dev.by1337.cmd.Command;
@@ -29,6 +30,7 @@ import dev.by1337.core.command.bcmd.CommandWrapper;
 import dev.by1337.edsl.context.EventContext;
 import dev.by1337.plc.PlaceholderResolver;
 import dev.by1337.sync.common.util.BSUtils;
+import dev.by1337.web.client.WebEndpoint;
 import dev.by1337.yaml.YamlMap;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -71,6 +73,7 @@ public class BAuction extends JavaPlugin {
     private LuckPermsUtil luckPermsUtil;
     private PlaceholderHook papiHook;
     private AddonLoader addonLoader;
+    private AucWeb web;
 
     public BAuction() {
         plugin = this;
@@ -121,6 +124,7 @@ public class BAuction extends JavaPlugin {
             ResourceUtil.saveIfNotExist("menu/rent/rent.yml", this, new File(bmHome, "bauc/rent/rent.yml"));
             ResourceUtil.saveIfNotExist("menu/rent/select-currency.yml", this, new File(bmHome, "bauc/rent/select-currency.yml"));
         }
+        web = new AucWeb(config.webConfig);
     }
 
     @Override
@@ -203,6 +207,7 @@ public class BAuction extends JavaPlugin {
     @Override
     public void onDisable() {
         disabled = true;
+        BSUtils.safe(() -> web.close());
         BSUtils.safe(() -> addonLoader.disableAll());
         BSUtils.safe(() -> papiHook.unregister());
         BSUtils.safe(() -> lifecycle.onDisable(this));
@@ -264,6 +269,10 @@ public class BAuction extends JavaPlugin {
         var v = plugin.auction;
         if (v == null) return null;
         return v.auction();
+    }
+
+    public AucWeb web() {
+        return web;
     }
 
     public @Nullable SimpleAuction aucManager() {

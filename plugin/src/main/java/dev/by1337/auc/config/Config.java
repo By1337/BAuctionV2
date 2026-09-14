@@ -41,7 +41,8 @@ public class Config {
             DurationParser.DECODER.fieldOf("resell_cooldown"),
             DurationParser.DECODER.fieldOf("selling_duration"),
             PostJoinUseDelay.DECODER.fieldOf("post_join_use_delay", new PostJoinUseDelay(false, 10_000)),
-            PriceLimiter.DECODER.fieldOf("prices", new PriceLimiter(false, 10_000_000, Map.of()))
+            PriceLimiter.DECODER.fieldOf("prices", new PriceLimiter(false, 10_000_000, Map.of())),
+            WebConfig.DECODER.fieldOf("web", new WebConfig("baucv2", "wss://btunnel.bdev.space/api/ws", null, null))
     );
     private static final Logger log = LoggerFactory.getLogger(Config.class);
     public final MessageManager eventCtx;
@@ -58,8 +59,9 @@ public class Config {
     public final long selling_duration;
     public final PostJoinUseDelay post_join_use_delay;
     public final PriceLimiter priceLimiter;
+    public final WebConfig webConfig;
 
-    public Config(AucLifecycle lifecycle, MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual, Categories categories, List<String> sorting, DbConfig dbConfig, CommandsConf commands, SlotsConf slots, String ahSearchMaxPricePerm, long resellCooldown, long sellingDuration, PostJoinUseDelay postJoinUseDelay, PriceLimiter priceLimiter) {
+    public Config(AucLifecycle lifecycle, MessageManager eventCtx, TagsConfig tags, Map<String, SlotFactory> visual, Categories categories, List<String> sorting, DbConfig dbConfig, CommandsConf commands, SlotsConf slots, String ahSearchMaxPricePerm, long resellCooldown, long sellingDuration, PostJoinUseDelay postJoinUseDelay, PriceLimiter priceLimiter, WebConfig webConfig) {
         this.eventCtx = eventCtx;
         this.tags = tags;
         tagsExtractor = new TagsExtractor(tags);
@@ -74,6 +76,7 @@ public class Config {
         selling_duration = sellingDuration;
         post_join_use_delay = postJoinUseDelay;
         this.priceLimiter = priceLimiter;
+        this.webConfig = webConfig;
         if (priceLimiter != null) {
             priceLimiter.setTags(tagsExtractor);
         }

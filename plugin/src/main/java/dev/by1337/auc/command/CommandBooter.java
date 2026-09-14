@@ -298,6 +298,27 @@ public class CommandBooter {
                     var res = sb.toString();
                     s.sendMessage(Component.text(res).hoverEvent(Component.text("copy")).clickEvent(ClickEvent.copyToClipboard(res)));
                 }));
+        cmd.sub(new Command<CommandSender>("web").executor((s) -> {
+            var web = BAuction.plugin().web();
+            var webCfg = BAuction.plugin().config().webConfig;
+            var url = webCfg.url
+                    .replace("wss://", "https://")
+                    .replace("ws://", "http://")
+                    .replace("/api/ws", "/")
+                    ;
+            var f = web.getConnection();
+            if (!f.isDone()){
+                s.sendMessage("creating link...");
+            }
+            f.thenAccept(c -> {
+                if (c == null){
+                    s.sendMessage("failed to create link!");
+                    return;
+                }
+                String resultUrl = url + c.getToken() + "/" + webCfg.staticContent;
+                s.sendMessage(Component.text(resultUrl).clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, resultUrl)));
+            });
+        }));
         return lifecycle.bootAdminCommands(cmd);
     }
 

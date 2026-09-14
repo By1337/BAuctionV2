@@ -118,7 +118,9 @@ public class LotsIndexer implements LocalChannelHandler, SearchEngine {
     }
 
     public @Nullable BitSetPool.PooledBitSet ownerMask(UUID owner) {
-        return new BitSetPool.PooledBitSet(owner2ownedLots.get(owner), false);
+        var v = owner2ownedLots.get(owner);
+        if (v == null) return null;
+        return new BitSetPool.PooledBitSet(v, false);
     }
 
 

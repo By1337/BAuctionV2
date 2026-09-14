@@ -172,8 +172,7 @@ public class AuctionLogRepository {
         first = append(sql, args, first, query.actor(), "actor = ?");
         first = append(sql, args, first, query.subject(), "subject = ?");
         first = append(sql, args, first, query.type(), "type = ?");
-        if (first) sql.append(" ");
-        sql.append("ORDER BY id DESC LIMIT ?");
+        sql.append(" ORDER BY id DESC LIMIT ?");
         args.add(query.limit());
 
         try (Connection connection = dataSource.getConnection();

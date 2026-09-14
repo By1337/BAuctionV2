@@ -29,7 +29,7 @@ public class LogRepository implements LocalChannelHandler {
     private LocalPipeline pipeline;
     private Remote remote;
     private SimpleAuction auction;
-    private CopyOnWriteArrayList<Consumer<LogRecord>> logListeners = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<Consumer<LogRecord>> logListeners = new CopyOnWriteArrayList<>();
 
     @Override
     public void init(LocalPipeline pipeline, Remote remote, SimpleAuction auction) {
