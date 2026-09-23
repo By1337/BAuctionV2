@@ -107,7 +107,7 @@ public class LotsRepository implements LocalChannelHandler {
     }
 
     public ResponseFuture<ActionResult> removeLot(ClientAucLot lot0) {
-        return pipeline.submit(() -> remote.request(new C2SRemoveLotRequest(lot0.uid()))
+        return pipeline.submit(() -> remote.request(new C2SSubtractLotRequest(lot0.uid(), lot0.count()))
                 .map(ActionResult::of).orElse(ActionResult::deny));
     }
 

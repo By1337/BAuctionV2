@@ -5,6 +5,7 @@ import dev.by1337.sync.common.packet.ExpectsResponse;
 import dev.by1337.sync.common.packet.Packet;
 import io.netty.buffer.ByteBuf;
 
+@Deprecated
 public record C2SRemoveLotRequest(int uid) implements Packet, ExpectsResponse<A2AFlagResponse> {
     public C2SRemoveLotRequest(ByteBuf buf, int protocolVersion) {
         this(buf.readInt());
