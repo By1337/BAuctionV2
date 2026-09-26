@@ -133,10 +133,11 @@ public interface LotsResult {
 
             @Override
             public @Nullable LotData next() {
-                var v = self.next();
-                if (v == null) return null;
-                if (!filter.test(v)) return null;
-                return v;
+                LotData lot;
+                while ((lot = self.next()) != null) {
+                    if (filter.test(lot)) return lot;
+                }
+                return null;
             }
 
             @Override

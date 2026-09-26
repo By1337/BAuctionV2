@@ -19,11 +19,11 @@ public class PriceLimiterSearchFilter implements SearchFilter {
     }
 
     public LotsResult searchLots(LotsIndexer indexer, Sorting sorting) {
-        return LotsResult.of(indexer.lotsSet(sorting)).filter(l -> l.centsPrice() <= maxPrice);
+        return delegated.searchLots(indexer, sorting).filter(l -> l.centsPrice() <= maxPrice);
     }
 
     public LotsResult apply(LotsIndexer indexer, LotsResult upper) {
-        return upper.filter(l -> l.centsPrice() <= maxPrice);
+        return delegated.apply(indexer, upper).filter(l -> l.centsPrice() <= maxPrice);
     }
 
 
