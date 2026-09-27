@@ -42,11 +42,15 @@ public class ResellTransaction implements Transaction<Boolean> {
             BAuction.sendMessage("has_no_items_resell", who);
             return new ResponseFuture<>(false);
         }
+        int limit = BAuction.plugin().config().slots.collectSlots(player) - auction.getPlayerOwnedLotsCount(who);
+        if (limit <= 0) {
+            BAuction.sendMessage("slots_limited", who);
+            return new ResponseFuture<>(false);
+        }
         user.pdc().setLong("resell.cooldown", now + BAuction.plugin().config().resell_cooldown);
 
-        int limit = BAuction.plugin().config().slots.collectSlots(player);
         Location loc = player.getLocation();
-        if (vault.size() != 0) {
+        if (vault.size() > 0) {
             ClientVaultLot l;
             while (limit-- > 0 && (l = vault.next()) != null) {
                 final ClientVaultLot lot = l;
@@ -60,7 +64,7 @@ public class ResellTransaction implements Transaction<Boolean> {
                 });
             }
         }
-        if (lots.size() != 0) {
+        if (lots.size() > 0) {
             LotData l;
             while (limit-- > 0 && (l = lots.next()) != null && l instanceof ClientAucLot lot) {
                 //final ClientAucLot lot = l;
