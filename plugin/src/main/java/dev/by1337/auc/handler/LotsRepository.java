@@ -122,7 +122,7 @@ public class LotsRepository implements LocalChannelHandler {
 
     public ResponseFuture<ActionResult> readdVaultLot(ClientVaultLot vault) {
         return pipeline.submit(() -> remote.request(new C2SAddNewVaultRequest(
-                vault.lot.uid(),
+                vault.itemStack.id(),
                 vault.owner(),
                 VAULT_STORE_DURATION_MS,
                 vault.count(),
@@ -161,7 +161,7 @@ public class LotsRepository implements LocalChannelHandler {
                         ))
                         .ifEmpty(() -> log.error("Server ignored C2SAddNewLotRequest {}", itemStack))
                         .flatMap(flag -> {
-                            if (!flag.flag()) return null;
+                            if (!flag.flag()) return new ResponseFuture<>(null);
                             return zip(
                                     itemService.loadItem(id),
                                     players.loadName(owner),

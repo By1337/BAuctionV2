@@ -56,9 +56,9 @@ public class AddLotTransaction implements Transaction<@Nullable GhostLot> {
         if (!skipPriceChecks) {
             var cfg = BAuction.plugin().config();
             if (cfg.priceLimiter.enabled()) {
-                var max = cfg.priceLimiter.getMaxPrice(itemStack.asQuantity(count));
+                long max = cfg.priceLimiter.getMaxPrice(itemStack.asQuantity(count));
                 if (centsPrice > max) {
-                    BAuction.sendMessage("maximum_price", who, PlaceholderResolver.of("max", NumberFormatter.format(max)));
+                    BAuction.sendMessage("maximum_price", who, PlaceholderResolver.of("max", NumberFormatter.format(EconomyUtil.fromCents(max))));
                     return EMPTY;
                 }
             }

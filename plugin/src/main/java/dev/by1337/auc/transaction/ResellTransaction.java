@@ -38,48 +38,52 @@ public class ResellTransaction implements Transaction<Boolean> {
         var vault = auction.playerVaultLots(who);
         var lots = auction.search(who, null, auction.registries().sorting.first());
 
-        if (lots.size() == 0 && vault.size() == 0) {
-            BAuction.sendMessage("has_no_items_resell", who);
-            return new ResponseFuture<>(false);
-        }
-        int limit = BAuction.plugin().config().slots.collectSlots(player) - auction.getPlayerOwnedLotsCount(who);
-        if (limit <= 0) {
-            BAuction.sendMessage("slots_limited", who);
-            return new ResponseFuture<>(false);
-        }
-        user.pdc().setLong("resell.cooldown", now + BAuction.plugin().config().resell_cooldown);
+        try {
+            if (lots.size() == 0 && vault.size() == 0) {
+                BAuction.sendMessage("has_no_items_resell", who);
+                return new ResponseFuture<>(false);
+            }
+            int limit = BAuction.plugin().config().slots.collectSlots(player) - auction.getPlayerOwnedLotsCount(who);
+            if (limit <= 0) {
+                BAuction.sendMessage("slots_limited", who);
+                return new ResponseFuture<>(false);
+            }
+            user.pdc().setLong("resell.cooldown", now + BAuction.plugin().config().resell_cooldown);
 
-        Location loc = player.getLocation();
-        if (vault.size() > 0) {
-            ClientVaultLot l;
-            while (limit-- > 0 && (l = vault.next()) != null) {
-                final ClientVaultLot lot = l;
-                auction.removeVaultLot(lot).then(r -> {
-                    if (r == null || !r.success) return;
-                    auction.addLot(lot.itemStack, lot.owner(), BAuction.plugin().config().selling_duration, lot.count(), lot.centsPrice()).then(s -> {
-                        if (s == null) {
-                            returnItem(lot.itemStack.asQuantity(lot.count()), loc);
-                        }
+            Location loc = player.getLocation();
+            if (vault.size() > 0) {
+                ClientVaultLot l;
+                while (limit-- > 0 && (l = vault.next()) != null) {
+                    final ClientVaultLot lot = l;
+                    auction.removeVaultLot(lot).then(r -> {
+                        if (r == null || !r.success) return;
+                        auction.addLot(lot.itemStack, lot.owner(), BAuction.plugin().config().selling_duration, lot.count(), lot.centsPrice()).then(s -> {
+                            if (s == null) {
+                                returnItem(lot.itemStack.asQuantity(lot.count()), loc);
+                            }
+                        });
                     });
-                });
+                }
             }
-        }
-        if (lots.size() > 0) {
-            LotData l;
-            while (limit-- > 0 && (l = lots.next()) != null && l instanceof ClientAucLot lot) {
-                //final ClientAucLot lot = l;
-                auction.removeLot(lot).then(r -> {
-                    if (r == null || !r.success) return;
-                    auction.addLot(lot.itemStack, lot.owner(), BAuction.plugin().config().selling_duration, lot.count(), lot.centsPrice()).then(s -> {
-                        if (s == null) {
-                            returnItem(lot.itemStack.asQuantity(lot.count()), loc);
-                        }
+            if (lots.size() > 0) {
+                LotData l;
+                while (limit-- > 0 && (l = lots.next()) != null && l instanceof ClientAucLot lot) {
+                    //final ClientAucLot lot = l;
+                    auction.removeLot(lot).then(r -> {
+                        if (r == null || !r.success) return;
+                        auction.addLot(lot.itemStack, lot.owner(), BAuction.plugin().config().selling_duration, lot.count(), lot.centsPrice()).then(s -> {
+                            if (s == null) {
+                                returnItem(lot.itemStack.asQuantity(lot.count()), loc);
+                            }
+                        });
                     });
-                });
+                }
             }
+            BAuction.sendMessage("resell_success", who);
+            return new ResponseFuture<>(true);
+        } finally {
+            lots.release();
         }
-        BAuction.sendMessage("resell_success", who);
-        return new ResponseFuture<>(true);
     }
 
     private void returnItem(ItemStack itemStack, Location location) {

@@ -226,6 +226,7 @@ public class BAuction extends JavaPlugin {
             backend = null;
         }
         auction = null;
+        BSUtils.safe(() -> addonLoader.close());
 
         for (HandlerList handlerList : HandlerList.getHandlerLists()) {
             for (RegisteredListener listener : handlerList.getRegisteredListeners()) {

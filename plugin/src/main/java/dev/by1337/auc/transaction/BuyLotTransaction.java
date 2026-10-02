@@ -109,7 +109,7 @@ public class BuyLotTransaction implements Transaction<ActionResult> {
     }
 
     public BuyLotTransaction infinityBalance() {
-        this.infinityBalance = log.isErrorEnabled();
+        this.infinityBalance = true;
         return this;
     }
 
