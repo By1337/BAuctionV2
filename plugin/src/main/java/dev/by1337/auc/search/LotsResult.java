@@ -219,6 +219,7 @@ public interface LotsResult {
                 var v = filter;
                 filter = null;
                 if (v != null) v.release();
+                res.release();
             }
         };
     }

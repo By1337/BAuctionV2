@@ -31,7 +31,8 @@ public interface SearchEngine {
                         var set = safeGet(idx, index);
                         if (set == null) {
                             buffer.clear();
-                            continue;
+                            init = true;
+                            break;
                         }
                         if (!init) {
                             buffer.copy(set);
@@ -76,12 +77,11 @@ public interface SearchEngine {
             base = BitSetPool.get(used());
         } else {
             for (int i : and) {
-                if (maxIndex < i) continue;
-                var set = index[i];
-                if (set == null) {
-                    if (base != null) base.clear();
-                    continue;
+                if (i < 0 || maxIndex < i || index[i] == null) {
+                    if (base != null) base.release();
+                    return BitSetPool.empty();
                 }
+                var set = index[i];
                 if (base == null) {
                     base = BitSetPool.get(set);
                 } else {

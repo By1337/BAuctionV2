@@ -7,7 +7,6 @@ import dev.by1337.yaml.codec.DataResult;
 import dev.by1337.yaml.decoder.YamlDecoder;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.bukkit.Material;
-import org.bukkit.Registry;
 
 import java.util.*;
 
@@ -26,8 +25,6 @@ public class SearchFilterParser {
         if (input.isBlank()) return EmptySearchFilter.INSTANCE;
         ExpReader reader = new ExpReader(input);
 
-        Set<Material> materials = new HashSet<>();
-
         List<IntArrayList> ands = new ArrayList<>();
         List<IntArrayList> nots = new ArrayList<>();
         IntArrayList and = new IntArrayList();
@@ -38,7 +35,7 @@ public class SearchFilterParser {
                 switch (token) {
                     case "!" -> {
                         for (String word : parseToken(reader)) {
-                            not.add(Tag2IdService.INSTANCE.getId(word));
+                            if (!word.equals("|")) not.add(Tag2IdService.INSTANCE.getId(word));
                         }
                     }
                     case "|" -> {
@@ -56,18 +53,13 @@ public class SearchFilterParser {
                     default -> {
                         int id = Tag2IdService.INSTANCE.getId(token);
                         and.add(id);
-                        var mat = Tag2IdService.INSTANCE.getMaterial(id);
-                        if (mat != null) {
-                            materials.add(mat);
-                        }
                     }
                 }
             }
         }
-        if (!and.isEmpty())
-            ands.add(and);
-        if (!not.isEmpty())
-            nots.add(not);
+        ands.add(and);
+        nots.add(not);
+        if (ands.size() == 1 && and.isEmpty() && not.isEmpty()) return EmptySearchFilter.INSTANCE;
         SearchFilter result;
         int size = Math.max(ands.size(), nots.size());
         if (size == 0) return EmptySearchFilter.INSTANCE;
@@ -84,17 +76,30 @@ public class SearchFilterParser {
                 IntArrayList a = ands.size() > i ? ands.get(i) : null;
                 IntArrayList n = nots.size() > i ? nots.get(i) : null;
                 if (a != null && !a.isEmpty()) resAnds[i] = a.toIntArray();
-                if (n != null && n.isEmpty()) resNots[i] = n.toIntArray();
+                if (n != null && !n.isEmpty()) resNots[i] = n.toIntArray();
             }
             result = new ComplexSearchFilter(resAnds, resNots);
         }
-        if (materials.isEmpty()) return result;
+        // Every OR branch must require a material before narrowing the candidate set.
+        Set<Material> materials = new LinkedHashSet<>();
+        boolean materialOnly = true;
+        for (int i = 0; i < ands.size(); i++) {
+            boolean requiresMaterial = false;
+            for (int tag : ands.get(i)) {
+                Material material = Tag2IdService.INSTANCE.getMaterial(tag);
+                if (material != null) {
+                    materials.add(material);
+                    requiresMaterial = true;
+                }
+            }
+            if (!requiresMaterial) return result;
+            materialOnly &= ands.get(i).size() == 1 && nots.get(i).isEmpty();
+        }
         if (materials.size() > 10) return result;
         Material[] arr = materials.toArray(new Material[0]);
-        if (arr.length == 1) {
-            return new MaterialSearchFilter(arr[0]).and(result);
-        }
-        return new MaterialsSearchFilter(arr).and(result);
+        SearchFilter materialFilter = arr.length == 1
+                ? new MaterialSearchFilter(arr[0]) : new MaterialsSearchFilter(arr);
+        return materialOnly ? materialFilter : materialFilter.and(result);
     }
 
     private static List<String> parseToken(ExpReader reader) {
@@ -125,7 +130,8 @@ public class SearchFilterParser {
         String word = sb.toString().toLowerCase(Locale.ROOT);
         if (word.contains("*") || word.contains("?")) {
             List<String> result = new ArrayList<>();
-            for (Material material : Registry.MATERIAL) {
+            for (Material material : Material.values()) {
+                if (material.isLegacy()) continue;
                 var key = material.getKey().value();
                 if (WildcardMatcher.match(word, key)) {
                     result.add(key);

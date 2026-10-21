@@ -19,6 +19,7 @@ public class MaterialsSearchFilter implements SearchFilter {
     private final IntSet ordinalSet;
 
     public MaterialsSearchFilter(Material[] materials) {
+        materials = java.util.Arrays.stream(materials).distinct().toArray(Material[]::new);
         this.materials = materials;
         ordinal = new int[materials.length];
         tagId = new int[materials.length];

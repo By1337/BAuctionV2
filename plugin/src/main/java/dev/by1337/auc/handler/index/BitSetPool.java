@@ -104,7 +104,7 @@ public class BitSetPool {
         }
 
         public boolean isEmpty() {
-            return src == null;
+            return src == null || src.isEmpty();
         }
     }
 }

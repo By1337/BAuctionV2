@@ -108,6 +108,22 @@ public class HomeMenu extends LotsMenu {
     //    }
     }
 
+    public Category category() {
+        return category;
+    }
+
+    public Sorting sorting() {
+        return sorting;
+    }
+
+    public UUID playerLots() {
+        return playerLots;
+    }
+
+    public boolean isNop() {
+        return nop;
+    }
+
     public void setSearch(@Nullable SearchFilter search) {
         if (search == null) {
             categoryIterator = auction.registries().category.cycle();

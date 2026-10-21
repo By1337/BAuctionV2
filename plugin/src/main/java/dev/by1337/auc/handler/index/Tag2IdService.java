@@ -2,7 +2,6 @@ package dev.by1337.auc.handler.index;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.bukkit.Material;
-import org.bukkit.Registry;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -19,7 +18,8 @@ public class Tag2IdService {
     private final Int2ObjectOpenHashMap<Material> tagId2material = new Int2ObjectOpenHashMap<>();
 
     public Tag2IdService() {
-        for (Material material : Registry.MATERIAL) {
+        for (Material material : Material.values()) {
+            if (material.isLegacy()) continue;
             tagId2material.put(getId(material.getKey().value()), material);
         }
     }
