@@ -1,6 +1,5 @@
 package dev.by1337.auc;
 
-import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.gson.JsonParser;
 import dev.by1337.auc.addon.AddonLoader;
 import dev.by1337.auc.assets.McLangDownloader;
@@ -27,29 +26,24 @@ import dev.by1337.bmenu.BMenu;
 import dev.by1337.bmenu.loader.MenuSubLoader;
 import dev.by1337.cmd.Command;
 import dev.by1337.core.command.bcmd.CommandWrapper;
+import dev.by1337.core.util.io.ResourceUtil;
 import dev.by1337.edsl.context.EventContext;
 import dev.by1337.plc.PlaceholderResolver;
 import dev.by1337.sync.common.util.BSUtils;
 import dev.by1337.web.client.WebEndpoint;
-import dev.by1337.yaml.YamlMap;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredListener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -109,21 +103,14 @@ public class BAuction extends JavaPlugin {
         MenuBooter.boot(subLoader, lifecycle);
         BMenu.menuLoader().registerSubLoader(this, subLoader);
 
-        File bmHome = BMenu.menuLoader().homeDir();
-        if (!new File(bmHome, "bauc").exists()) {
+        File menuHome = new File(BMenu.menuLoader().homeDir(), "bauc");
+        if (!menuHome.exists()) {
             ResourceUtil.saveIfNotExist("menu.txt", this);
-            ResourceUtil.saveIfNotExist("menu/select_category.yml", this, new File(bmHome, "bauc/select_category.yml"));
-            ResourceUtil.saveIfNotExist("menu/sell_gui.yml", this, new File(bmHome, "bauc/sell_gui.yml"));
-            ResourceUtil.saveIfNotExist("menu/vault.yml", this, new File(bmHome, "bauc/vault.yml"));
-            ResourceUtil.saveIfNotExist("menu/lots_items.yml", this, new File(bmHome, "bauc/lots_items.yml"));
-            ResourceUtil.saveIfNotExist("menu/home.yml", this, new File(bmHome, "bauc/home.yml"));
-            ResourceUtil.saveIfNotExist("menu/confirm.yml", this, new File(bmHome, "bauc/confirm.yml"));
-            ResourceUtil.saveIfNotExist("menu/select_count.yml", this, new File(bmHome, "bauc/select_count.yml"));
-            ResourceUtil.saveIfNotExist("menu/container_view.yml", this, new File(bmHome, "bauc/container_view.yml"));
-            ResourceUtil.saveIfNotExist("menu/rent/confirm_eco.yml", this, new File(bmHome, "bauc/rent/confirm_eco.yml"));
-            ResourceUtil.saveIfNotExist("menu/rent/rent.yml", this, new File(bmHome, "bauc/rent/rent.yml"));
-            ResourceUtil.saveIfNotExist("menu/rent/select-currency.yml", this, new File(bmHome, "bauc/rent/select-currency.yml"));
         }
+        ResourceUtil.resourceStream(this, "menu/*")
+                .to(menuHome)
+                .stripPrefix("menu")
+                .storeIfFolderNotExist();
         web = new AucWeb(config.webConfig);
     }
 
@@ -174,8 +161,8 @@ public class BAuction extends JavaPlugin {
                                 enable();
                                 BMenu.menuLoader().reload();
                                 s.sendMessage("done in " + (System.nanoTime() - nanos) / 1_000_000D);
-                            }))
-                    , this);
+                            })),
+                    this);
             aha.setPermission("aha.use");
             aha.register();
             lifecycle.onPostEnabled(this);
@@ -302,49 +289,6 @@ public class BAuction extends JavaPlugin {
     public static void sendMessage(String key, Player player) {
         plugin().config.eventCtx.call(key, player);
     }
-
-    public static class ResourceUtil {
-
-        @NotNull
-        @CanIgnoreReturnValue
-        public static File saveIfNotExist(@NotNull String path, @NotNull Plugin plugin, File outFile) {
-            path = path.replace('\\', '/');
-            if (path.startsWith("/")) {
-                path = path.substring(1);
-            }
-            if (!outFile.exists()) {
-                outFile.getParentFile().mkdirs();
-                try (
-                        FileOutputStream fw = new FileOutputStream(outFile);
-                        var in = plugin.getResource(path)
-                ) {
-                    in.transferTo(fw);
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-            }
-            return outFile;
-        }
-
-        @NotNull
-        @CanIgnoreReturnValue
-        public static File saveIfNotExist(@NotNull String path, @NotNull Plugin plugin) {
-            path = path.replace('\\', '/');
-            if (path.startsWith("/")) {
-                path = path.substring(1);
-            }
-            var f = new File(plugin.getDataFolder(), path);
-            if (!f.exists()) {
-                plugin.saveResource(path, false);
-            }
-            return f;
-        }
-
-        public static YamlMap load(@NotNull String path, @NotNull Plugin plugin) {
-            return YamlMap.load(saveIfNotExist(path, plugin));
-        }
-    }
-
 
     static {
         Thread.startVirtualThread(() -> {
