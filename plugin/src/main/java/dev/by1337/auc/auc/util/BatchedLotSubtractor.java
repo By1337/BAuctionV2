@@ -1,5 +1,6 @@
 package dev.by1337.auc.auc.util;
 
+import dev.by1337.auc.BAuction;
 import dev.by1337.auc.common.auc.log.impl.BuyAuctionLog;
 import dev.by1337.auc.handler.Auction;
 import dev.by1337.auc.handler.event.ActionResult;
@@ -83,8 +84,19 @@ public class BatchedLotSubtractor {
     }
 
     private void giveReward(UUID who, Auction auction) {
+        var economy = BAuction.economy();
         for (Data d : data.values()) {
             long sum = d.lprice_for_one * d.count;
+            if (economy.isBVault()) {
+                economy.depositCents(d.owner, sum, l -> l
+                        .setString("reason", "sale")
+                        .setUUID("buyer", who)
+                        .setInt("lot", d.uid)
+                        .setInt("item", d.itemId)
+                        .setInt("count", d.count));
+            } else {
+                auction.users().pushMail(d.owner, UserMails.makeDepositCents(sum));
+            }
             auction.publishLog(new BuyAuctionLog(
                     System.currentTimeMillis(),
                     who,
@@ -93,7 +105,6 @@ public class BatchedLotSubtractor {
                     d.itemId,
                     d.count
             )).ifPresent(id -> auction.users().pushMail(d.owner, UserMails.makeLotSold(id)));
-            auction.users().pushMail(d.owner, UserMails.makeDepositCents(sum));
         }
     }
 

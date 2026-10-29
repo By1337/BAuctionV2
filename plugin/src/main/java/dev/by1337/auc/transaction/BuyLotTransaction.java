@@ -12,6 +12,7 @@ import dev.by1337.auc.util.number.EconomyUtil;
 import dev.by1337.auc.util.number.NumberFormatter;
 import dev.by1337.edsl.context.EventContext;
 import dev.by1337.sync.common.callback.ResponseFuture;
+import it.unimi.dsi.fastutil.ints.IntList;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.slf4j.Logger;
@@ -52,16 +53,23 @@ public class BuyLotTransaction implements Transaction<ActionResult> {
         }
         long priceCents = subtractor.centsTotal();
         long centForOne = priceCents / count;
+        var usedLots = IntList.of(subtractor.usedLots());
         if (!infinityBalance) {
             long balanceCents = eco.getCents(who);
             if (balanceCents < priceCents) {
                 BAuction.sendMessage("insufficient_balance", who);
                 return DENY;
             }
-            eco.withdrawCents(who, priceCents);
+            eco.withdrawCents(who, priceCents, l -> l
+                    .setString("reason", "purchase")
+                    .setIntList("lots", usedLots)
+                    .setInt("count", count));
         }
         Runnable undoBalance = () -> {
-            if (!infinityBalance) eco.depositCents(who, priceCents);
+            if (!infinityBalance) eco.depositCents(who, priceCents, l -> l
+                    .setString("reason", "purchase_refund")
+                    .setIntList("lots", usedLots)
+                    .setInt("count", count));
         };
         subtractor.log(auction);
         return subtractor.apply(who, auction).then(v -> {

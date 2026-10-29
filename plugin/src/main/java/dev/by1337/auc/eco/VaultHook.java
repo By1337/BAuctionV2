@@ -1,56 +1,83 @@
 package dev.by1337.auc.eco;
 
 import dev.by1337.auc.util.number.EconomyUtil;
+import dev.by1337.vault.BVaultApi;
+import dev.by1337.vault.log.LogDataWriter;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.RegisteredServiceProvider;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class VaultHook {
+    private static final String LOG_SOURCE = "BAuctionV2";
+    private final dev.by1337.vault.Economy bVault;
     private final Economy econ;
 
     public VaultHook() {
-        RegisteredServiceProvider<Economy> rsp = Bukkit.getServer().getServicesManager().getRegistration(Economy.class);
-        econ = Objects.requireNonNull(rsp, "Economy not found!").getProvider();
+        bVault = BVaultApi.defaultEconomy();
+        if (bVault == null) {
+            RegisteredServiceProvider<Economy> rsp = Bukkit.getServer().getServicesManager().getRegistration(Economy.class);
+            econ = Objects.requireNonNull(rsp, "Economy not found!").getProvider();
+        } else {
+            econ = null;
+        }
+    }
+
+    public boolean isBVault() {
+        return bVault != null;
     }
 
     public long getCents(UUID uuid) {
-        return EconomyUtil.toCents(getBalance(Bukkit.getOfflinePlayer(uuid)));
+        if (bVault != null) return bVault.getBalanceIfLoaded(uuid);
+        return EconomyUtil.toCents(econ.getBalance(Bukkit.getOfflinePlayer(uuid)));
     }
 
     public void withdrawCents(UUID uuid, long count) {
-        withdrawPlayer(Bukkit.getOfflinePlayer(uuid), EconomyUtil.fromCents(count));
+        withdrawCents(uuid, count, null);
+    }
+
+    public void withdrawCents(UUID uuid, long count, @Nullable Consumer<LogDataWriter> details) {
+        if (bVault != null) {
+            bVault.withdraw(uuid, count, LOG_SOURCE, details);
+        } else {
+            econ.withdrawPlayer(Bukkit.getOfflinePlayer(uuid), EconomyUtil.fromCents(count));
+        }
     }
 
     public void depositCents(UUID uuid, long count) {
-        depositPlayer(Bukkit.getOfflinePlayer(uuid), EconomyUtil.fromCents(count));
+        depositCents(uuid, count, null);
     }
 
+    public void depositCents(UUID uuid, long count, @Nullable Consumer<LogDataWriter> details) {
+        if (bVault != null) {
+            bVault.deposit(uuid, count, LOG_SOURCE, details);
+        } else {
+            econ.depositPlayer(Bukkit.getOfflinePlayer(uuid), EconomyUtil.fromCents(count));
+        }
+    }
 
     public double getBalance(UUID uuid) {
-        return getBalance(Bukkit.getOfflinePlayer(uuid));
+        if (bVault != null) return EconomyUtil.fromCents(bVault.getBalanceIfLoaded(uuid));
+        return econ.getBalance(Bukkit.getOfflinePlayer(uuid));
     }
 
     public void withdrawPlayer(UUID uuid, double count) {
-        withdrawPlayer(Bukkit.getOfflinePlayer(uuid), count);
+        if (bVault != null) {
+            withdrawCents(uuid, EconomyUtil.toCents(count));
+        } else {
+            econ.withdrawPlayer(Bukkit.getOfflinePlayer(uuid), count);
+        }
     }
 
     public void depositPlayer(UUID uuid, double count) {
-        depositPlayer(Bukkit.getOfflinePlayer(uuid), count);
-    }
-
-    private double getBalance(OfflinePlayer offlinePlayer) {
-        return econ.getBalance(offlinePlayer);
-    }
-
-    private void withdrawPlayer(OfflinePlayer offlinePlayer, double count) {
-        econ.withdrawPlayer(offlinePlayer, count);
-    }
-
-    private void depositPlayer(OfflinePlayer offlinePlayer, double count) {
-        econ.depositPlayer(offlinePlayer, count);
+        if (bVault != null) {
+            depositCents(uuid, EconomyUtil.toCents(count));
+        } else {
+            econ.depositPlayer(Bukkit.getOfflinePlayer(uuid), count);
+        }
     }
 }

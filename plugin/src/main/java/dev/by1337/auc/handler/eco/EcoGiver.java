@@ -25,8 +25,9 @@ public class EcoGiver implements LocalChannelHandler {
         if (msg instanceof UserMailEvent(AucUser user, String mail)) {
             if (UserMails.isDepositCents(mail)) {
                 long cents = UserMails.getLong(mail);
-                BAuction.economy().depositCents(user.uuid, cents);
-                if (!BAuction.playerList().isOnline(user.uuid)) {
+                var economy = BAuction.economy();
+                economy.depositCents(user.uuid, cents, l -> l.setString("reason", "mailbox_payout"));
+                if (!economy.isBVault() && !BAuction.playerList().isOnline(user.uuid)) {
                     log.warn("Give to offline player! {} {}", user.uuid, mail);
                 }
             } else {
