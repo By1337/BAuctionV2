@@ -3,7 +3,6 @@ package dev.by1337.auc.transaction;
 import dev.by1337.auc.BAuction;
 import dev.by1337.auc.auc.ClientAucLot;
 import dev.by1337.auc.auc.ClientVaultLot;
-import dev.by1337.auc.auc.LotData;
 import dev.by1337.auc.handler.Auction;
 import dev.by1337.auc.util.DurationFormatter;
 import dev.by1337.auc.util.mc.InvUtil;
@@ -43,8 +42,8 @@ public class ResellTransaction implements Transaction<Boolean> {
                 BAuction.sendMessage("has_no_items_resell", who);
                 return new ResponseFuture<>(false);
             }
-            int limit = BAuction.plugin().config().slots.collectSlots(player) - auction.getPlayerOwnedLotsCount(who);
-            if (limit <= 0) {
+            int freeSlots = BAuction.plugin().config().slots.collectSlots(player) - auction.getPlayerOwnedLotsCount(who);
+            if (freeSlots <= 0 && lots.size() == 0) {
                 BAuction.sendMessage("slots_limited", who);
                 return new ResponseFuture<>(false);
             }
@@ -53,7 +52,7 @@ public class ResellTransaction implements Transaction<Boolean> {
             Location loc = player.getLocation();
             if (vault.size() > 0) {
                 ClientVaultLot l;
-                while (limit-- > 0 && (l = vault.next()) != null) {
+                while (freeSlots-- > 0 && (l = vault.next()) != null) {
                     final ClientVaultLot lot = l;
                     auction.removeVaultLot(lot).then(r -> {
                         if (r == null || !r.success) return;
@@ -66,9 +65,10 @@ public class ResellTransaction implements Transaction<Boolean> {
                 }
             }
             if (lots.size() > 0) {
-                LotData l;
-                while (limit-- > 0 && (l = lots.next()) != null && l instanceof ClientAucLot lot) {
-                    //final ClientAucLot lot = l;
+                ClientAucLot l;
+                // Active lots already occupy their slots; relisting does not need free slots.
+                while ((l = lots.next()) != null) {
+                    final ClientAucLot lot = l;
                     auction.removeLot(lot).then(r -> {
                         if (r == null || !r.success) return;
                         auction.addLot(lot.itemStack, lot.owner(), BAuction.plugin().config().selling_duration, lot.count(), lot.centsPrice()).then(s -> {
