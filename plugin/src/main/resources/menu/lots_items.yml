@@ -39,7 +39,7 @@ sold:
   lore:
     - ""
     - *info
-    - '<gray>f чтобы найти аналоги'
+    - '<gray>[<key:key.swapOffhand>] чтобы найти аналоги'
   on_swap_offhand_click:
     - find_analogs: ''
     - delay: '1 [research]' # у майна какие-то баги из-за чего предмет по которому кликнули через f остаётся...
@@ -54,7 +54,7 @@ purchased:
   lore:
     - ""
     - *info
-    - '<gray>f чтобы найти аналоги'
+    - '<gray>[<key:key.swapOffhand>] чтобы найти аналоги'
   on_swap_offhand_click:
     - find_analogs: ''
     - delay: '1 [research]'
@@ -69,7 +69,7 @@ taken:
   lore:
     - ""
     - *info
-    - '<gray>f чтобы найти аналоги'
+    - '<gray>[<key:key.swapOffhand>] чтобы найти аналоги'
   on_swap_offhand_click:
     - find_analogs: ''
     - delay: '1 [research]'
@@ -83,7 +83,7 @@ owned:
   lore:
     - '<#FF6600> ➥ Нажмите<#FFFFE6>, чтобы <#FFFF00>забрать'
     - *info
-    - '<gray>f чтобы найти аналоги'
+    - '<gray>[<key:key.swapOffhand>] чтобы найти аналоги'
   on_swap_offhand_click:
     - find_analogs: ''
     - delay: '1 [research]'
@@ -94,7 +94,7 @@ one:
   lore:
     - '<#FF6600> ➥ Нажмите<#FFFFE6>, чтобы <#00FF00>купить'
     - *info
-    - '<gray>f чтобы найти аналоги'
+    - '<gray>[<key:key.swapOffhand>] чтобы найти аналоги'
   on_swap_offhand_click:
     - find_analogs: ''
     - delay: '1 [research]'
@@ -112,7 +112,7 @@ container:
     - '&r '
     - '<#E99100>↪ <white>Нажмите <#E99100>Пкм'
     - '<#E99100> <white>чтобы осмотреть содержимое.'
-    - '<gray>f чтобы найти аналоги'
+    - '<gray>[<key:key.swapOffhand>] чтобы найти аналоги'
   on_swap_offhand_click:
     - find_analogs: ''
     - delay: '1 [research]'
@@ -132,7 +132,7 @@ many:
     - '&r '
     - '<#E99100>↪ <white>Нажмите <#E99100>Пкм'
     - '<#E99100> <white>чтобы купить количество'
-    - '<gray>f чтобы найти аналоги'
+    - '<gray>[<key:key.swapOffhand>] чтобы найти аналоги'
   on_swap_offhand_click:
     - find_analogs: ''
     - delay: '1 [research]'

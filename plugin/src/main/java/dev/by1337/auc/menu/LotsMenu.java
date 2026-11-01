@@ -89,6 +89,9 @@ public abstract class LotsMenu extends AbstractMenu {
             BAuction.sendMessage("auction_is_disabled", viewer);
             return;
         }
+        if (!isReopen) {
+            preloadPlaceholders();
+        }
         super.open(isReopen);
     }
 
@@ -188,6 +191,23 @@ public abstract class LotsMenu extends AbstractMenu {
                 inWork.set(false);
             }
         });
+    }
+
+    public void preloadPlaceholders() {
+        LotsResult searchResult = this.searchResult;
+        if (searchResult == null) {
+            this.searchResult = searchResult = search();
+        }
+        int[] slots = cfg.slots;
+
+        int totalSize = searchResult.size();
+
+        int pageCount = (totalSize + slots.length - 1) / slots.length;
+        maxPage = Math.max(0, pageCount - 1);
+
+        currentPage = Math.min(currentPage, maxPage);
+
+        hasNextPage = totalSize > (currentPage + 1) * slots.length;
     }
 
     @Override
