@@ -9,6 +9,11 @@ slots: 0-44
 vault_type: 'vault_and_active' # vault_and_active, only_active, only_vault
 always_show_vault_lot: true # всегда показываем vault_lot из lots_items.yml (тогда шалкер не получится осмотреть)
 
+menu-events:
+  lots_loaded:
+    - layer: 0 set next_page 50
+    - layer: 0 set previous_page 48
+
 items:
   back:
     slot: 46
@@ -56,25 +61,18 @@ items:
       - '[sound] ui.button.click 1 1'
       - open: 'auc_rent:home'
 
-  # фулл скрыть next_page если нет некст страницы не получится из-за особеностей вычисления {has_next_page}
   next_page:
-    slot: 50
+    #slot: 50
     material: spectral_arrow
-    oneOf:
-      - on_view: '{has_next_page} == true'
-        name: "<#FF0000>[»]<#FF6600> Следующая страница"
-      - name: "<gray>[»] Следующая страница"
+    on_view: '{has_next_page} == true'
     on_click:
       - sound: 'entity.ender_eye.launch 1 1'
       - next_page: ''
 
   previous_page:
-    slot: 48
+    #slot: 48
     material: spectral_arrow
-    oneOf:
-      - on_view: '{current_page} != 1'
-        name: "<#FF0000>[«]<#FF6600> Предыдущая страница"
-      - name: "<gray>[«] Предыдущая страница"
+    on_view: '{current_page} != 1'
     on_click:
       - sound: 'entity.ender_eye.launch 1 1'
       - previous_page: ''

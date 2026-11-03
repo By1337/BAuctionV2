@@ -5,6 +5,7 @@ import dev.by1337.auc.auc.ClientVaultLot;
 import dev.by1337.auc.auc.LotData;
 import dev.by1337.auc.handler.Auction;
 import dev.by1337.auc.search.LotsResult;
+import dev.by1337.auc.util.mc.MCUtil;
 import dev.by1337.bmenu.command.ExecuteContext;
 import dev.by1337.bmenu.factory.MenuCodecs;
 import dev.by1337.bmenu.loader.MenuConfig;
@@ -183,6 +184,7 @@ public abstract class LotsMenu extends AbstractMenu {
                 }
                 hasNextPage = lots.size() > (currentPage + 1) * slots.length;
                 this.title.setData(this.setPlaceholders(this.config.title()));
+                MCUtil.ensureMain(() -> onEvent("lots_loaded"));
             } finally {
                 System.arraycopy(lotsLayerBuffer, 0, lotsLayer, 0, lotsLayer.length);
                 inWork.set(false);
