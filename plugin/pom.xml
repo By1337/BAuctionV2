@@ -79,8 +79,8 @@
                 <configuration>
                     <jars>
                         <jar>
-                            <artifact>dev.by1337.sync:bsync-client:1.3.2</artifact>
-                            <output>libraries/bsync-client-1.3.2.jar</output>
+                            <artifact>dev.by1337.sync:bsync-client:1.6</artifact>
+                            <output>libraries/bsync-client.jar</output>
                             <compression>STORED</compression>
                         </jar>
                     </jars>

@@ -8,7 +8,7 @@ import dev.by1337.core.util.reflect.ClasspathUtil;
 import java.nio.file.Path;
 
 public class LibrariesUtil {
-    private static final String BSYNC_JAR = "bsync-client-1.3.2.jar";
+    private static final String BSYNC_JAR = "bsync-client.jar";
 
     public static void bootMariaDbDriver() {
         Path libraries = BAuction.plugin().getDataFolder().toPath().resolve(".libraries");
@@ -26,9 +26,6 @@ public class LibrariesUtil {
 
     public static void boot() {
         Path libraries = BAuction.plugin().getDataFolder().toPath().resolve(".libraries");
-        if (!hasClass("com.zaxxer.hikari.HikariConfig")) {
-            ClasspathUtil.addUrl(BAuction.plugin(), RepositoryUtil.download("com.zaxxer:HikariCP:7.0.2", libraries));
-        }
         if (!hasClass("dev.by1337.sync.common.channel.ChannelMessage")
                 || !hasClass("dev.by1337.sync.client.channel.ChannelMaker")) {
             ResourceUtil.resourceStream(BAuction.plugin(), "libraries/" + BSYNC_JAR)
