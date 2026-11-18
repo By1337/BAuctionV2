@@ -28,6 +28,7 @@ public class BuyLotTransaction implements Transaction<ActionResult> {
     private final int count;
     private boolean infinityBalance = false;
     private boolean noGiveItem = false;
+    private boolean noSellerReward = false;
 
     public BuyLotTransaction(UUID who, ClientAucLot lot, int count) {
         this(who, (BuyableLot) lot, count);
@@ -72,7 +73,7 @@ public class BuyLotTransaction implements Transaction<ActionResult> {
                     .setInt("count", count));
         };
         subtractor.log(auction);
-        return subtractor.apply(who, auction).then(v -> {
+        return subtractor.apply(who, auction, !noSellerReward).then(v -> {
             if (v == null || !v.success) {
                 undoBalance.run();
                 BAuction.sendMessage("outdated_lot", who);
@@ -123,6 +124,11 @@ public class BuyLotTransaction implements Transaction<ActionResult> {
 
     public BuyLotTransaction noGiveItem() {
         this.noGiveItem = true;
+        return this;
+    }
+
+    public BuyLotTransaction noSellerReward() {
+        this.noSellerReward = true;
         return this;
     }
 

@@ -63,11 +63,15 @@ public class BatchedLotSubtractor {
     }
 
     public ResponseFuture<ActionResult> apply(UUID who, Auction auction) {
+        return apply(who, auction, true);
+    }
+
+    public ResponseFuture<ActionResult> apply(UUID who, Auction auction, boolean paySeller) {
         if (data.size() == 1) {
             var data = this.data.int2ObjectEntrySet().iterator().next().getValue();
             return auction.subtractOrRemoveLot(data.uid, data.count).ifPresent(r -> {
                 if (!r.success) return;
-                giveReward(who, auction);
+                completeSale(who, auction, paySeller);
             });
         }
         int[] raw = new int[data.size() * 2];
@@ -79,23 +83,25 @@ public class BatchedLotSubtractor {
         }
         return auction.subtractOrRemoveLots(raw).ifPresent(r -> {
             if (!r.success) return;
-            giveReward(who, auction);
+            completeSale(who, auction, paySeller);
         });
     }
 
-    private void giveReward(UUID who, Auction auction) {
+    private void completeSale(UUID who, Auction auction, boolean paySeller) {
         var economy = BAuction.economy();
         for (Data d : data.values()) {
             long sum = d.lprice_for_one * d.count;
-            if (economy.isBVault()) {
-                economy.depositCents(d.owner, sum, l -> l
-                        .setString("reason", "sale")
-                        .setUUID("buyer", who)
-                        .setInt("lot", d.uid)
-                        .setInt("item", d.itemId)
-                        .setInt("count", d.count));
-            } else {
-                auction.users().pushMail(d.owner, UserMails.makeDepositCents(sum));
+            if (paySeller) {
+                if (economy.isBVault()) {
+                    economy.depositCents(d.owner, sum, l -> l
+                            .setString("reason", "sale")
+                            .setUUID("buyer", who)
+                            .setInt("lot", d.uid)
+                            .setInt("item", d.itemId)
+                            .setInt("count", d.count));
+                } else {
+                    auction.users().pushMail(d.owner, UserMails.makeDepositCents(sum));
+                }
             }
             auction.publishLog(new BuyAuctionLog(
                     System.currentTimeMillis(),
