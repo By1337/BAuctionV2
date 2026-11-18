@@ -57,42 +57,33 @@ public class Trie<T> {
     public List<String> getSuggestions(CharSequence prefix, int limit) {
         List<String> suggestions = new ArrayList<>();
         int len = prefix.length();
+        int start = 0;
 
-        for (int start = 0; start < len; start++) {
+        while (true) {
             Node<T> node = root;
-            boolean validPrefix = true;
-
-            for (int i = start; i < len; i++) {
+            int nextTermStart = start;
+            for (int i = start; i < len && node != null; i++) {
                 char c = prefix.charAt(i);
-                boolean validSpace = c == ' ' && node.key != null;
-                node = node.children.get(prefix.charAt(i));
-                if (node == null && validSpace) {
-                    start = i;
-                    validPrefix = false;
-                    break;
+                if (c == ' ' && node.storedValue != null) {
+                    nextTermStart = i + 1;
                 }
-                if (node == null) {
-                    validPrefix = false;
-                    break;
-                }
+                node = node.children.get(c);
             }
 
-            if (validPrefix && node != null) {
+            if (node != null) {
                 String before = prefix.subSequence(0, start).toString();
                 collectSuggestions(node, before, suggestions, limit);
                 return suggestions;
             }
-        }
 
-        Node<T> node = root;
-        for (int i = 0; i < len; i++) {
-            node = node.children.get(prefix.charAt(i));
-            if (node == null) {
+            if (nextTermStart > start) {
+                start = nextTermStart;
+            } else if (prefix.charAt(start) == ' ') {
+                start++;
+            } else {
                 return suggestions;
             }
         }
-        collectSuggestions(node, prefix.toString(), suggestions, limit);
-        return suggestions;
     }
 
     private void collectSuggestions(Node<T> node, String prefix, List<String> suggestions, int limit) {
