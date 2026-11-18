@@ -22,7 +22,7 @@ public class LuckPermsUtil {
         return getPermissionTimeLeft(luckPerms.getUserManager().getUser(user), permission);
     }
 
-    public static long getPermissionTimeLeft(@Nullable User user, String permission) {
+    private long getPermissionTimeLeft(@Nullable User user, String permission) {
         if (user == null) return 0;
         long now = System.currentTimeMillis();
 
