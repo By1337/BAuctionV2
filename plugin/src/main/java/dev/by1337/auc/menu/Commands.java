@@ -120,8 +120,11 @@ class Commands {
                             BAuction.sendMessage("auction_is_disabled", viewer);
                             return;
                         }
-                        auction.apply(new ResellTransaction(menu.viewer().getUniqueId()));
-
+                        auction.apply(new ResellTransaction(viewer.getUniqueId())).ifPresent(success -> {
+                            if (success && menu.isOpened() && menu instanceof LotsMenu lotsMenu) {
+                                lotsMenu.research();
+                            }
+                        });
                     }));
 
     public static Command<ExecuteContext> create() {
