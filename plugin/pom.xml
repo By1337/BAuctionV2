@@ -204,7 +204,7 @@
         <dependency>
             <groupId>dev.by1337.core</groupId>
             <artifactId>BLibV2</artifactId>
-            <version>1.10.7</version>
+            <version>${blib.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

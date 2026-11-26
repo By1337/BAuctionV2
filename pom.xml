@@ -6,6 +6,9 @@
     <version>1.4</version>
     <packaging>pom</packaging>
     <name>bauc-root</name>
+    <properties>
+        <blib.version>1.10.7</blib.version>
+    </properties>
     <distributionManagement>
         <repository>
             <id>by1337.repo.2</id>
