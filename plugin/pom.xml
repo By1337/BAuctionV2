@@ -75,7 +75,7 @@
             <plugin>
                 <groupId>dev.by1337.bpatch</groupId>
                 <artifactId>bpatch-maven-plugin</artifactId>
-                <version>1.0.0</version>
+                <version>1.0.1</version>
                 <configuration>
                     <jars>
                         <jar>
